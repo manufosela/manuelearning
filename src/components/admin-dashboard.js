@@ -105,7 +105,7 @@ export class AdminDashboard extends LitElement {
 
     .cohort-row__bar-fill {
       height: 100%;
-      background: #ec1313;
+      background: #84cc16;
       border-radius: 4px;
       transition: width 0.3s ease;
     }

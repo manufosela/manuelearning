@@ -50,8 +50,8 @@ export class AuthForm extends LitElement {
 
     input:focus {
       outline: none;
-      border-color: #ec1313;
-      box-shadow: 0 0 0 3px rgba(236, 19, 19, 0.1);
+      border-color: #84cc16;
+      box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.1);
     }
 
     .error-message {
@@ -98,8 +98,8 @@ export class AuthForm extends LitElement {
 
     .submit-btn {
       height: 3.25rem;
-      background-color: #ec1313;
-      color: #fff;
+      background-color: #84cc16;
+      color: #0f172a;
       border: none;
       border-radius: 0.5rem;
       font-size: 1rem;
@@ -125,7 +125,7 @@ export class AuthForm extends LitElement {
     }
 
     .cancel-link a {
-      color: #ec1313;
+      color: #84cc16;
       text-decoration: none;
       font-weight: 600;
       cursor: pointer;

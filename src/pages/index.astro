@@ -6,7 +6,7 @@ import { SITE } from '../config/site.config.js';
 <MainLayout>
   <!-- Hero Section -->
   <section class="hero-wrapper">
-    <div class="hero" style="background-image: linear-gradient(to right, rgba(236, 19, 19, 0.9) 0%, rgba(236, 19, 19, 0.4) 100%), url('/images/hero-background.jpg');">
+    <div class="hero" style="background-image: linear-gradient(to right, #0f172a 0%, #1a2e05 100%), url('/images/hero-background.jpg');">
       <div class="hero__content">
         <div class="hero__badge">
           <span class="material-symbols-outlined">verified</span>
@@ -243,24 +243,24 @@ import { SITE } from '../config/site.config.js';
 
   .service-card:hover {
     box-shadow: var(--shadow-2xl);
-    border-color: rgba(236, 19, 19, 0.5);
+    border-color: rgba(34, 211, 238, 0.5);
   }
 
   .service-card__icon {
     width: 3.5rem;
     height: 3.5rem;
     border-radius: var(--radius-md);
-    background-color: var(--color-primary-light);
+    background-color: rgba(34, 211, 238, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-primary);
+    color: var(--color-secondary);
     transition: all var(--transition-base);
   }
 
   .service-card:hover .service-card__icon {
-    background-color: var(--color-primary);
-    color: var(--color-text-white);
+    background-color: var(--color-secondary);
+    color: #0f172a;
   }
 
   .service-card__icon span {

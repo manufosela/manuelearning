@@ -67,7 +67,7 @@ export class AdminModulesList extends LitElement {
       transition: background-color 0.15s;
     }
 
-    .btn--primary { background: #ec1313; color: #fff; }
+    .btn--primary { background: #84cc16; color: #0f172a; }
     .btn--primary:hover { background: #d11111; }
     .btn--secondary { background: #f1f5f9; color: #334155; }
     .btn--secondary:hover { background: #e2e8f0; }
@@ -105,7 +105,7 @@ export class AdminModulesList extends LitElement {
       width: 2rem;
       height: 2rem;
       border-radius: 0.375rem;
-      background: #ec1313;
+      background: #84cc16;
       color: #fff;
       display: flex;
       align-items: center;
@@ -271,8 +271,8 @@ export class AdminModulesList extends LitElement {
     .form-group input:focus,
     .form-group textarea:focus {
       outline: none;
-      border-color: #ec1313;
-      box-shadow: 0 0 0 3px rgba(236, 19, 19, 0.1);
+      border-color: #84cc16;
+      box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.1);
     }
 
     .form-error {
@@ -300,7 +300,7 @@ export class AdminModulesList extends LitElement {
       width: 1.5rem;
       height: 1.5rem;
       border: 3px solid #e2e8f0;
-      border-top-color: #ec1313;
+      border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
       margin: 0 auto 0.75rem;
@@ -323,8 +323,8 @@ export class AdminModulesList extends LitElement {
 
     .search-input:focus {
       outline: none;
-      border-color: #ec1313;
-      box-shadow: 0 0 0 3px rgba(236, 19, 19, 0.1);
+      border-color: #84cc16;
+      box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.1);
     }
 
     .no-results {
@@ -344,7 +344,7 @@ export class AdminModulesList extends LitElement {
     }
 
     .form-check { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
-    .form-check input[type="checkbox"] { width: auto; margin: 0; accent-color: #ec1313; }
+    .form-check input[type="checkbox"] { width: auto; margin: 0; accent-color: #84cc16; }
     .form-check label { font-size: 0.813rem; font-weight: 500; color: #334155; cursor: pointer; }
 
     .empty-state .material-symbols-outlined {
@@ -383,8 +383,8 @@ export class AdminModulesList extends LitElement {
 
     .reorder-btn:hover {
       background: #f1f5f9;
-      color: #ec1313;
-      border-color: #ec1313;
+      color: #84cc16;
+      border-color: #84cc16;
     }
 
     .reorder-btn:disabled {

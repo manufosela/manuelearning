@@ -55,9 +55,9 @@ export class LessonNav extends LitElement {
     }
 
     .nav-btn--primary {
-      background: #ec1313;
+      background: #84cc16;
       color: #fff;
-      border-color: #ec1313;
+      border-color: #84cc16;
     }
 
     .nav-btn--primary:hover {

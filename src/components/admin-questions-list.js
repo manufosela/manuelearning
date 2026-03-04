@@ -25,7 +25,7 @@ export class AdminQuestionsList extends LitElement {
     .filter-group { display: flex; gap: 0.375rem; }
 
     .btn { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 1rem; border: none; border-radius: 0.5rem; font-size: 0.813rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background-color 0.15s; }
-    .btn--primary { background: #ec1313; color: #fff; }
+    .btn--primary { background: #84cc16; color: #0f172a; }
     .btn--primary:hover { background: #d11111; }
     .btn--secondary { background: #f1f5f9; color: #334155; }
     .btn--secondary:hover { background: #e2e8f0; }
@@ -55,11 +55,11 @@ export class AdminQuestionsList extends LitElement {
 
     .answer-form { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
     .answer-form textarea { flex: 1; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; font-size: 0.875rem; font-family: inherit; resize: vertical; min-height: 2.5rem; }
-    .answer-form textarea:focus { outline: none; border-color: #ec1313; box-shadow: 0 0 0 3px rgba(236,19,19,0.1); }
+    .answer-form textarea:focus { outline: none; border-color: #84cc16; box-shadow: 0 0 0 3px rgba(132,204,22,0.1); }
 
     .loading, .error-msg { text-align: center; padding: 3rem; color: #475569; }
     .error-msg { color: #991b1b; }
-    .spinner { width: 1.5rem; height: 1.5rem; border: 3px solid #e2e8f0; border-top-color: #ec1313; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 0.75rem; }
+    .spinner { width: 1.5rem; height: 1.5rem; border: 3px solid #e2e8f0; border-top-color: #84cc16; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 0.75rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .empty-state { text-align: center; padding: 3rem; color: #64748b; }
   `;

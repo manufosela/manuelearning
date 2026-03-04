@@ -76,7 +76,7 @@ export class RegistrationToggle extends LitElement {
     }
 
     input:checked + .toggle-slider {
-      background-color: #ec1313;
+      background-color: #84cc16;
     }
 
     input:checked + .toggle-slider::before {
