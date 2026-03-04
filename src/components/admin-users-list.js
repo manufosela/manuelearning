@@ -3,6 +3,7 @@ import { fetchAllUsers, updateUserRole } from '../lib/firebase/users.js';
 import { fetchAllCohorts } from '../lib/firebase/cohorts.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { exportCsv } from '../lib/csv-export.js';
+import { filterBySearch } from '../lib/search-filter.js';
 
 /**
  * @element admin-users-list
@@ -13,6 +14,7 @@ export class AdminUsersList extends LitElement {
     _users: { type: Array, state: true },
     _loading: { type: Boolean, state: true },
     _error: { type: String, state: true },
+    _searchQuery: { type: String, state: true },
   };
 
   static styles = css`
@@ -119,6 +121,39 @@ export class AdminUsersList extends LitElement {
       font-size: 1rem;
     }
 
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .search-input {
+      flex: 1;
+      height: 2.5rem;
+      padding: 0 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-family: inherit;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #ec1313;
+      box-shadow: 0 0 0 3px rgba(236, 19, 19, 0.1);
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 2rem;
+      color: #94a3b8;
+      font-size: 0.875rem;
+      background: #fff;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
     .loading, .error {
       text-align: center;
       padding: 3rem;
@@ -156,6 +191,7 @@ export class AdminUsersList extends LitElement {
     this._cohortMap = {};
     this._loading = true;
     this._error = '';
+    this._searchQuery = '';
   }
 
   connectedCallback() {
@@ -227,6 +263,8 @@ export class AdminUsersList extends LitElement {
       return html`<div class="error">${this._error}</div>`;
     }
 
+    const filtered = filterBySearch(this._users, ['email', 'displayName', 'role'], this._searchQuery);
+
     return html`
       <div class="toolbar">
         <span>${this._users.length} usuarios</span>
@@ -235,44 +273,57 @@ export class AdminUsersList extends LitElement {
           Exportar CSV
         </button>
       </div>
-      <table class="users-table">
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th class="hide-mobile">Nombre</th>
-            <th>Rol</th>
-            <th class="hide-mobile">Cohorte</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${this._users.map(
-            (user) => html`
+      <div class="search-bar">
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Buscar por email, nombre o rol..."
+          .value=${this._searchQuery}
+          @input=${(e) => { this._searchQuery = e.target.value; }}
+        />
+      </div>
+      ${filtered.length === 0
+        ? html`<div class="no-results">Sin resultados. Prueba con otro término de búsqueda.</div>`
+        : html`
+          <table class="users-table">
+            <thead>
               <tr>
-                <td>${user.email}</td>
-                <td class="hide-mobile">${user.displayName || '-'}</td>
-                <td>
-                  <span class="role-badge role-badge--${user.role}">
-                    ${user.role}
-                  </span>
-                </td>
-                <td class="hide-mobile">${this._cohortMap[user.cohortId] || user.cohortId || '-'}</td>
-                <td>
-                  <select
-                    class="role-select"
-                    data-uid=${user.uid}
-                    .value=${user.role}
-                    @change=${this._handleRoleChange}
-                  >
-                    <option value="student">student</option>
-                    <option value="admin">admin</option>
-                  </select>
-                </td>
+                <th>Email</th>
+                <th class="hide-mobile">Nombre</th>
+                <th>Rol</th>
+                <th class="hide-mobile">Cohorte</th>
+                <th>Acciones</th>
               </tr>
-            `
-          )}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              ${filtered.map(
+                (user) => html`
+                  <tr>
+                    <td>${user.email}</td>
+                    <td class="hide-mobile">${user.displayName || '-'}</td>
+                    <td>
+                      <span class="role-badge role-badge--${user.role}">
+                        ${user.role}
+                      </span>
+                    </td>
+                    <td class="hide-mobile">${this._cohortMap[user.cohortId] || user.cohortId || '-'}</td>
+                    <td>
+                      <select
+                        class="role-select"
+                        data-uid=${user.uid}
+                        .value=${user.role}
+                        @change=${this._handleRoleChange}
+                      >
+                        <option value="student">student</option>
+                        <option value="admin">admin</option>
+                      </select>
+                    </td>
+                  </tr>
+                `
+              )}
+            </tbody>
+          </table>
+        `}
     `;
   }
 }
