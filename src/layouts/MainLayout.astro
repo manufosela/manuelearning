@@ -1,0 +1,315 @@
+---
+/**
+ * @typedef {Object} Props
+ * @property {string} [title] - Page title
+ * @property {string} [description] - Meta description
+ */
+
+import { SITE } from '../config/site.config.js';
+
+/** @type {Props} */
+const {
+  title = `${SITE.name} | ${SITE.tagline}`,
+  description = SITE.tagline,
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lexend:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet"
+  />
+  <title>{title}</title>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Header -->
+    <header class="site-header">
+      <div class="site-header__brand">
+        <span class="material-symbols-outlined site-header__icon">architecture</span>
+        <h2 class="site-header__title">{SITE.name}</h2>
+      </div>
+      <nav class="site-header__nav">
+        <a href="/registro" class="btn btn--primary btn--sm">Regístrate</a>
+      </nav>
+      <button class="site-header__menu-toggle" aria-label="Abrir menú">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </header>
+
+    <!-- Main content -->
+    <main class="site-main">
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <div class="site-footer__logo">
+            <span class="material-symbols-outlined">architecture</span>
+            <h2>{SITE.name}</h2>
+          </div>
+          <p>{SITE.tagline}</p>
+          <div class="site-footer__social">
+            <a href="#" aria-label="Web"><span class="material-symbols-outlined">public</span></a>
+            <a href="#" aria-label="Chat"><span class="material-symbols-outlined">chat</span></a>
+            <a href="#" aria-label="Email"><span class="material-symbols-outlined">mail</span></a>
+          </div>
+        </div>
+        <div class="site-footer__links">
+          <h4>Cursos</h4>
+          <ul>
+            <li><a href="#">Fundamentos Lean</a></li>
+            <li><a href="#">Maestría en Construcción Lean</a></li>
+            <li><a href="#">Liderazgo en Obra</a></li>
+            <li><a href="#">Ruta de Certificación</a></li>
+          </ul>
+        </div>
+        <div class="site-footer__links">
+          <h4>Recursos</h4>
+          <ul>
+            <li><a href="#">Libros Blancos Lean</a></li>
+            <li><a href="#">Webinars</a></li>
+            <li><a href="#">Centro de Formación</a></li>
+            <li><a href="#">API Docs</a></li>
+          </ul>
+        </div>
+        <div class="site-footer__links">
+          <h4>Contacto</h4>
+          <ul>
+            <li><span class="material-symbols-outlined">location_on</span> New York, NY</li>
+            <li><span class="material-symbols-outlined">mail</span> {SITE.contactEmail}</li>
+            <li><span class="material-symbols-outlined">call</span> +1 (888) LEAN-360</li>
+          </ul>
+        </div>
+      </div>
+      <div class="site-footer__bottom">
+        <p>&copy; {SITE.copyrightYear} {SITE.name}. Todos los derechos reservados.</p>
+        <div class="site-footer__legal">
+          <a href="#">Política de Privacidad</a>
+          <a href="#">Términos de Servicio</a>
+          <a href="#">Política de Cookies</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>
+
+<style>
+  /* --- Page wrapper --- */
+  .page-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* --- Header --- */
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--color-border);
+    padding: 1rem var(--section-px);
+    background-color: var(--color-bg-white);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .site-header__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+  }
+
+  .site-header__icon {
+    font-size: 1.875rem;
+    font-weight: 700;
+  }
+
+  .site-header__title {
+    font-size: 1.25rem;
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .site-header__nav {
+    display: none;
+  }
+
+  .site-header__menu-toggle {
+    display: block;
+    color: var(--color-text-primary);
+  }
+
+  @media (min-width: 768px) {
+    .site-header__nav {
+      display: flex;
+      flex: 1;
+      justify-content: flex-end;
+      gap: 2.5rem;
+    }
+
+    .site-header__menu-toggle {
+      display: none;
+    }
+  }
+
+  /* --- Main --- */
+  .site-main {
+    flex: 1;
+  }
+
+  /* --- Footer --- */
+  .site-footer {
+    background-color: var(--color-bg-slate-950);
+    color: var(--color-text-on-dark);
+    padding: 10rem var(--section-px) 3rem;
+  }
+
+  .site-footer__grid {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    margin-bottom: 4rem;
+  }
+
+  @media (min-width: 768px) {
+    .site-footer__grid {
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
+  }
+
+  .site-footer__brand p {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+
+  .site-footer__logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text-white);
+    margin-bottom: 1.5rem;
+  }
+
+  .site-footer__logo span {
+    font-size: 1.5rem;
+  }
+
+  .site-footer__logo h2 {
+    font-size: 1.125rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+
+  .site-footer__social {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .site-footer__social a {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-full);
+    background-color: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-white);
+    transition: background-color var(--transition-base);
+  }
+
+  .site-footer__social a:hover {
+    background-color: var(--color-primary);
+  }
+
+  .site-footer__social a span {
+    font-size: 1.125rem;
+  }
+
+  .site-footer__links h4 {
+    color: var(--color-text-white);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+  }
+
+  .site-footer__links ul {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    font-size: 0.875rem;
+  }
+
+  .site-footer__links li {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .site-footer__links li span {
+    font-size: 0.875rem;
+  }
+
+  .site-footer__links a:hover {
+    color: var(--color-text-white);
+    transition: color var(--transition-fast);
+  }
+
+  .site-footer__bottom {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border-dark);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    font-size: 0.75rem;
+  }
+
+  @media (min-width: 768px) {
+    .site-footer__bottom {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+
+  .site-footer__legal {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .site-footer__legal a:hover {
+    color: var(--color-text-white);
+    transition: color var(--transition-fast);
+  }
+</style>

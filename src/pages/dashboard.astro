@@ -1,0 +1,88 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { SITE } from '../config/site.config.js';
+---
+
+<MainLayout title={`Dashboard | ${SITE.name}`}>
+  <auth-guard>
+    <section class="dashboard">
+      <div class="dashboard__header">
+        <h1>Dashboard del estudiante</h1>
+        <button class="btn btn--secondary btn--sm" id="logout-btn">
+          <span class="material-symbols-outlined">logout</span>
+          Cerrar sesión
+        </button>
+      </div>
+      <student-dashboard-view></student-dashboard-view>
+    </section>
+  </auth-guard>
+</MainLayout>
+
+<script>
+  import '../components/auth-guard.js';
+  import '../components/student-dashboard-view.js';
+  import { logoutUser } from '../lib/firebase/auth.js';
+
+  document.getElementById('logout-btn')?.addEventListener('click', async () => {
+    const result = await logoutUser();
+    if (result.success) {
+      window.location.href = '/';
+    }
+  });
+</script>
+
+<style>
+  .dashboard {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding: 2rem var(--section-px);
+  }
+
+  .dashboard__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .dashboard__header h1 {
+    font-size: 1.5rem;
+    font-weight: 900;
+  }
+
+  #logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  #logout-btn .material-symbols-outlined {
+    font-size: 1.25rem;
+  }
+
+  .dashboard__welcome {
+    text-align: center;
+    padding: 4rem 2rem;
+    background-color: var(--color-bg-white);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-md);
+  }
+
+  .dashboard__icon {
+    font-size: 3rem;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+  }
+
+  .dashboard__welcome h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+  }
+
+  .dashboard__welcome p {
+    color: var(--color-text-secondary);
+  }
+</style>

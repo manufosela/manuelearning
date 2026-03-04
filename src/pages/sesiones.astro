@@ -1,0 +1,45 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { SITE } from '../config/site.config.js';
+---
+
+<MainLayout title={`Sesiones | ${SITE.name}`}>
+  <section class="sessions-page">
+    <div class="sessions-page__header">
+      <h1>Sesiones en vivo</h1>
+      <p>Consulta las próximas sesiones síncronas y accede a los enlaces de Zoom</p>
+    </div>
+    <auth-guard>
+      <student-sessions-view></student-sessions-view>
+    </auth-guard>
+  </section>
+</MainLayout>
+
+<script>
+  import '../components/auth-guard.js';
+  import '../components/student-sessions-view.js';
+</script>
+
+<style>
+  .sessions-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .sessions-page__header {
+    margin-bottom: 2rem;
+  }
+
+  .sessions-page__header h1 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--color-text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .sessions-page__header p {
+    color: var(--color-text-secondary);
+    font-size: 0.938rem;
+  }
+</style>

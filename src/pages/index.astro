@@ -1,0 +1,418 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { SITE } from '../config/site.config.js';
+---
+
+<MainLayout>
+  <!-- Hero Section -->
+  <section class="hero-wrapper">
+    <div class="hero" style="background-image: linear-gradient(to right, rgba(236, 19, 19, 0.9) 0%, rgba(236, 19, 19, 0.4) 100%), url('/images/hero-background.jpg');">
+      <div class="hero__content">
+        <div class="hero__badge">
+          <span class="material-symbols-outlined">verified</span>
+          <span>The Standard in Lean Management</span>
+        </div>
+        <h1 class="hero__title">
+          Domina la Construcción Lean,
+          <br /><span class="hero__title--accent">construye tu futuro.</span>
+        </h1>
+        <p class="hero__description">
+          {SITE.tagline}
+          Master efficiency, precision scheduling, and global standards with our certified courses.
+        </p>
+        <div class="hero__actions">
+          <a href="/registro" class="btn btn--primary btn--lg hero__btn-white">Regístrate ahora</a>
+          <a href="#services" class="btn btn--outline btn--lg">Ver detalles del curso</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="services" id="services">
+    <div class="services__header">
+      <h2 class="section-label">Plan de estudios</h2>
+      <h3 class="section-title">Habilidades que dominarás</h3>
+      <div class="section-divider"></div>
+    </div>
+    <div class="services__grid">
+      <article class="service-card">
+        <div class="service-card__icon">
+          <span class="material-symbols-outlined">trending_up</span>
+        </div>
+        <h4 class="service-card__title">Optimización del flujo de trabajo</h4>
+        <p class="service-card__text">Learn to design and manage seamless workflows that eliminate bottlenecks and maximize site productivity.</p>
+      </article>
+      <article class="service-card">
+        <div class="service-card__icon">
+          <span class="material-symbols-outlined">delete_sweep</span>
+        </div>
+        <h4 class="service-card__title">Identificación de desperdicios</h4>
+        <p class="service-card__text">Master the art of identifying the 8 wastes in construction and implementing actionable reduction strategies.</p>
+      </article>
+      <article class="service-card">
+        <div class="service-card__icon">
+          <span class="material-symbols-outlined">calendar_today</span>
+        </div>
+        <h4 class="service-card__title">Sistema Last Planner®</h4>
+        <p class="service-card__text">Practical training on pull-planning and collaborative scheduling for high-performance site teams.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Why Lean Section -->
+  <section class="why-lean" id="why-lean">
+    <div class="why-lean__grid">
+      <div class="why-lean__image-wrapper">
+        <div class="why-lean__image">
+          <img src="/images/engineer-tablet.jpg" alt="Profesional de construcción revisando planos digitales en una tablet" />
+        </div>
+        <div class="why-lean__stat">
+          <p class="why-lean__stat-number">98%</p>
+          <p class="why-lean__stat-label">Tasa de finalización de estudiantes</p>
+        </div>
+      </div>
+      <div class="why-lean__content">
+        <h2 class="section-label">Programa principal</h2>
+        <h3 class="why-lean__title">Maestría en Construcción Lean</h3>
+        <p class="why-lean__description">
+          Nuestro programa integral de certificación de 12 semanas diseñado para gerentes de proyecto,
+          ingenieros y supervisores. Transición del caos tradicional a la precisión lean.
+        </p>
+        <ul class="why-lean__features">
+          <li>
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>Certificación completa reconocida por líderes de la industria</span>
+          </li>
+          <li>
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>Talleres interactivos y simulaciones de obras del mundo real</span>
+          </li>
+          <li>
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>Mentoría directa de expertos en Lean</span>
+          </li>
+        </ul>
+        <button class="btn btn--primary btn--md">Descargar temario</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section class="cta-banner-wrapper">
+    <div class="cta-banner">
+      <a href="/registro" class="btn btn--primary btn--lg">Inscríbete ya</a>
+      <a href="/login" class="btn btn--secondary btn--lg">Acceso alumnos</a>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  /* --- Hero --- */
+  .hero-wrapper {
+    padding: 2rem var(--section-px);
+  }
+
+  .hero {
+    position: relative;
+    min-height: 560px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    background-size: cover;
+    background-position: center;
+  }
+
+  @media (min-width: 768px) {
+    .hero {
+      padding: 2rem 4rem;
+    }
+  }
+
+  .hero__content {
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .hero__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    background-color: rgba(255, 255, 255, 0.2);
+    color: var(--color-text-white);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    width: fit-content;
+  }
+
+  .hero__badge span.material-symbols-outlined {
+    font-size: 0.875rem;
+  }
+
+  .hero__badge span:last-child {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .hero__title {
+    color: var(--color-text-white);
+    font-size: clamp(2.5rem, 6vw, 3.75rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .hero__title--accent {
+    opacity: 0.9;
+  }
+
+  .hero__description {
+    color: #f1f5f9;
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-weight: 400;
+    line-height: 1.6;
+    opacity: 0.9;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-top: 1rem;
+  }
+
+  .hero__btn-white {
+    background-color: var(--color-text-white);
+    color: var(--color-primary);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .hero__btn-white:hover {
+    transform: scale(1.05);
+    filter: none;
+  }
+
+  /* --- Services --- */
+  .services {
+    padding: var(--section-py) var(--section-px);
+    background-color: var(--color-bg-white);
+  }
+
+  .services__header {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 4rem;
+    text-align: center;
+    align-items: center;
+  }
+
+  .services__grid {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @media (min-width: 768px) {
+    .services__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .service-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-bg-white);
+    padding: 2rem;
+    transition: all var(--transition-base);
+  }
+
+  .service-card:hover {
+    box-shadow: var(--shadow-2xl);
+    border-color: rgba(236, 19, 19, 0.5);
+  }
+
+  .service-card__icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: var(--radius-md);
+    background-color: var(--color-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+    transition: all var(--transition-base);
+  }
+
+  .service-card:hover .service-card__icon {
+    background-color: var(--color-primary);
+    color: var(--color-text-white);
+  }
+
+  .service-card__icon span {
+    font-size: 1.875rem;
+  }
+
+  .service-card__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  .service-card__text {
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+  }
+
+  /* --- Why Lean --- */
+  .why-lean {
+    padding: 6rem var(--section-px);
+    background-color: var(--color-bg-slate-50);
+    color: var(--color-text-primary);
+  }
+
+  .why-lean__grid {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  @media (min-width: 1024px) {
+    .why-lean__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .why-lean__image-wrapper {
+    position: relative;
+  }
+
+  .why-lean__image {
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-2xl);
+  }
+
+  .why-lean__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .why-lean__stat {
+    display: none;
+    position: absolute;
+    bottom: -1.5rem;
+    right: -1.5rem;
+    background-color: var(--color-primary);
+    color: var(--color-text-white);
+    padding: 2rem;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+  }
+
+  @media (min-width: 768px) {
+    .why-lean__stat {
+      display: block;
+    }
+  }
+
+  .why-lean__stat-number {
+    font-size: 2.25rem;
+    font-weight: 900;
+  }
+
+  .why-lean__stat-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.8;
+  }
+
+  .why-lean__content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .why-lean__title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    line-height: 1.15;
+    color: var(--color-text-primary);
+  }
+
+  .why-lean__description {
+    font-size: 1.125rem;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+  }
+
+  .why-lean__features {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .why-lean__features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .why-lean__features li span.material-symbols-outlined {
+    color: var(--color-primary);
+    flex-shrink: 0;
+  }
+
+  /* --- CTA Banner --- */
+  .cta-banner-wrapper {
+    padding: 0 var(--section-px);
+    margin-bottom: -5rem;
+    position: relative;
+    z-index: 10;
+  }
+
+  .cta-banner {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    background-color: var(--color-bg-white);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-2xl);
+    padding: 2rem 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    border: 1px solid #f1f5f9;
+  }
+
+  @media (min-width: 768px) {
+    .cta-banner {
+      flex-direction: row;
+      justify-content: center;
+    }
+  }
+</style>

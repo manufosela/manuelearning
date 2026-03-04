@@ -1,0 +1,176 @@
+---
+/**
+ * @typedef {Object} Props
+ * @property {string} [title] - Page title
+ */
+
+import { SITE } from '../config/site.config.js';
+
+/** @type {Props} */
+const {
+  title = `Admin | ${SITE.name}`,
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lexend:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet"
+  />
+  <title>{title}</title>
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar__brand">
+        <span class="material-symbols-outlined">architecture</span>
+        <h2>Admin</h2>
+      </div>
+      <nav class="admin-sidebar__nav">
+        <a href="/admin/users" class="admin-nav-link">
+          <span class="material-symbols-outlined">group</span>
+          Usuarios
+        </a>
+        <a href="/admin/cohorts" class="admin-nav-link">
+          <span class="material-symbols-outlined">school</span>
+          Cohortes
+        </a>
+        <a href="/admin/modules" class="admin-nav-link">
+          <span class="material-symbols-outlined">menu_book</span>
+          Módulos
+        </a>
+        <a href="/admin/quizzes" class="admin-nav-link">
+          <span class="material-symbols-outlined">quiz</span>
+          Quizzes
+        </a>
+        <a href="/admin/sessions" class="admin-nav-link">
+          <span class="material-symbols-outlined">videocam</span>
+          Sesiones
+        </a>
+        <a href="/admin/questions" class="admin-nav-link">
+          <span class="material-symbols-outlined">forum</span>
+          Preguntas
+          <admin-notifications-badge></admin-notifications-badge>
+        </a>
+        <a href="/admin/retention" class="admin-nav-link">
+          <span class="material-symbols-outlined">monitoring</span>
+          Retención
+        </a>
+        <a href="/admin/settings" class="admin-nav-link">
+          <span class="material-symbols-outlined">settings</span>
+          Configuración
+        </a>
+        <a href="/dashboard" class="admin-nav-link">
+          <span class="material-symbols-outlined">dashboard</span>
+          Dashboard
+        </a>
+      </nav>
+    </aside>
+    <main class="admin-main">
+      <admin-guard>
+        <slot />
+      </admin-guard>
+    </main>
+  </div>
+</body>
+</html>
+
+<script>
+  import '../components/admin-guard.js';
+  import '../components/admin-notifications-badge.js';
+</script>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>
+
+<style>
+  .admin-layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .admin-sidebar {
+    width: 240px;
+    background: var(--color-bg-slate-950);
+    color: var(--color-text-on-dark);
+    padding: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .admin-sidebar__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text-white);
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border-dark);
+  }
+
+  .admin-sidebar__brand h2 {
+    font-size: 1.125rem;
+    font-weight: 900;
+  }
+
+  .admin-sidebar__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .admin-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color var(--transition-fast);
+  }
+
+  .admin-nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-white);
+  }
+
+  .admin-nav-link .material-symbols-outlined {
+    font-size: 1.25rem;
+  }
+
+  .admin-main {
+    flex: 1;
+    padding: 2rem;
+    background: var(--color-bg-light);
+    overflow-y: auto;
+  }
+
+  @media (max-width: 768px) {
+    .admin-sidebar {
+      width: 60px;
+      padding: 1rem 0.5rem;
+    }
+
+    .admin-sidebar__brand h2,
+    .admin-nav-link span:last-child {
+      display: none;
+    }
+
+    .admin-nav-link {
+      justify-content: center;
+      padding: 0.75rem;
+    }
+  }
+</style>

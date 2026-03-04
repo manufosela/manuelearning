@@ -1,0 +1,25 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { SITE } from '../config/site.config.js';
+---
+
+<MainLayout title={`Clase | ${SITE.name}`}>
+  <section class="lesson-page">
+    <auth-guard>
+      <lesson-view></lesson-view>
+    </auth-guard>
+  </section>
+</MainLayout>
+
+<script>
+  import '../components/auth-guard.js';
+  import '../components/lesson-view.js';
+</script>
+
+<style>
+  .lesson-page {
+    padding: 2rem var(--section-px);
+    max-width: 960px;
+    margin: 0 auto;
+  }
+</style>

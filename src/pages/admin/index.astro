@@ -1,0 +1,95 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { SITE } from '../../config/site.config.js';
+---
+
+<AdminLayout title={`Panel de administración | ${SITE.name}`}>
+  <div class="admin-home">
+    <h1>Panel de administración</h1>
+    <p>Selecciona una sección del menú lateral para empezar.</p>
+    <div class="admin-shortcuts">
+      <a href="/admin/users" class="shortcut-card">
+        <span class="material-symbols-outlined">group</span>
+        <span>Usuarios</span>
+      </a>
+      <a href="/admin/cohorts" class="shortcut-card">
+        <span class="material-symbols-outlined">school</span>
+        <span>Cohortes</span>
+      </a>
+      <a href="/admin/modules" class="shortcut-card">
+        <span class="material-symbols-outlined">menu_book</span>
+        <span>Módulos</span>
+      </a>
+      <a href="/admin/quizzes" class="shortcut-card">
+        <span class="material-symbols-outlined">quiz</span>
+        <span>Quizzes</span>
+      </a>
+      <a href="/admin/sessions" class="shortcut-card">
+        <span class="material-symbols-outlined">videocam</span>
+        <span>Sesiones</span>
+      </a>
+      <a href="/admin/questions" class="shortcut-card">
+        <span class="material-symbols-outlined">forum</span>
+        <span>Preguntas</span>
+      </a>
+      <a href="/admin/retention" class="shortcut-card">
+        <span class="material-symbols-outlined">monitoring</span>
+        <span>Retención</span>
+      </a>
+      <a href="/admin/settings" class="shortcut-card">
+        <span class="material-symbols-outlined">settings</span>
+        <span>Configuración</span>
+      </a>
+    </div>
+  </div>
+</AdminLayout>
+
+<style>
+  .admin-home {
+    max-width: 800px;
+  }
+
+  .admin-home h1 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--color-text-primary, #0f172a);
+    margin-bottom: 0.5rem;
+  }
+
+  .admin-home p {
+    color: var(--color-text-secondary, #64748b);
+    margin-bottom: 2rem;
+  }
+
+  .admin-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+
+  .shortcut-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem 1rem;
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    text-decoration: none;
+    color: var(--color-text-primary, #0f172a);
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+
+  .shortcut-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+  }
+
+  .shortcut-card .material-symbols-outlined {
+    font-size: 2rem;
+    color: var(--color-primary, #ec1313);
+  }
+</style>
