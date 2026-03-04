@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { getSiteSettings, setRegistrationOpen } from '../lib/firebase/settings.js';
+import { stateStyles } from '../lib/shared-styles.js';
 
 /**
  * @element registration-toggle
@@ -9,9 +10,10 @@ export class RegistrationToggle extends LitElement {
   static properties = {
     _isOpen: { type: Boolean, state: true },
     _loading: { type: Boolean, state: true },
+    _error: { type: String, state: true },
   };
 
-  static styles = css`
+  static styles = [stateStyles, css`
     :host {
       display: block;
     }
@@ -97,12 +99,22 @@ export class RegistrationToggle extends LitElement {
       background: #fef2f2;
       color: #991b1b;
     }
-  `;
+
+    .toggle-error {
+      margin-top: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: #fef2f2;
+      border-radius: 0.375rem;
+      font-size: 0.813rem;
+      color: #991b1b;
+    }
+  `];
 
   constructor() {
     super();
     this._isOpen = true;
     this._loading = true;
+    this._error = '';
   }
 
   connectedCallback() {
@@ -111,23 +123,49 @@ export class RegistrationToggle extends LitElement {
   }
 
   async _loadSettings() {
+    this._loading = true;
+    this._error = '';
     const result = await getSiteSettings();
     this._loading = false;
     if (result.success) {
       this._isOpen = result.settings.registrationOpen;
+    } else {
+      this._error = result.error || 'Error al cargar la configuración';
     }
   }
 
   async _handleToggle() {
+    this._error = '';
     const newValue = !this._isOpen;
     const result = await setRegistrationOpen(newValue);
     if (result.success) {
       this._isOpen = newValue;
+    } else {
+      this._error = result.error || 'Error al cambiar el estado del registro';
     }
   }
 
   render() {
-    if (this._loading) return html`<p>Cargando...</p>`;
+    if (this._loading) {
+      return html`
+        <div class="state-loading">
+          <div class="state-spinner"></div>
+          <p>Cargando configuración...</p>
+        </div>
+      `;
+    }
+
+    if (this._error && !this._isOpen) {
+      return html`
+        <div class="state-error">
+          <p>${this._error}</p>
+          <button class="state-retry-btn" @click=${this._loadSettings}>
+            <span class="material-symbols-outlined">refresh</span>
+            Reintentar
+          </button>
+        </div>
+      `;
+    }
 
     return html`
       <div class="toggle-card">
@@ -147,6 +185,7 @@ export class RegistrationToggle extends LitElement {
           <span class="toggle-slider"></span>
         </label>
       </div>
+      ${this._error ? html`<div class="toggle-error">${this._error}</div>` : ''}
     `;
   }
 }

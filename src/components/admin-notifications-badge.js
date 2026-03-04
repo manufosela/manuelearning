@@ -53,7 +53,11 @@ export class AdminNotificationsBadge extends LitElement {
 
   async _loadCount() {
     const result = await countUnreadNotifications();
-    if (result.success) this._count = result.count;
+    if (result.success) {
+      this._count = result.count;
+    } else {
+      console.warn('admin-notifications-badge: failed to load count', result.error);
+    }
   }
 
   render() {

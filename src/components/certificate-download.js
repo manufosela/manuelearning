@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { getUserCertificate, saveCertificate, buildCertificateData } from '../lib/firebase/certificates.js';
 import { SITE } from '../config/site.config.js';
+import { stateStyles } from '../lib/shared-styles.js';
 
 /**
  * @element certificate-download
@@ -13,9 +14,10 @@ export class CertificateDownload extends LitElement {
     progress: { type: Number },
     _certificate: { type: Object, state: true },
     _generating: { type: Boolean, state: true },
+    _error: { type: String, state: true },
   };
 
-  static styles = css`
+  static styles = [stateStyles, css`
     :host { display: block; }
 
     .certificate-card {
@@ -48,7 +50,16 @@ export class CertificateDownload extends LitElement {
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .issued-date { font-size: 0.75rem; color: #64748b; margin-top: 0.75rem; }
-  `;
+
+    .cert-error {
+      margin-top: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(254, 202, 202, 0.3);
+      border-radius: 0.375rem;
+      font-size: 0.813rem;
+      color: #fecaca;
+    }
+  `];
 
   constructor() {
     super();
@@ -57,6 +68,7 @@ export class CertificateDownload extends LitElement {
     this.progress = 0;
     this._certificate = null;
     this._generating = false;
+    this._error = '';
   }
 
   connectedCallback() {
@@ -73,6 +85,7 @@ export class CertificateDownload extends LitElement {
 
   async _generateCertificate() {
     this._generating = true;
+    this._error = '';
     const data = buildCertificateData(this.userName, SITE.courseName);
     const result = await saveCertificate(this.userId, data);
     this._generating = false;
@@ -80,6 +93,8 @@ export class CertificateDownload extends LitElement {
     if (result.success) {
       this._certificate = { ...data, id: result.id };
       this._downloadCertificate();
+    } else {
+      this._error = result.error || 'Error al generar el certificado. Inténtalo de nuevo.';
     }
   }
 
@@ -181,6 +196,7 @@ export class CertificateDownload extends LitElement {
             <button class="btn btn--gold" ?disabled=${this._generating} @click=${this._generateCertificate}>
               ${this._generating ? 'Generando...' : 'Generar certificado'}
             </button>
+            ${this._error ? html`<div class="cert-error">${this._error}</div>` : ''}
           `}
       </div>
     `;
