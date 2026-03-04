@@ -31,3 +31,6 @@ coverage/
 # Debug
 npm-debug.log*
 .scannerwork/
+
+# Course materials (binary docs)
+docs/
