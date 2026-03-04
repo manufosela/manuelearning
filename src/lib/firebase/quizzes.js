@@ -219,3 +219,54 @@ export async function getQuizResponses(quizId) {
     return { success: false, error: 'Error al cargar las respuestas' };
   }
 }
+
+/**
+ * @typedef {Object} QuizResultDetail
+ * @property {string} responseId
+ * @property {string} quizId
+ * @property {string} quizTitle
+ * @property {QuizQuestion[]} questions
+ * @property {string[]} userAnswers
+ * @property {*} completedAt
+ */
+
+/**
+ * Get all quiz results for a user, including quiz details.
+ * @param {string} userId
+ * @returns {Promise<{success: boolean, results?: QuizResultDetail[], error?: string}>}
+ */
+export async function getUserQuizResults(userId) {
+  if (!userId) return { success: false, error: 'userId es obligatorio' };
+
+  try {
+    const ref = collection(db, RESPONSES);
+    const q = query(ref, where('userId', '==', userId));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.docs.length === 0) {
+      return { success: true, results: [] };
+    }
+
+    const results = [];
+    for (const responseDoc of snapshot.docs) {
+      const responseData = responseDoc.data();
+      const quizSnap = await getDoc(doc(db, QUIZZES, responseData.quizId));
+
+      if (quizSnap.exists()) {
+        const quizData = quizSnap.data();
+        results.push({
+          responseId: responseDoc.id,
+          quizId: responseData.quizId,
+          quizTitle: quizData.title,
+          questions: quizData.questions || [],
+          userAnswers: responseData.answers || [],
+          completedAt: responseData.completedAt,
+        });
+      }
+    }
+
+    return { success: true, results };
+  } catch (err) {
+    return { success: false, error: 'Error al cargar los resultados de quizzes' };
+  }
+}

@@ -1,0 +1,54 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { SITE } from '../config/site.config.js';
+---
+
+<MainLayout title={`Mis resultados | ${SITE.name}`}>
+  <auth-guard>
+    <section class="results-page">
+      <div class="results-page__nav">
+        <a href="/dashboard" class="back-link">
+          <span class="material-symbols-outlined">arrow_back</span>
+          Volver al dashboard
+        </a>
+      </div>
+      <quiz-results-view></quiz-results-view>
+    </section>
+  </auth-guard>
+</MainLayout>
+
+<script>
+  import '../components/auth-guard.js';
+  import '../components/quiz-results-view.js';
+</script>
+
+<style>
+  .results-page {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding: 2rem var(--section-px);
+  }
+
+  .results-page__nav {
+    margin-bottom: 1.5rem;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--color-text-secondary, #64748b);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+
+  .back-link:hover {
+    color: var(--color-primary, #ec1313);
+  }
+
+  .back-link .material-symbols-outlined {
+    font-size: 1.125rem;
+  }
+</style>
