@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { fetchAllUsers, updateUserRole } from '../lib/firebase/users.js';
 import { fetchAllCohorts } from '../lib/firebase/cohorts.js';
 import { waitForAuth } from '../lib/auth-ready.js';
+import { exportCsv } from '../lib/csv-export.js';
 
 /**
  * @element admin-users-list
@@ -85,6 +86,39 @@ export class AdminUsersList extends LitElement {
       cursor: pointer;
     }
 
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+      color: #475569;
+    }
+
+    .export-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.5rem 1rem;
+      background: #f1f5f9;
+      color: #334155;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.813rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+
+    .export-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .export-btn .material-symbols-outlined {
+      font-size: 1rem;
+    }
+
     .loading, .error {
       text-align: center;
       padding: 3rem;
@@ -154,6 +188,17 @@ export class AdminUsersList extends LitElement {
     }
   }
 
+  _exportCsv() {
+    const headers = ['Email', 'Nombre', 'Rol', 'Cohorte'];
+    const rows = this._users.map((u) => [
+      u.email,
+      u.displayName || '',
+      u.role,
+      this._cohortMap[u.cohortId] || u.cohortId || '',
+    ]);
+    exportCsv(headers, rows, 'usuarios.csv');
+  }
+
   /** @param {Event} e */
   async _handleRoleChange(e) {
     const select = /** @type {HTMLSelectElement} */ (e.target);
@@ -183,6 +228,13 @@ export class AdminUsersList extends LitElement {
     }
 
     return html`
+      <div class="toolbar">
+        <span>${this._users.length} usuarios</span>
+        <button class="export-btn" @click=${this._exportCsv}>
+          <span class="material-symbols-outlined">download</span>
+          Exportar CSV
+        </button>
+      </div>
       <table class="users-table">
         <thead>
           <tr>

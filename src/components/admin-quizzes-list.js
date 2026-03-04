@@ -7,6 +7,7 @@ import {
   validateQuiz,
 } from '../lib/firebase/quizzes.js';
 import { waitForAuth } from '../lib/auth-ready.js';
+import { exportCsv } from '../lib/csv-export.js';
 
 /**
  * @element admin-quizzes-list
@@ -153,6 +154,17 @@ export class AdminQuizzesList extends LitElement {
     if (result.success) await this._loadQuizzes();
   }
 
+  _exportResponses(quiz) {
+    const questionCount = quiz.questions?.length || 0;
+    const headers = ['Usuario', ...Array.from({ length: questionCount }, (_, i) => `Pregunta ${i + 1}`)];
+    const rows = this._responses.map((r) => [
+      r.userId,
+      ...Array.from({ length: questionCount }, (_, i) => r.answers[i] || ''),
+    ]);
+    const safeName = quiz.title.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+    exportCsv(headers, rows, `quiz_${safeName}.csv`);
+  }
+
   async _toggleResponses(quizId) {
     if (this._viewingResponses === quizId) { this._viewingResponses = null; return; }
     this._viewingResponses = quizId;
@@ -197,6 +209,14 @@ export class AdminQuizzesList extends LitElement {
 
         ${isViewing ? html`
           <div class="responses-panel">
+            ${this._responses.length > 0 ? html`
+              <div style="margin-bottom: 0.75rem;">
+                <button class="btn btn--secondary btn--small" @click=${() => this._exportResponses(q)}>
+                  <span class="material-symbols-outlined" style="font-size: 0.875rem;">download</span>
+                  Exportar resultados
+                </button>
+              </div>
+            ` : ''}
             ${this._responses.length === 0
               ? html`<p class="quiz-meta">Sin respuestas aún</p>`
               : this._responses.map((r) => html`
