@@ -47,6 +47,22 @@
         { "fieldPath": "userId", "order": "ASCENDING" },
         { "fieldPath": "quizId", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "userNotifications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "userNotifications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "read", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

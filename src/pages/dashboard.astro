@@ -13,6 +13,7 @@ import { SITE } from '../config/site.config.js';
           Cerrar sesión
         </button>
       </div>
+      <notification-center></notification-center>
       <student-dashboard-view></student-dashboard-view>
     </section>
   </auth-guard>
@@ -21,6 +22,7 @@ import { SITE } from '../config/site.config.js';
 <script>
   import '../components/auth-guard.js';
   import '../components/student-dashboard-view.js';
+  import '../components/notification-center.js';
   import { logoutUser } from '../lib/firebase/auth.js';
 
   document.getElementById('logout-btn')?.addEventListener('click', async () => {

@@ -6,6 +6,9 @@ import {
   deleteSession,
   validateSession,
 } from '../lib/firebase/sessions.js';
+import { fetchAllUsers } from '../lib/firebase/users.js';
+import { notifyUsers } from '../lib/firebase/user-notifications.js';
+import { showBrowserNotification, getNotificationPermission } from '../lib/notification-utils.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 
 /**
@@ -22,6 +25,7 @@ export class AdminSessionsList extends LitElement {
     _formData: { type: Object, state: true },
     _formError: { type: String, state: true },
     _saving: { type: Boolean, state: true },
+    _notifyStudents: { type: Boolean, state: true },
   };
 
   static styles = css`
@@ -59,6 +63,9 @@ export class AdminSessionsList extends LitElement {
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .form-error { color: #991b1b; font-size: 0.813rem; margin-bottom: 1rem; }
     .form-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; }
+    .form-check { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+    .form-check input[type="checkbox"] { width: auto; margin: 0; accent-color: #ec1313; }
+    .form-check label { font-size: 0.813rem; font-weight: 500; color: #334155; cursor: pointer; }
 
     .loading, .error-msg { text-align: center; padding: 3rem; color: #475569; }
     .error-msg { color: #991b1b; }
@@ -77,6 +84,7 @@ export class AdminSessionsList extends LitElement {
     this._formData = this._emptyForm();
     this._formError = '';
     this._saving = false;
+    this._notifyStudents = false;
   }
 
   connectedCallback() {
@@ -161,11 +169,27 @@ export class AdminSessionsList extends LitElement {
     this._saving = false;
 
     if (result.success) {
+      if (!this._editingId && this._notifyStudents) {
+        this._sendSessionNotification(this._formData.title);
+      }
       this._closeForm();
       await this._loadSessions();
     } else {
       this._formError = result.error;
     }
+  }
+
+  async _sendSessionNotification(sessionTitle) {
+    const usersResult = await fetchAllUsers();
+    if (!usersResult.success) return;
+    const studentIds = usersResult.users
+      .filter((u) => u.role === 'student')
+      .map((u) => u.uid);
+    if (studentIds.length === 0) return;
+    await notifyUsers(studentIds, {
+      type: 'new_session',
+      message: `Nueva sesión programada: ${sessionTitle}`,
+    });
   }
 
   async _handleDelete(id) {
@@ -276,6 +300,13 @@ export class AdminSessionsList extends LitElement {
                 <input id="session-quiz" name="quizId" type="text" .value=${this._formData.quizId} @input=${this._handleInput} />
               </div>
             </div>
+
+            ${!this._editingId ? html`
+              <div class="form-check">
+                <input type="checkbox" id="notify-students" .checked=${this._notifyStudents} @change=${(e) => { this._notifyStudents = e.target.checked; }} />
+                <label for="notify-students">Notificar a los alumnos</label>
+              </div>
+            ` : ''}
 
             ${this._formError ? html`<div class="form-error">${this._formError}</div>` : ''}
             <div class="form-actions">

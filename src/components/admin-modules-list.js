@@ -13,6 +13,8 @@ import {
   reorderModule,
   reorderLesson,
 } from '../lib/firebase/modules.js';
+import { fetchAllUsers } from '../lib/firebase/users.js';
+import { notifyUsers } from '../lib/firebase/user-notifications.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { filterBySearch } from '../lib/search-filter.js';
 
@@ -38,6 +40,7 @@ export class AdminModulesList extends LitElement {
     _lessonFormError: { type: String, state: true },
     _saving: { type: Boolean, state: true },
     _searchQuery: { type: String, state: true },
+    _notifyStudents: { type: Boolean, state: true },
   };
 
   static styles = css`
@@ -340,6 +343,10 @@ export class AdminModulesList extends LitElement {
       color: #64748b;
     }
 
+    .form-check { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+    .form-check input[type="checkbox"] { width: auto; margin: 0; accent-color: #ec1313; }
+    .form-check label { font-size: 0.813rem; font-weight: 500; color: #334155; cursor: pointer; }
+
     .empty-state .material-symbols-outlined {
       font-size: 3rem;
       color: #cbd5e1;
@@ -414,6 +421,7 @@ export class AdminModulesList extends LitElement {
     this._lessonFormError = '';
     this._saving = false;
     this._searchQuery = '';
+    this._notifyStudents = false;
   }
 
   connectedCallback() {
@@ -508,12 +516,28 @@ export class AdminModulesList extends LitElement {
       const result = await createModule(this._moduleFormData);
       this._saving = false;
       if (result.success) {
+        if (this._notifyStudents) {
+          this._sendModuleNotification(this._moduleFormData.title);
+        }
         this._closeModuleForm();
         await this._loadModules();
       } else {
         this._moduleFormError = result.error;
       }
     }
+  }
+
+  async _sendModuleNotification(moduleTitle) {
+    const usersResult = await fetchAllUsers();
+    if (!usersResult.success) return;
+    const studentIds = usersResult.users
+      .filter((u) => u.role === 'student')
+      .map((u) => u.uid);
+    if (studentIds.length === 0) return;
+    await notifyUsers(studentIds, {
+      type: 'new_module',
+      message: `Nuevo módulo disponible: ${moduleTitle}`,
+    });
   }
 
   async _handleDeleteModule(mod) {
@@ -757,6 +781,12 @@ export class AdminModulesList extends LitElement {
               <label for="mod-order">Orden</label>
               <input id="mod-order" name="order" type="number" min="0" .value=${String(this._moduleFormData.order)} @input=${this._handleModuleInput} required />
             </div>
+            ${!this._editingModuleId ? html`
+              <div class="form-check">
+                <input type="checkbox" id="notify-module" .checked=${this._notifyStudents} @change=${(e) => { this._notifyStudents = e.target.checked; }} />
+                <label for="notify-module">Notificar a los alumnos</label>
+              </div>
+            ` : ''}
             ${this._moduleFormError ? html`<div class="form-error">${this._moduleFormError}</div>` : ''}
             <div class="form-actions">
               <button type="button" class="btn btn--secondary" @click=${this._closeModuleForm}>Cancelar</button>
