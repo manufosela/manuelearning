@@ -34,6 +34,7 @@ import {
   submitQuizResponse,
   getUserQuizResponse,
   getQuizResponses,
+  getUserQuizResults,
 } from '../src/lib/firebase/quizzes.js';
 
 /* ── validateQuiz ───────────────────────────────────────────── */
@@ -259,5 +260,76 @@ describe('getQuizResponses', () => {
   it('should handle errors', async () => {
     mockGetDocs.mockRejectedValue(new Error('err'));
     expect((await getQuizResponses('q1')).success).toBe(false);
+  });
+});
+
+/* ── getUserQuizResults ───────────────────────────────────── */
+describe('getUserQuizResults', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('should reject empty userId', async () => {
+    expect((await getUserQuizResults('')).success).toBe(false);
+  });
+
+  it('should return empty array when no responses', async () => {
+    mockGetDocs.mockResolvedValue({ docs: [] });
+    const result = await getUserQuizResults('u1');
+    expect(result.success).toBe(true);
+    expect(result.results).toEqual([]);
+  });
+
+  it('should return results with quiz details', async () => {
+    mockGetDocs.mockResolvedValue({
+      docs: [
+        {
+          id: 'r1',
+          data: () => ({
+            userId: 'u1',
+            quizId: 'q1',
+            answers: ['Respuesta 1', 'B'],
+            completedAt: '2026-03-01',
+          }),
+        },
+      ],
+    });
+
+    mockGetDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({
+        title: 'Quiz Semana 1',
+        questions: [
+          { text: 'Pregunta abierta', type: 'open' },
+          { text: 'Seleccion', type: 'multiple', options: ['A', 'B', 'C'] },
+        ],
+      }),
+    });
+
+    const result = await getUserQuizResults('u1');
+    expect(result.success).toBe(true);
+    expect(result.results).toHaveLength(1);
+    expect(result.results[0].quizTitle).toBe('Quiz Semana 1');
+    expect(result.results[0].questions).toHaveLength(2);
+    expect(result.results[0].userAnswers).toEqual(['Respuesta 1', 'B']);
+  });
+
+  it('should skip responses whose quiz no longer exists', async () => {
+    mockGetDocs.mockResolvedValue({
+      docs: [
+        { id: 'r1', data: () => ({ userId: 'u1', quizId: 'deleted-quiz', answers: ['a'] }) },
+      ],
+    });
+
+    mockGetDoc.mockResolvedValue({ exists: () => false });
+
+    const result = await getUserQuizResults('u1');
+    expect(result.success).toBe(true);
+    expect(result.results).toHaveLength(0);
+  });
+
+  it('should handle errors', async () => {
+    mockGetDocs.mockRejectedValue(new Error('Network error'));
+    const result = await getUserQuizResults('u1');
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('resultados');
   });
 });

@@ -316,6 +316,10 @@ export class StudentDashboardView extends LitElement {
             Curso completado
           </a>
         `}
+        <a href="/resultados" class="quick-link" style="background: #334155;">
+          <span class="material-symbols-outlined">quiz</span>
+          Mis quizzes
+        </a>
         <a href="/curso" class="quick-link" style="background: #334155;">
           <span class="material-symbols-outlined">menu_book</span>
           Ver temario
