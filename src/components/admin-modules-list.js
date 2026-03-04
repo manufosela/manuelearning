@@ -12,6 +12,7 @@ import {
   validateLesson,
 } from '../lib/firebase/modules.js';
 import { waitForAuth } from '../lib/auth-ready.js';
+import { filterBySearch } from '../lib/search-filter.js';
 
 /**
  * @element admin-modules-list
@@ -34,6 +35,7 @@ export class AdminModulesList extends LitElement {
     _lessonFormData: { type: Object, state: true },
     _lessonFormError: { type: String, state: true },
     _saving: { type: Boolean, state: true },
+    _searchQuery: { type: String, state: true },
   };
 
   static styles = css`
@@ -301,6 +303,35 @@ export class AdminModulesList extends LitElement {
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    .search-input {
+      flex: 1;
+      height: 2.5rem;
+      padding: 0 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-family: inherit;
+      margin-bottom: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #ec1313;
+      box-shadow: 0 0 0 3px rgba(236, 19, 19, 0.1);
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 2rem;
+      color: #94a3b8;
+      font-size: 0.875rem;
+      background: #fff;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
     .empty-state {
       text-align: center;
       padding: 3rem;
@@ -338,6 +369,7 @@ export class AdminModulesList extends LitElement {
     this._lessonFormData = this._emptyLessonForm();
     this._lessonFormError = '';
     this._saving = false;
+    this._searchQuery = '';
   }
 
   connectedCallback() {
@@ -541,6 +573,8 @@ export class AdminModulesList extends LitElement {
       return html`<div class="error-msg">${this._error}</div>`;
     }
 
+    const filtered = filterBySearch(this._modules, ['title', 'description'], this._searchQuery);
+
     return html`
       <div class="toolbar">
         <span>${this._modules.length} módulo${this._modules.length !== 1 ? 's' : ''}</span>
@@ -550,9 +584,19 @@ export class AdminModulesList extends LitElement {
         </button>
       </div>
 
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Buscar módulos..."
+        .value=${this._searchQuery}
+        @input=${(e) => { this._searchQuery = e.target.value; }}
+      />
+
       ${this._modules.length === 0
         ? html`<div class="empty-state"><span class="material-symbols-outlined">menu_book</span><p>No hay módulos creados</p></div>`
-        : this._modules.map((mod) => this._renderModule(mod))}
+        : filtered.length === 0
+          ? html`<div class="no-results">Sin resultados. Prueba con otro término de búsqueda.</div>`
+          : filtered.map((mod) => this._renderModule(mod))}
 
       ${this._showModuleForm ? this._renderModuleForm() : ''}
       ${this._showLessonForm ? this._renderLessonForm() : ''}
