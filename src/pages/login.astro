@@ -7,7 +7,7 @@ import { SITE } from '../config/site.config.js';
   <section class="auth-page">
     <div class="auth-card">
       <div class="auth-header">
-        <span class="material-symbols-outlined auth-icon">login</span>
+        <img src="/logo.svg" alt={SITE.name} class="auth-logo" />
         <h1>Acceder</h1>
         <p>Inicia sesion en {SITE.name}</p>
       </div>
@@ -43,9 +43,9 @@ import { SITE } from '../config/site.config.js';
     margin-bottom: 2rem;
   }
 
-  .auth-icon {
-    font-size: 2.5rem;
-    color: var(--color-primary);
+  .auth-logo {
+    height: 2.5rem;
+    width: auto;
     margin-bottom: 0.5rem;
   }
 

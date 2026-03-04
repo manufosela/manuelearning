@@ -39,10 +39,10 @@ const {
 <body>
   <div class="admin-layout">
     <aside class="admin-sidebar">
-      <div class="admin-sidebar__brand">
-        <span class="material-symbols-outlined">architecture</span>
+      <a href="/" class="admin-sidebar__brand">
+        <img src="/logo.svg" alt={SITE.name} class="admin-sidebar__logo" />
         <h2>Admin</h2>
-      </div>
+      </a>
       <nav class="admin-sidebar__nav">
         <a href="/admin/users" class="admin-nav-link">
           <span class="material-symbols-outlined">group</span>
@@ -130,6 +130,12 @@ const {
     margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--color-border-dark);
+    text-decoration: none;
+  }
+
+  .admin-sidebar__logo {
+    height: 1.75rem;
+    width: auto;
   }
 
   .admin-sidebar__brand h2 {
