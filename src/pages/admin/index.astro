@@ -6,7 +6,11 @@ import { SITE } from '../../config/site.config.js';
 <AdminLayout title={`Panel de administración | ${SITE.name}`}>
   <div class="admin-home">
     <h1>Panel de administración</h1>
-    <p>Selecciona una sección del menú lateral para empezar.</p>
+    <p>Vista general de la plataforma</p>
+
+    <admin-dashboard></admin-dashboard>
+
+    <h2 class="shortcuts-heading">Accesos rápidos</h2>
     <div class="admin-shortcuts">
       <a href="/admin/users" class="shortcut-card">
         <span class="material-symbols-outlined">group</span>
@@ -44,9 +48,21 @@ import { SITE } from '../../config/site.config.js';
   </div>
 </AdminLayout>
 
+<script>
+  import '../../components/admin-dashboard.js';
+</script>
+
 <style>
   .admin-home {
-    max-width: 800px;
+    max-width: 960px;
+  }
+
+  .shortcuts-heading {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text-primary, #0f172a);
+    margin-bottom: 1rem;
+    margin-top: 0.5rem;
   }
 
   .admin-home h1 {
