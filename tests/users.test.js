@@ -27,6 +27,7 @@ import {
   fetchAllUsers,
   fetchUser,
   updateUserRole,
+  updateUserDisplayName,
   toggleLifetimeAccess,
   isAdmin,
 } from '../src/lib/firebase/users.js';
@@ -150,6 +151,40 @@ describe('toggleLifetimeAccess', () => {
   it('should handle errors', async () => {
     mockUpdateDoc.mockRejectedValue(new Error('err'));
     expect((await toggleLifetimeAccess('u1', true)).success).toBe(false);
+  });
+});
+
+describe('updateUserDisplayName', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('should reject empty uid', async () => {
+    const result = await updateUserDisplayName('', 'Test');
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('UID es obligatorio');
+  });
+
+  it('should reject empty name', async () => {
+    const result = await updateUserDisplayName('u1', '');
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('nombre es obligatorio');
+  });
+
+  it('should reject whitespace-only name', async () => {
+    const result = await updateUserDisplayName('u1', '   ');
+    expect(result.success).toBe(false);
+  });
+
+  it('should update display name', async () => {
+    mockUpdateDoc.mockResolvedValue();
+    const result = await updateUserDisplayName('u1', 'New Name');
+    expect(result.success).toBe(true);
+    expect(mockUpdateDoc).toHaveBeenCalled();
+  });
+
+  it('should handle errors', async () => {
+    mockUpdateDoc.mockRejectedValue(new Error('err'));
+    const result = await updateUserDisplayName('u1', 'New Name');
+    expect(result.success).toBe(false);
   });
 });
 
