@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { fetchQuestionsByLesson, createQuestion } from '../lib/firebase/questions.js';
 import { waitForAuth } from '../lib/auth-ready.js';
+import { stateStyles } from '../lib/shared-styles.js';
 
 /**
  * @element lesson-qa
@@ -16,9 +17,10 @@ export class LessonQA extends LitElement {
     _loading: { type: Boolean, state: true },
     _newQuestion: { type: String, state: true },
     _submitting: { type: Boolean, state: true },
+    _error: { type: String, state: true },
   };
 
-  static styles = css`
+  static styles = [stateStyles, css`
     :host { display: block; margin-top: 2rem; }
 
     h3 { font-size: 1.125rem; font-weight: 700; color: #0f172a; margin: 0 0 1rem; }
@@ -60,7 +62,7 @@ export class LessonQA extends LitElement {
 
     .empty-state { text-align: center; padding: 2rem; color: #94a3b8; font-size: 0.875rem; }
     .loading { text-align: center; padding: 1rem; color: #94a3b8; font-size: 0.875rem; }
-  `;
+  `];
 
   constructor() {
     super();
@@ -72,6 +74,7 @@ export class LessonQA extends LitElement {
     this._loading = true;
     this._newQuestion = '';
     this._submitting = false;
+    this._error = '';
   }
 
   connectedCallback() {
@@ -83,9 +86,14 @@ export class LessonQA extends LitElement {
 
   async _loadQuestions() {
     this._loading = true;
+    this._error = '';
     const result = await fetchQuestionsByLesson(this.lessonId);
     this._loading = false;
-    if (result.success) this._questions = result.questions;
+    if (result.success) {
+      this._questions = result.questions;
+    } else {
+      this._error = result.error || 'Error al cargar las preguntas';
+    }
   }
 
   async _handleSubmit(e) {
@@ -128,7 +136,17 @@ export class LessonQA extends LitElement {
 
       ${this._loading ? html`<div class="loading">Cargando preguntas...</div>` : ''}
 
-      ${!this._loading && this._questions.length === 0
+      ${!this._loading && this._error ? html`
+        <div class="state-error">
+          <p>${this._error}</p>
+          <button class="state-retry-btn" @click=${this._loadQuestions}>
+            <span class="material-symbols-outlined">refresh</span>
+            Reintentar
+          </button>
+        </div>
+      ` : ''}
+
+      ${!this._loading && !this._error && this._questions.length === 0
         ? html`<div class="empty-state">No hay preguntas aún. Sé el primero en preguntar.</div>`
         : ''}
 

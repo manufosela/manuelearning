@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { getSiteSettings } from '../lib/firebase/settings.js';
+import { stateStyles } from '../lib/shared-styles.js';
 
 /**
  * @element registration-gate
@@ -9,9 +10,10 @@ export class RegistrationGate extends LitElement {
   static properties = {
     _isOpen: { type: Boolean, state: true },
     _loading: { type: Boolean, state: true },
+    _error: { type: Boolean, state: true },
   };
 
-  static styles = css`
+  static styles = [stateStyles, css`
     :host {
       display: block;
     }
@@ -71,12 +73,13 @@ export class RegistrationGate extends LitElement {
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-  `;
+  `];
 
   constructor() {
     super();
     this._isOpen = false;
     this._loading = true;
+    this._error = false;
   }
 
   connectedCallback() {
@@ -85,9 +88,16 @@ export class RegistrationGate extends LitElement {
   }
 
   async _checkRegistration() {
+    this._loading = true;
+    this._error = false;
     const result = await getSiteSettings();
     this._loading = false;
-    this._isOpen = result.success ? result.settings.registrationOpen : true;
+    if (result.success) {
+      this._isOpen = result.settings.registrationOpen;
+    } else {
+      this._error = true;
+      this._isOpen = false;
+    }
   }
 
   render() {
@@ -96,6 +106,18 @@ export class RegistrationGate extends LitElement {
         <div class="loading">
           <div class="spinner"></div>
           <p>Verificando disponibilidad...</p>
+        </div>
+      `;
+    }
+
+    if (this._error) {
+      return html`
+        <div class="state-error">
+          <p>No se pudo verificar el estado del registro</p>
+          <button class="state-retry-btn" @click=${this._checkRegistration}>
+            <span class="material-symbols-outlined">refresh</span>
+            Reintentar
+          </button>
         </div>
       `;
     }
