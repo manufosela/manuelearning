@@ -3,6 +3,7 @@
  * @typedef {Object} Props
  * @property {string} [title] - Page title
  * @property {string} [description] - Meta description
+ * @property {boolean} [hideAuthButton] - Hide the login button in header
  */
 
 import { SITE } from '../config/site.config.js';
@@ -11,6 +12,7 @@ import { SITE } from '../config/site.config.js';
 const {
   title = `${SITE.name} | ${SITE.tagline}`,
   description = SITE.tagline,
+  hideAuthButton = false,
 } = Astro.props;
 ---
 
@@ -22,11 +24,11 @@ const {
   <meta name="description" content={description} />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#ec1313" />
+  <meta name="theme-color" content="#84cc16" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="ManuElearning" />
-  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.svg" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -43,13 +45,14 @@ const {
   <div class="page-wrapper">
     <!-- Header -->
     <header class="site-header">
-      <div class="site-header__brand">
-        <span class="material-symbols-outlined site-header__icon">architecture</span>
-        <h2 class="site-header__title">{SITE.name}</h2>
-      </div>
-      <nav class="site-header__nav">
-        <a href="/registro" class="btn btn--primary btn--sm">Regístrate</a>
-      </nav>
+      <a href="/" class="site-header__brand">
+        <img src="/logo.svg" alt={SITE.name} class="site-header__logo" />
+      </a>
+      {!hideAuthButton && (
+        <nav class="site-header__nav">
+          <a href="/login" class="btn btn--primary btn--sm">Acceder</a>
+        </nav>
+      )}
       <button class="site-header__menu-toggle" aria-label="Abrir menú">
         <span class="material-symbols-outlined">menu</span>
       </button>
@@ -65,8 +68,7 @@ const {
       <div class="site-footer__grid">
         <div class="site-footer__brand">
           <div class="site-footer__logo">
-            <span class="material-symbols-outlined">architecture</span>
-            <h2>{SITE.name}</h2>
+            <img src="/logo.svg" alt={SITE.name} height="32" />
           </div>
           <p>{SITE.tagline}</p>
           <div class="site-footer__social">
@@ -78,27 +80,24 @@ const {
         <div class="site-footer__links">
           <h4>Cursos</h4>
           <ul>
-            <li><a href="#">Fundamentos Lean</a></li>
-            <li><a href="#">Maestría en Construcción Lean</a></li>
-            <li><a href="#">Liderazgo en Obra</a></li>
-            <li><a href="#">Ruta de Certificación</a></li>
+            <li><a href="#">Docker</a></li>
+            <li><a href="#">JavaScript</a></li>
+            <li><a href="#">Aprende a conducir</a></li>
           </ul>
         </div>
         <div class="site-footer__links">
           <h4>Recursos</h4>
           <ul>
-            <li><a href="#">Libros Blancos Lean</a></li>
-            <li><a href="#">Webinars</a></li>
-            <li><a href="#">Centro de Formación</a></li>
-            <li><a href="#">API Docs</a></li>
+            <li><a href="#">GitHub del curso</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Sobre Mánu</a></li>
           </ul>
         </div>
         <div class="site-footer__links">
           <h4>Contacto</h4>
           <ul>
-            <li><span class="material-symbols-outlined">location_on</span> New York, NY</li>
+            <li><span class="material-symbols-outlined">location_on</span> Madrid, España</li>
             <li><span class="material-symbols-outlined">mail</span> {SITE.contactEmail}</li>
-            <li><span class="material-symbols-outlined">call</span> +1 (888) LEAN-360</li>
           </ul>
         </div>
       </div>
@@ -152,20 +151,11 @@ const {
   .site-header__brand {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--color-primary);
   }
 
-  .site-header__icon {
-    font-size: 1.875rem;
-    font-weight: 700;
-  }
-
-  .site-header__title {
-    font-size: 1.25rem;
-    font-weight: 900;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+  .site-header__logo {
+    height: 2rem;
+    width: auto;
   }
 
   .site-header__nav {
@@ -199,7 +189,7 @@ const {
   .site-footer {
     background-color: var(--color-bg-slate-950);
     color: var(--color-text-on-dark);
-    padding: 10rem var(--section-px) 3rem;
+    padding: 5rem var(--section-px) 3rem;
   }
 
   .site-footer__grid {

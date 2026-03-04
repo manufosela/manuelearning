@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# Pre-commit hook: chains global hook + auto-bumps patch version
+#
+
+# Chain global hook (anti-IA attribution)
+GLOBAL_HOOK="$HOME/.git-hooks/pre-commit"
+if [ -x "$GLOBAL_HOOK" ]; then
+    "$GLOBAL_HOOK" "$@"
+    GLOBAL_EXIT=$?
+    [ $GLOBAL_EXIT -ne 0 ] && exit $GLOBAL_EXIT
+fi
+
+# Skip during merge/rebase
+[ -f .git/MERGE_HEAD ] || [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ] && exit 0
+
+# Skip if only package.json and/or CHANGELOG.md are staged
+STAGED=$(git diff --cached --name-only)
+[ -z "$STAGED" ] && exit 0
+NON_META=$(echo "$STAGED" | grep -cvE '^(package\.json|CHANGELOG\.md)$' || true)
+[ "$NON_META" -eq 0 ] && exit 0
+
+# Bump patch version in package.json
+node -e "
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+const [M, m, p] = pkg.version.split('.').map(Number);
+pkg.version = M + '.' + m + '.' + (p + 1);
+fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+"
+git add package.json

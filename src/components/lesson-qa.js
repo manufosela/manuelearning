@@ -36,10 +36,10 @@ export class LessonQA extends LitElement {
       resize: vertical;
       min-height: 2.5rem;
     }
-    .qa-form textarea:focus { outline: none; border-color: #ec1313; box-shadow: 0 0 0 3px rgba(236,19,19,0.1); }
+    .qa-form textarea:focus { outline: none; border-color: #84cc16; box-shadow: 0 0 0 3px rgba(132,204,22,0.1); }
 
     .btn { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 1rem; border: none; border-radius: 0.5rem; font-size: 0.813rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background-color 0.15s; }
-    .btn--primary { background: #ec1313; color: #fff; align-self: flex-end; }
+    .btn--primary { background: linear-gradient(to right, #84cc16, #fb923c); color: #0f172a; align-self: flex-end; }
     .btn--primary:hover { background: #d11111; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
@@ -49,7 +49,7 @@ export class LessonQA extends LitElement {
       padding: 1rem;
       margin-bottom: 0.75rem;
       box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
-      border-left: 3px solid #ec1313;
+      border-left: 3px solid #84cc16;
     }
 
     .question-text { font-size: 0.938rem; color: #0f172a; margin-bottom: 0.375rem; }

@@ -70,7 +70,7 @@ export class StudentDashboardView extends LitElement {
     }
 
     .stat-value--accent {
-      color: #ec1313;
+      color: #84cc16;
     }
 
     .global-progress {
@@ -99,7 +99,7 @@ export class StudentDashboardView extends LitElement {
     .progress-bar {
       height: 100%;
       border-radius: 9999px;
-      background: linear-gradient(90deg, #ec1313, #ff4444);
+      background: linear-gradient(90deg, #84cc16, #22d3ee);
       transition: width 0.5s ease;
     }
 
@@ -139,7 +139,7 @@ export class StudentDashboardView extends LitElement {
     .module-progress-percent {
       font-size: 0.813rem;
       font-weight: 700;
-      color: #ec1313;
+      color: #84cc16;
     }
 
     .progress-bar-sm {
@@ -159,7 +159,7 @@ export class StudentDashboardView extends LitElement {
       gap: 0.375rem;
       padding: 0.5rem 1rem;
       border-radius: 0.5rem;
-      background: #ec1313;
+      background: #84cc16;
       color: #fff;
       text-decoration: none;
       font-size: 0.813rem;
@@ -189,7 +189,7 @@ export class StudentDashboardView extends LitElement {
       width: 1.5rem;
       height: 1.5rem;
       border: 3px solid #e2e8f0;
-      border-top-color: #ec1313;
+      border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
       margin: 0 auto 0.75rem;

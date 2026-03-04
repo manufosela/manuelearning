@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# Commit-msg hook: chains global hook + auto-updates CHANGELOG.md
+#
+
+COMMIT_MSG_FILE="$1"
+
+# Chain global hook (anti-IA attribution)
+GLOBAL_HOOK="$HOME/.git-hooks/commit-msg"
+if [ -x "$GLOBAL_HOOK" ]; then
+    "$GLOBAL_HOOK" "$@"
+    GLOBAL_EXIT=$?
+    [ $GLOBAL_EXIT -ne 0 ] && exit $GLOBAL_EXIT
+fi
+
+# Skip during merge/rebase
+[ -f .git/MERGE_HEAD ] || [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ] && exit 0
+
+MSG=$(head -1 "$COMMIT_MSG_FILE")
+
+# Skip if it's a release/version-only commit
+echo "$MSG" | grep -qE '^chore\(release\)' && exit 0
+
+VERSION=$(node -p "require('./package.json').version")
+DATE=$(date +%Y-%m-%d)
+
+# Insert entry in CHANGELOG.md after the marker
+node -e "
+const fs = require('fs');
+const msg = process.argv[1], ver = process.argv[2], date = process.argv[3];
+let cl = fs.readFileSync('CHANGELOG.md', 'utf8');
+const entry = '\n## [' + ver + '] - ' + date + '\n- ' + msg + '\n';
+const marker = '<!-- CHANGELOG_ENTRIES -->';
+if (cl.includes(marker)) {
+  cl = cl.replace(marker, marker + entry);
+} else {
+  const idx = cl.indexOf('\n## ');
+  cl = idx > -1 ? cl.slice(0, idx) + entry + cl.slice(idx) : cl + entry;
+}
+fs.writeFileSync('CHANGELOG.md', cl);
+" "$MSG" "$VERSION" "$DATE"
+
+git add CHANGELOG.md

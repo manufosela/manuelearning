@@ -25,7 +25,7 @@ export class StudentSessionsView extends LitElement {
       padding: 1.25rem;
       box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
       margin-bottom: 1rem;
-      border-left: 4px solid #ec1313;
+      border-left: 4px solid #84cc16;
     }
 
     .session-card--past {
@@ -92,7 +92,7 @@ export class StudentSessionsView extends LitElement {
 
     .loading, .error-msg { text-align: center; padding: 3rem; color: #475569; }
     .error-msg { color: #991b1b; }
-    .spinner { width: 1.5rem; height: 1.5rem; border: 3px solid #e2e8f0; border-top-color: #ec1313; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 0.75rem; }
+    .spinner { width: 1.5rem; height: 1.5rem; border: 3px solid #e2e8f0; border-top-color: #84cc16; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 0.75rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .empty-state { text-align: center; padding: 3rem; color: #64748b; }
   `;

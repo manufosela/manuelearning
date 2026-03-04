@@ -67,7 +67,7 @@ export class NotificationCenter extends LitElement {
       right: -6px;
       min-width: 16px;
       height: 16px;
-      background: #ec1313;
+      background: #84cc16;
       color: #fff;
       font-size: 0.625rem;
       font-weight: 700;
@@ -96,7 +96,7 @@ export class NotificationCenter extends LitElement {
       border: none;
       font-size: 0.75rem;
       font-weight: 600;
-      color: #ec1313;
+      color: #84cc16;
       cursor: pointer;
       font-family: inherit;
       padding: 0.25rem 0.5rem;
@@ -134,7 +134,7 @@ export class NotificationCenter extends LitElement {
       margin-top: 0.125rem;
     }
 
-    .notif-item--unread .notif-item-icon { color: #ec1313; }
+    .notif-item--unread .notif-item-icon { color: #84cc16; }
 
     .notif-item-content {
       flex: 1;
@@ -168,7 +168,7 @@ export class NotificationCenter extends LitElement {
       flex-shrink: 0;
     }
 
-    .notif-item-mark:hover { color: #ec1313; background: #fff; }
+    .notif-item-mark:hover { color: #84cc16; background: #fff; }
 
     .notif-empty {
       text-align: center;
@@ -206,7 +206,7 @@ export class NotificationCenter extends LitElement {
       width: 1rem;
       height: 1rem;
       border: 2px solid #e2e8f0;
-      border-top-color: #ec1313;
+      border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
       margin: 1.5rem auto;

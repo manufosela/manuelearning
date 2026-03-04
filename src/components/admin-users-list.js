@@ -140,8 +140,8 @@ export class AdminUsersList extends LitElement {
 
     .search-input:focus {
       outline: none;
-      border-color: #ec1313;
-      box-shadow: 0 0 0 3px rgba(236, 19, 19, 0.1);
+      border-color: #84cc16;
+      box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.1);
     }
 
     .no-results {
@@ -168,7 +168,7 @@ export class AdminUsersList extends LitElement {
       width: 1.5rem;
       height: 1.5rem;
       border: 3px solid #e2e8f0;
-      border-top-color: #ec1313;
+      border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
       margin: 0 auto 0.75rem;

@@ -43,11 +43,11 @@ export class AdminRetentionDashboard extends LitElement {
     .status-dot--red { background: #dc2626; }
 
     .progress-bar { width: 80px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 0.5rem; }
-    .progress-bar__fill { height: 100%; background: #ec1313; border-radius: 3px; }
+    .progress-bar__fill { height: 100%; background: #84cc16; border-radius: 3px; }
 
     .loading, .error-msg { text-align: center; padding: 3rem; color: #475569; }
     .error-msg { color: #991b1b; }
-    .spinner { width: 1.5rem; height: 1.5rem; border: 3px solid #e2e8f0; border-top-color: #ec1313; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 0.75rem; }
+    .spinner { width: 1.5rem; height: 1.5rem; border: 3px solid #e2e8f0; border-top-color: #84cc16; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 0.75rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .empty-state { text-align: center; padding: 3rem; color: #64748b; }
   `;

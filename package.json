@@ -1,8 +1,9 @@
 {
-  "name": "lean-construction",
+  "name": "manuelearning",
   "type": "module",
-  "version": "0.0.1",
+  "version": "1.0.9",
   "scripts": {
+    "prepare": "git config --local core.hooksPath scripts/git-hooks",
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",

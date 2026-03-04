@@ -70,7 +70,7 @@ export class MarkdownContent extends LitElement {
     }
 
     blockquote {
-      border-left: 4px solid #ec1313;
+      border-left: 4px solid #84cc16;
       padding: 0.5rem 1rem;
       margin: 1rem 0;
       background: #fef2f2;
@@ -78,7 +78,7 @@ export class MarkdownContent extends LitElement {
     }
 
     a {
-      color: #ec1313;
+      color: #84cc16;
       text-decoration: underline;
     }
 

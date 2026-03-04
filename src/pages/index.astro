@@ -6,23 +6,21 @@ import { SITE } from '../config/site.config.js';
 <MainLayout>
   <!-- Hero Section -->
   <section class="hero-wrapper">
-    <div class="hero" style="background-image: linear-gradient(to right, rgba(236, 19, 19, 0.9) 0%, rgba(236, 19, 19, 0.4) 100%), url('/images/hero-background.jpg');">
+    <div class="hero" style="background-image: linear-gradient(to right, #0f172a 0%, #1a2e05 100%), url('/images/hero-background.jpg');">
       <div class="hero__content">
         <div class="hero__badge">
           <span class="material-symbols-outlined">verified</span>
-          <span>The Standard in Lean Management</span>
+          <span>Formación directa, práctica y sin filtros</span>
         </div>
         <h1 class="hero__title">
-          Domina la Construcción Lean,
-          <br /><span class="hero__title--accent">construye tu futuro.</span>
+          Aprende tecnología de verdad.
+          <br /><span class="hero__title--accent">Sin rodeos.</span>
         </h1>
         <p class="hero__description">
-          {SITE.tagline}
-          Master efficiency, precision scheduling, and global standards with our certified courses.
+          Plataforma de formación online de Mánu Fosela — cursos prácticos de desarrollo web, Docker y más, para quien quiera aprender con quien ya lo ha vivido.
         </p>
         <div class="hero__actions">
-          <a href="/registro" class="btn btn--primary btn--lg hero__btn-white">Regístrate ahora</a>
-          <a href="#services" class="btn btn--outline btn--lg">Ver detalles del curso</a>
+          <a href="#services" class="btn btn--primary btn--lg hero__btn-white">Ver cursos disponibles</a>
         </div>
       </div>
     </div>
@@ -31,31 +29,31 @@ import { SITE } from '../config/site.config.js';
   <!-- Services Section -->
   <section class="services" id="services">
     <div class="services__header">
-      <h2 class="section-label">Plan de estudios</h2>
-      <h3 class="section-title">Habilidades que dominarás</h3>
+      <h2 class="section-label">Cursos</h2>
+      <h3 class="section-title">¿Qué cursos ofrezco?</h3>
       <div class="section-divider"></div>
     </div>
     <div class="services__grid">
       <article class="service-card">
         <div class="service-card__icon">
-          <span class="material-symbols-outlined">trending_up</span>
+          <span class="material-symbols-outlined">deployed_code</span>
         </div>
-        <h4 class="service-card__title">Optimización del flujo de trabajo</h4>
-        <p class="service-card__text">Learn to design and manage seamless workflows that eliminate bottlenecks and maximize site productivity.</p>
+        <h4 class="service-card__title">Docker desde cero</h4>
+        <p class="service-card__text">Contenedores, imágenes, volúmenes, redes y docker-compose. Del "funciona en mi máquina" al despliegue real.</p>
       </article>
       <article class="service-card">
         <div class="service-card__icon">
-          <span class="material-symbols-outlined">delete_sweep</span>
+          <span class="material-symbols-outlined">code</span>
         </div>
-        <h4 class="service-card__title">Identificación de desperdicios</h4>
-        <p class="service-card__text">Master the art of identifying the 8 wastes in construction and implementing actionable reduction strategies.</p>
+        <h4 class="service-card__title">JavaScript moderno</h4>
+        <p class="service-card__text">Fundamentos sólidos, DOM, fetch, promesas y patrones reales. El JS que se usa, no el de los libros.</p>
       </article>
       <article class="service-card">
         <div class="service-card__icon">
-          <span class="material-symbols-outlined">calendar_today</span>
+          <span class="material-symbols-outlined">directions_car</span>
         </div>
-        <h4 class="service-card__title">Sistema Last Planner®</h4>
-        <p class="service-card__text">Practical training on pull-planning and collaborative scheduling for high-performance site teams.</p>
+        <h4 class="service-card__title">Aprende a conducir</h4>
+        <p class="service-card__text">Teoría, señales, maniobras y test de práctica. Todo lo que necesitas para sacarte el carné.</p>
       </article>
     </div>
   </section>
@@ -67,44 +65,46 @@ import { SITE } from '../config/site.config.js';
         <div class="why-lean__image">
           <img src="/images/engineer-tablet.jpg" alt="Profesional de construcción revisando planos digitales en una tablet" />
         </div>
-        <div class="why-lean__stat">
-          <p class="why-lean__stat-number">98%</p>
-          <p class="why-lean__stat-label">Tasa de finalización de estudiantes</p>
+        <div class="why-lean__stats">
+          <div class="why-lean__stat">
+            <p class="why-lean__stat-number">+25</p>
+            <p class="why-lean__stat-label">desarrollando software</p>
+          </div>
+          <div class="why-lean__stat">
+            <p class="why-lean__stat-number">+15</p>
+            <p class="why-lean__stat-label">mentorizando juniors</p>
+          </div>
+          <div class="why-lean__stat">
+            <p class="why-lean__stat-number">+10</p>
+            <p class="why-lean__stat-label">liderando equipos</p>
+          </div>
         </div>
       </div>
       <div class="why-lean__content">
-        <h2 class="section-label">Programa principal</h2>
-        <h3 class="why-lean__title">Maestría en Construcción Lean</h3>
+        <h2 class="section-label">¿Para quién es esto?</h2>
+        <h3 class="why-lean__title">Para quien quiere aprender con alguien de verdad</h3>
         <p class="why-lean__description">
-          Nuestro programa integral de certificación de 12 semanas diseñado para gerentes de proyecto,
-          ingenieros y supervisores. Transición del caos tradicional a la precisión lean.
+          Esta plataforma no es un marketplace ni una academia masiva. Es un espacio de formación personal donde comparto lo que sé con personas a las que conozco o que me conocen. Si estás empezando en el mundo del desarrollo, si quieres entender Docker de una vez, o si buscas algo más cercano que un tutorial de YouTube — puede que estés en el sitio correcto.
         </p>
         <ul class="why-lean__features">
           <li>
             <span class="material-symbols-outlined">check_circle</span>
-            <span>Certificación completa reconocida por líderes de la industria</span>
+            <span>Acceso solo por invitación — aprendes con contexto y sin ruido</span>
           </li>
           <li>
             <span class="material-symbols-outlined">check_circle</span>
-            <span>Talleres interactivos y simulaciones de obras del mundo real</span>
+            <span>Cursos basados en proyectos reales, no en ejemplos de juguete</span>
           </li>
           <li>
             <span class="material-symbols-outlined">check_circle</span>
-            <span>Mentoría directa de expertos en Lean</span>
+            <span>Soporte directo — puedes preguntarme a mí</span>
           </li>
         </ul>
-        <button class="btn btn--primary btn--md">Descargar temario</button>
+        <a href="/solicitar-acceso" class="btn btn--primary btn--md">Solicitar acceso</a>
       </div>
     </div>
   </section>
 
-  <!-- CTA Banner -->
-  <section class="cta-banner-wrapper">
-    <div class="cta-banner">
-      <a href="/registro" class="btn btn--primary btn--lg">Inscríbete ya</a>
-      <a href="/login" class="btn btn--secondary btn--lg">Acceso alumnos</a>
-    </div>
-  </section>
 </MainLayout>
 
 <style>
@@ -146,9 +146,9 @@ import { SITE } from '../config/site.config.js';
     gap: 0.5rem;
     padding: 0.25rem 0.75rem;
     border-radius: var(--radius-full);
-    background-color: rgba(255, 255, 255, 0.2);
-    color: var(--color-text-white);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: linear-gradient(to right, rgba(132, 204, 22, 0.15), rgba(251, 146, 60, 0.15));
+    color: var(--color-primary);
+    border: 1px solid rgba(132, 204, 22, 0.3);
     width: fit-content;
   }
 
@@ -164,15 +164,18 @@ import { SITE } from '../config/site.config.js';
   }
 
   .hero__title {
-    color: var(--color-text-white);
     font-size: clamp(2.5rem, 6vw, 3.75rem);
     font-weight: 900;
     line-height: 1.1;
     letter-spacing: -0.02em;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .hero__title--accent {
-    opacity: 0.9;
+    opacity: 0.85;
   }
 
   .hero__description {
@@ -191,14 +194,14 @@ import { SITE } from '../config/site.config.js';
   }
 
   .hero__btn-white {
-    background-color: var(--color-text-white);
-    color: var(--color-primary);
+    background: var(--gradient-primary);
+    color: #0f172a;
     box-shadow: var(--shadow-lg);
   }
 
   .hero__btn-white:hover {
     transform: scale(1.05);
-    filter: none;
+    filter: brightness(1.1);
   }
 
   /* --- Services --- */
@@ -233,11 +236,12 @@ import { SITE } from '../config/site.config.js';
   }
 
   .service-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border);
+    border: 2px solid var(--color-border);
     background-color: var(--color-bg-white);
     padding: 2rem;
     transition: all var(--transition-base);
@@ -245,24 +249,24 @@ import { SITE } from '../config/site.config.js';
 
   .service-card:hover {
     box-shadow: var(--shadow-2xl);
-    border-color: rgba(236, 19, 19, 0.5);
+    border-color: var(--color-primary);
   }
 
   .service-card__icon {
     width: 3.5rem;
     height: 3.5rem;
     border-radius: var(--radius-md);
-    background-color: var(--color-primary-light);
+    background-color: rgba(34, 211, 238, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-primary);
+    color: var(--color-secondary);
     transition: all var(--transition-base);
   }
 
   .service-card:hover .service-card__icon {
-    background-color: var(--color-primary);
-    color: var(--color-text-white);
+    background-color: var(--color-secondary);
+    color: #0f172a;
   }
 
   .service-card__icon span {
@@ -319,35 +323,42 @@ import { SITE } from '../config/site.config.js';
     object-fit: cover;
   }
 
-  .why-lean__stat {
+  .why-lean__stats {
     display: none;
     position: absolute;
     bottom: -1.5rem;
     right: -1.5rem;
-    background-color: var(--color-primary);
-    color: var(--color-text-white);
-    padding: 2rem;
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xl);
+    gap: 0.75rem;
   }
 
   @media (min-width: 768px) {
-    .why-lean__stat {
-      display: block;
+    .why-lean__stats {
+      display: flex;
     }
   }
 
+  .why-lean__stat {
+    background: var(--gradient-primary);
+    color: #0f172a;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    text-align: center;
+    min-width: 5.5rem;
+  }
+
   .why-lean__stat-number {
-    font-size: 2.25rem;
+    font-size: 1.75rem;
     font-weight: 900;
+    line-height: 1;
   }
 
   .why-lean__stat-label {
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: 0.625rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    opacity: 0.8;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
   }
 
   .why-lean__content {
@@ -386,33 +397,4 @@ import { SITE } from '../config/site.config.js';
     flex-shrink: 0;
   }
 
-  /* --- CTA Banner --- */
-  .cta-banner-wrapper {
-    padding: 0 var(--section-px);
-    margin-bottom: -5rem;
-    position: relative;
-    z-index: 10;
-  }
-
-  .cta-banner {
-    max-width: var(--container-max);
-    margin-inline: auto;
-    background-color: var(--color-bg-white);
-    border-radius: var(--radius-2xl);
-    box-shadow: var(--shadow-2xl);
-    padding: 2rem 3rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem;
-    border: 1px solid #f1f5f9;
-  }
-
-  @media (min-width: 768px) {
-    .cta-banner {
-      flex-direction: row;
-      justify-content: center;
-    }
-  }
 </style>
