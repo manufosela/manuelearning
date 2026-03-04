@@ -114,6 +114,46 @@ describe('computeDashboardStats', () => {
     expect(stats.globalPercent).toBe(0);
     expect(stats.totalLessons).toBe(0);
     expect(stats.moduleStats).toHaveLength(0);
+    expect(stats.courseGroups).toHaveLength(0);
+  });
+
+  it('should group modules by course', () => {
+    const coursedModules = [
+      { id: 'm1', title: 'Intro Docker', order: 1, course: 'docker' },
+      { id: 'm2', title: 'Containers', order: 2, course: 'docker' },
+      { id: 'm3', title: 'JS Basics', order: 3, course: 'javascript' },
+    ];
+    const coursedLessons = {
+      m1: [{ id: 'l1', title: 'L1', order: 1 }],
+      m2: [{ id: 'l2', title: 'L2', order: 1 }],
+      m3: [{ id: 'l3', title: 'L3', order: 1 }],
+    };
+    const completed = [{ moduleId: 'm1', lessonId: 'l1' }];
+    const stats = computeDashboardStats(coursedModules, coursedLessons, completed);
+    expect(stats.courseGroups).toHaveLength(2);
+    expect(stats.courseGroups[0].course).toBe('docker');
+    expect(stats.courseGroups[0].modules).toHaveLength(2);
+    expect(stats.courseGroups[0].completedCount).toBe(1);
+    expect(stats.courseGroups[0].totalLessons).toBe(2);
+    expect(stats.courseGroups[0].percent).toBe(50);
+    expect(stats.courseGroups[1].course).toBe('javascript');
+    expect(stats.courseGroups[1].modules).toHaveLength(1);
+    expect(stats.courseGroups[1].completedCount).toBe(0);
+  });
+
+  it('should put modules without course in "Sin curso" group', () => {
+    const stats = computeDashboardStats(modules, lessonsByModule, []);
+    expect(stats.courseGroups).toHaveLength(1);
+    expect(stats.courseGroups[0].course).toBe('Sin curso');
+  });
+
+  it('should include course field in moduleStats', () => {
+    const coursedModules = [
+      { id: 'm1', title: 'Docker Intro', order: 1, course: 'docker' },
+    ];
+    const coursedLessons = { m1: [{ id: 'l1', title: 'L1', order: 1 }] };
+    const stats = computeDashboardStats(coursedModules, coursedLessons, []);
+    expect(stats.moduleStats[0].course).toBe('docker');
   });
 });
 
