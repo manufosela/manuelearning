@@ -28,7 +28,7 @@ const {
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="ManuElearning" />
-  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.svg" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -45,10 +45,9 @@ const {
   <div class="page-wrapper">
     <!-- Header -->
     <header class="site-header">
-      <div class="site-header__brand">
-        <span class="material-symbols-outlined site-header__icon">architecture</span>
-        <h2 class="site-header__title">{SITE.name}</h2>
-      </div>
+      <a href="/" class="site-header__brand">
+        <img src="/logo.svg" alt={SITE.name} class="site-header__logo" />
+      </a>
       {!hideAuthButton && (
         <nav class="site-header__nav">
           <a href="/login" class="btn btn--primary btn--sm">Acceder</a>
@@ -69,8 +68,7 @@ const {
       <div class="site-footer__grid">
         <div class="site-footer__brand">
           <div class="site-footer__logo">
-            <span class="material-symbols-outlined">architecture</span>
-            <h2>{SITE.name}</h2>
+            <img src="/logo.svg" alt={SITE.name} height="32" />
           </div>
           <p>{SITE.tagline}</p>
           <div class="site-footer__social">
@@ -153,20 +151,11 @@ const {
   .site-header__brand {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--color-primary);
   }
 
-  .site-header__icon {
-    font-size: 1.875rem;
-    font-weight: 700;
-  }
-
-  .site-header__title {
-    font-size: 1.25rem;
-    font-weight: 900;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+  .site-header__logo {
+    height: 2rem;
+    width: auto;
   }
 
   .site-header__nav {
