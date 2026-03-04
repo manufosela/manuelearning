@@ -1,0 +1,328 @@
+import { LitElement, html, css } from 'lit';
+import { fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
+import { getUserProgress } from '../lib/firebase/progress.js';
+import { waitForAuth } from '../lib/auth-ready.js';
+import { computeDashboardStats } from '../lib/dashboard-stats.js';
+
+/**
+ * @element student-dashboard-view
+ * Displays student progress dashboard with global and per-module stats.
+ */
+export class StudentDashboardView extends LitElement {
+  static properties = {
+    _stats: { type: Object, state: true },
+    _loading: { type: Boolean, state: true },
+    _error: { type: String, state: true },
+  };
+
+  static styles = css`
+    :host {
+      display: block;
+    }
+
+    .dashboard-header {
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-header h1 {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #0f172a;
+      margin-bottom: 0.25rem;
+    }
+
+    .dashboard-header p {
+      color: #64748b;
+      font-size: 0.938rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.375rem;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: #0f172a;
+    }
+
+    .stat-value--accent {
+      color: #ec1313;
+    }
+
+    .global-progress {
+      background: #fff;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+      margin-bottom: 2rem;
+    }
+
+    .global-progress h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 1rem;
+    }
+
+    .progress-bar-container {
+      background: #f1f5f9;
+      border-radius: 9999px;
+      height: 1rem;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, #ec1313, #ff4444);
+      transition: width 0.5s ease;
+    }
+
+    .progress-text {
+      font-size: 0.813rem;
+      color: #64748b;
+    }
+
+    .modules-section h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 1rem;
+    }
+
+    .module-progress {
+      background: #fff;
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+      margin-bottom: 0.75rem;
+    }
+
+    .module-progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .module-progress-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .module-progress-percent {
+      font-size: 0.813rem;
+      font-weight: 700;
+      color: #ec1313;
+    }
+
+    .progress-bar-sm {
+      background: #f1f5f9;
+      border-radius: 9999px;
+      height: 0.5rem;
+      overflow: hidden;
+    }
+
+    .progress-bar-sm .progress-bar {
+      height: 100%;
+    }
+
+    .quick-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      background: #ec1313;
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.813rem;
+      font-weight: 600;
+      margin-top: 0.75rem;
+      transition: background 0.15s;
+    }
+
+    .quick-link:hover {
+      background: #d11111;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: #475569;
+    }
+
+    .spinner {
+      width: 1.5rem;
+      height: 1.5rem;
+      border: 3px solid #e2e8f0;
+      border-top-color: #ec1313;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 0 auto 0.75rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg {
+      text-align: center;
+      padding: 3rem;
+      color: #991b1b;
+    }
+  `;
+
+  constructor() {
+    super();
+    this._stats = null;
+    this._loading = true;
+    this._error = '';
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    waitForAuth().then((user) => this._loadDashboard(user));
+  }
+
+  async _loadDashboard(user) {
+    this._loading = true;
+
+    const [modulesResult, progressResult] = await Promise.all([
+      fetchAllModules(),
+      getUserProgress(user.uid),
+    ]);
+
+    if (!modulesResult.success) {
+      this._loading = false;
+      this._error = modulesResult.error;
+      return;
+    }
+
+    if (!progressResult.success) {
+      this._loading = false;
+      this._error = progressResult.error;
+      return;
+    }
+
+    const lessonsByModule = {};
+    for (const mod of modulesResult.modules) {
+      const res = await fetchLessons(mod.id);
+      lessonsByModule[mod.id] = res.success ? res.lessons : [];
+    }
+
+    this._stats = computeDashboardStats(
+      modulesResult.modules,
+      lessonsByModule,
+      progressResult.completedLessons
+    );
+
+    this._loading = false;
+  }
+
+  render() {
+    if (this._loading) {
+      return html`<div class="loading"><div class="spinner"></div><p>Cargando dashboard...</p></div>`;
+    }
+
+    if (this._error) {
+      return html`<div class="error-msg">${this._error}</div>`;
+    }
+
+    const s = this._stats;
+
+    return html`
+      <div class="dashboard-header">
+        <h1>Mi progreso</h1>
+        <p>Sigue tu avance en el curso de Construcción Lean</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Avance global</div>
+          <div class="stat-value stat-value--accent">${s.globalPercent}%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Clases completadas</div>
+          <div class="stat-value">${s.completedCount} / ${s.totalLessons}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Módulos</div>
+          <div class="stat-value">${s.moduleStats.length}</div>
+        </div>
+      </div>
+
+      <div class="global-progress">
+        <h2>Progreso general</h2>
+        <div class="progress-bar-container">
+          <div class="progress-bar" style="width: ${s.globalPercent}%"></div>
+        </div>
+        <div class="progress-text">${s.completedCount} de ${s.totalLessons} clases completadas</div>
+      </div>
+
+      <div class="modules-section">
+        <h2>Progreso por módulo</h2>
+        ${s.moduleStats.map(
+          (mod) => html`
+            <div class="module-progress">
+              <div class="module-progress-header">
+                <span class="module-progress-title">${mod.moduleTitle}</span>
+                <span class="module-progress-percent">${mod.percent}%</span>
+              </div>
+              <div class="progress-bar-sm">
+                <div class="progress-bar" style="width: ${mod.percent}%"></div>
+              </div>
+            </div>
+          `
+        )}
+      </div>
+
+      <div class="quick-actions">
+        ${s.nextLesson ? html`
+          <a href="/leccion?m=${s.nextLesson.moduleId}&l=${s.nextLesson.lessonId}" class="quick-link">
+            <span class="material-symbols-outlined">play_arrow</span>
+            Continuar: ${s.nextLesson.lessonTitle}
+          </a>
+        ` : html`
+          <a href="/curso" class="quick-link">
+            <span class="material-symbols-outlined">check_circle</span>
+            Curso completado
+          </a>
+        `}
+        <a href="/curso" class="quick-link" style="background: #334155;">
+          <span class="material-symbols-outlined">menu_book</span>
+          Ver temario
+        </a>
+      </div>
+    `;
+  }
+}
+
+customElements.define('student-dashboard-view', StudentDashboardView);

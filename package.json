@@ -1,0 +1,29 @@
+{
+  "name": "lean-construction",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@astrojs/lit": "^4.3.0",
+    "astro": "^5.17.1",
+    "firebase": "^12.9.0",
+    "lit": "^3.3.2",
+    "marked": "^17.0.3"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@vitest/coverage-v8": "^4.0.18",
+    "firebase-admin": "^13.7.0",
+    "happy-dom": "^20.7.0",
+    "jsdom": "^28.1.0",
+    "vitest": "^4.0.18"
+  }
+}

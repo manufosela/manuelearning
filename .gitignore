@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Astro generated
+.astro/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Firebase
+.firebase/
+.firebaserc
+serviceAccountKey.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+
+# Debug
+npm-debug.log*
+.scannerwork/

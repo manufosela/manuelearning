@@ -1,0 +1,35 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Retención | Admin">
+  <div class="admin-retention">
+    <div class="admin-retention__header">
+      <h1>Dashboard de retención</h1>
+      <p>Identifica estudiantes dispersos o en riesgo de abandono</p>
+    </div>
+    <admin-retention-dashboard></admin-retention-dashboard>
+  </div>
+</AdminLayout>
+
+<script>
+  import '../../components/admin-retention-dashboard.js';
+</script>
+
+<style>
+  .admin-retention__header {
+    margin-bottom: 2rem;
+  }
+
+  .admin-retention__header h1 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--color-text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .admin-retention__header p {
+    color: var(--color-text-secondary);
+    font-size: 0.938rem;
+  }
+</style>

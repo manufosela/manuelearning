@@ -1,0 +1,35 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Gestión de Usuarios | Admin">
+  <div class="admin-users">
+    <div class="admin-users__header">
+      <h1>Gestión de usuarios</h1>
+      <p>Administra usuarios, roles y permisos de la plataforma</p>
+    </div>
+    <admin-users-list></admin-users-list>
+  </div>
+</AdminLayout>
+
+<script>
+  import '../../components/admin-users-list.js';
+</script>
+
+<style>
+  .admin-users__header {
+    margin-bottom: 2rem;
+  }
+
+  .admin-users__header h1 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--color-text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .admin-users__header p {
+    color: var(--color-text-secondary);
+    font-size: 0.938rem;
+  }
+</style>

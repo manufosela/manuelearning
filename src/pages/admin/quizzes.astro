@@ -1,0 +1,35 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Quizzes | Admin">
+  <div class="admin-quizzes">
+    <div class="admin-quizzes__header">
+      <h1>Gestión de quizzes</h1>
+      <p>Crea y administra los quizzes pre-clase para los estudiantes</p>
+    </div>
+    <admin-quizzes-list></admin-quizzes-list>
+  </div>
+</AdminLayout>
+
+<script>
+  import '../../components/admin-quizzes-list.js';
+</script>
+
+<style>
+  .admin-quizzes__header {
+    margin-bottom: 2rem;
+  }
+
+  .admin-quizzes__header h1 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--color-text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .admin-quizzes__header p {
+    color: var(--color-text-secondary);
+    font-size: 0.938rem;
+  }
+</style>

@@ -1,0 +1,154 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ── users ────────────────────────────────────────────────
+    match /users/{uid} {
+      // Any signed-in user can read their own profile; admins can read all
+      allow read: if isOwner(uid) || isAdmin();
+      // User can create their own profile during registration
+      allow create: if isOwner(uid);
+      // Only admins can update user profiles (role changes, lifetime access)
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // ── cohorts ──────────────────────────────────────────────
+    match /cohorts/{cohortId} {
+      // Any signed-in user can read (needed for dashboard info)
+      allow read: if isSignedIn();
+      // Only admins can create/update/delete
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── modules ──────────────────────────────────────────────
+    match /modules/{moduleId} {
+      // Any signed-in user can read modules
+      allow read: if isSignedIn();
+      // Only admins can manage modules
+      allow create, update, delete: if isAdmin();
+
+      // ── lessons (subcollection) ────────────────────────────
+      match /lessons/{lessonId} {
+        allow read: if isSignedIn();
+        allow create, update, delete: if isAdmin();
+      }
+    }
+
+    // ── quizzes ──────────────────────────────────────────────
+    match /quizzes/{quizId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── quizResponses ────────────────────────────────────────
+    match /quizResponses/{responseId} {
+      // Users can read their own responses; admins can read all
+      allow read: if isSignedIn()
+        && (resource.data.userId == request.auth.uid || isAdmin());
+      // Signed-in users can create responses (userId must match)
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // ── progress ─────────────────────────────────────────────
+    match /progress/{progressId} {
+      // Users can read their own progress; admins can read all
+      allow read: if isSignedIn()
+        && (resource.data.userId == request.auth.uid || isAdmin());
+      // Users can create/update their own progress
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // ── questions ────────────────────────────────────────────
+    match /questions/{questionId} {
+      // Any signed-in user can read questions
+      allow read: if isSignedIn();
+      // Signed-in users can create questions (userId must match)
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      // Admins can update (add answers) and delete
+      // Question owner can also update (for adding context)
+      allow update: if isSignedIn()
+        && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ── sessions ─────────────────────────────────────────────
+    match /sessions/{sessionId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── notifications ────────────────────────────────────────
+    match /notifications/{notifId} {
+      // Admins can read all notifications
+      allow read: if isAdmin();
+      // System creates notifications (from question creation)
+      // Allow any signed-in user to create (triggered by asking questions)
+      allow create: if isSignedIn();
+      // Admins can mark as read
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // ── certificates ─────────────────────────────────────────
+    match /certificates/{certId} {
+      // Users can read their own certs; admins can read all
+      allow read: if isSignedIn()
+        && (resource.data.userId == request.auth.uid || isAdmin());
+      // Users can create their own certificate
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // ── invitationCodes ──────────────────────────────────────
+    match /invitationCodes/{codeId} {
+      // Anyone can read (needed for validation during registration)
+      allow read: if true;
+      // Only admins can create/delete
+      allow create, delete: if isAdmin();
+      // Allow update for incrementing usedCount during registration
+      allow update: if true;
+    }
+
+    // ── settings ─────────────────────────────────────────────
+    match /settings/{settingId} {
+      // Anyone can read (registration open/closed check)
+      allow read: if true;
+      // Only admins can modify settings
+      allow create, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // ── suggestedAnswers ─────────────────────────────────────
+    match /suggestedAnswers/{sugId} {
+      allow read: if isSignedIn();
+      // Signed-in users can suggest answers
+      allow create: if isSignedIn();
+      // Only admins can approve/reject
+      allow update, delete: if isAdmin();
+    }
+  }
+}

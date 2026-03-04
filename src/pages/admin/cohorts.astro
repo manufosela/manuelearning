@@ -1,0 +1,35 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Cohortes | Admin">
+  <div class="admin-cohorts">
+    <div class="admin-cohorts__header">
+      <h1>Gestión de cohortes</h1>
+      <p>Crea, edita y administra las cohortes del programa</p>
+    </div>
+    <admin-cohorts-list></admin-cohorts-list>
+  </div>
+</AdminLayout>
+
+<script>
+  import '../../components/admin-cohorts-list.js';
+</script>
+
+<style>
+  .admin-cohorts__header {
+    margin-bottom: 2rem;
+  }
+
+  .admin-cohorts__header h1 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--color-text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .admin-cohorts__header p {
+    color: var(--color-text-secondary);
+    font-size: 0.938rem;
+  }
+</style>
