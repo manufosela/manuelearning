@@ -3,6 +3,7 @@
  * @typedef {Object} Props
  * @property {string} [title] - Page title
  * @property {string} [description] - Meta description
+ * @property {boolean} [hideAuthButton] - Hide the login button in header
  */
 
 import { SITE } from '../config/site.config.js';
@@ -11,6 +12,7 @@ import { SITE } from '../config/site.config.js';
 const {
   title = `${SITE.name} | ${SITE.tagline}`,
   description = SITE.tagline,
+  hideAuthButton = false,
 } = Astro.props;
 ---
 
@@ -47,9 +49,11 @@ const {
         <span class="material-symbols-outlined site-header__icon">architecture</span>
         <h2 class="site-header__title">{SITE.name}</h2>
       </div>
-      <nav class="site-header__nav">
-        <a href="/login" class="btn btn--primary btn--sm">Acceder</a>
-      </nav>
+      {!hideAuthButton && (
+        <nav class="site-header__nav">
+          <a href="/login" class="btn btn--primary btn--sm">Acceder</a>
+        </nav>
+      )}
       <button class="site-header__menu-toggle" aria-label="Abrir menú">
         <span class="material-symbols-outlined">menu</span>
       </button>

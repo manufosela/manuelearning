@@ -146,9 +146,9 @@ import { SITE } from '../config/site.config.js';
     gap: 0.5rem;
     padding: 0.25rem 0.75rem;
     border-radius: var(--radius-full);
-    background-color: rgba(255, 255, 255, 0.2);
-    color: var(--color-text-white);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: linear-gradient(to right, rgba(132, 204, 22, 0.15), rgba(251, 146, 60, 0.15));
+    color: var(--color-primary);
+    border: 1px solid rgba(132, 204, 22, 0.3);
     width: fit-content;
   }
 
@@ -164,15 +164,18 @@ import { SITE } from '../config/site.config.js';
   }
 
   .hero__title {
-    color: var(--color-text-white);
     font-size: clamp(2.5rem, 6vw, 3.75rem);
     font-weight: 900;
     line-height: 1.1;
     letter-spacing: -0.02em;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .hero__title--accent {
-    opacity: 0.9;
+    opacity: 0.85;
   }
 
   .hero__description {
@@ -191,14 +194,14 @@ import { SITE } from '../config/site.config.js';
   }
 
   .hero__btn-white {
-    background-color: var(--color-text-white);
-    color: var(--color-primary);
+    background: var(--gradient-primary);
+    color: #0f172a;
     box-shadow: var(--shadow-lg);
   }
 
   .hero__btn-white:hover {
     transform: scale(1.05);
-    filter: none;
+    filter: brightness(1.1);
   }
 
   /* --- Services --- */
@@ -233,11 +236,12 @@ import { SITE } from '../config/site.config.js';
   }
 
   .service-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border);
+    border: 2px solid var(--color-border);
     background-color: var(--color-bg-white);
     padding: 2rem;
     transition: all var(--transition-base);
@@ -245,7 +249,7 @@ import { SITE } from '../config/site.config.js';
 
   .service-card:hover {
     box-shadow: var(--shadow-2xl);
-    border-color: rgba(34, 211, 238, 0.5);
+    border-color: var(--color-primary);
   }
 
   .service-card__icon {
@@ -334,7 +338,7 @@ import { SITE } from '../config/site.config.js';
   }
 
   .why-lean__stat {
-    background-color: var(--color-primary);
+    background: var(--gradient-primary);
     color: #0f172a;
     padding: 1rem 1.25rem;
     border-radius: var(--radius-xl);

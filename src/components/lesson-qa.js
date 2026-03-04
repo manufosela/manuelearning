@@ -39,7 +39,7 @@ export class LessonQA extends LitElement {
     .qa-form textarea:focus { outline: none; border-color: #84cc16; box-shadow: 0 0 0 3px rgba(132,204,22,0.1); }
 
     .btn { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 1rem; border: none; border-radius: 0.5rem; font-size: 0.813rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background-color 0.15s; }
-    .btn--primary { background: #84cc16; color: #0f172a; align-self: flex-end; }
+    .btn--primary { background: linear-gradient(to right, #84cc16, #fb923c); color: #0f172a; align-self: flex-end; }
     .btn--primary:hover { background: #d11111; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 

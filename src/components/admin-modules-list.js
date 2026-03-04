@@ -67,7 +67,7 @@ export class AdminModulesList extends LitElement {
       transition: background-color 0.15s;
     }
 
-    .btn--primary { background: #84cc16; color: #0f172a; }
+    .btn--primary { background: linear-gradient(to right, #84cc16, #fb923c); color: #0f172a; }
     .btn--primary:hover { background: #d11111; }
     .btn--secondary { background: #f1f5f9; color: #334155; }
     .btn--secondary:hover { background: #e2e8f0; }

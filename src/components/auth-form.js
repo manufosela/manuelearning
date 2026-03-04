@@ -98,7 +98,7 @@ export class AuthForm extends LitElement {
 
     .submit-btn {
       height: 3.25rem;
-      background-color: #84cc16;
+      background: linear-gradient(to right, #84cc16, #fb923c);
       color: #0f172a;
       border: none;
       border-radius: 0.5rem;

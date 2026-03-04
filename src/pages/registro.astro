@@ -3,7 +3,7 @@ import MainLayout from '../layouts/MainLayout.astro';
 import { SITE } from '../config/site.config.js';
 ---
 
-<MainLayout title={`Registro | ${SITE.name}`}>
+<MainLayout title={`Registro | ${SITE.name}`} hideAuthButton={true}>
   <section class="auth-page">
     <div class="auth-card">
       <div class="auth-header">

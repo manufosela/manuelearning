@@ -33,7 +33,7 @@ export class AdminSessionsList extends LitElement {
 
     .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .btn { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 1rem; border: none; border-radius: 0.5rem; font-size: 0.813rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background-color 0.15s; }
-    .btn--primary { background: #84cc16; color: #0f172a; }
+    .btn--primary { background: linear-gradient(to right, #84cc16, #fb923c); color: #0f172a; }
     .btn--primary:hover { background: #d11111; }
     .btn--secondary { background: #f1f5f9; color: #334155; }
     .btn--secondary:hover { background: #e2e8f0; }
