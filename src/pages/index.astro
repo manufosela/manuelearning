@@ -66,9 +66,19 @@ import { SITE } from '../config/site.config.js';
         <div class="why-lean__image">
           <img src="/images/engineer-tablet.jpg" alt="Profesional de construcción revisando planos digitales en una tablet" />
         </div>
-        <div class="why-lean__stat">
-          <p class="why-lean__stat-number">+25</p>
-          <p class="why-lean__stat-label">años desarrollando software</p>
+        <div class="why-lean__stats">
+          <div class="why-lean__stat">
+            <p class="why-lean__stat-number">+25</p>
+            <p class="why-lean__stat-label">desarrollando software</p>
+          </div>
+          <div class="why-lean__stat">
+            <p class="why-lean__stat-number">+15</p>
+            <p class="why-lean__stat-label">mentorizando juniors</p>
+          </div>
+          <div class="why-lean__stat">
+            <p class="why-lean__stat-number">+10</p>
+            <p class="why-lean__stat-label">liderando equipos</p>
+          </div>
         </div>
       </div>
       <div class="why-lean__content">
@@ -317,35 +327,42 @@ import { SITE } from '../config/site.config.js';
     object-fit: cover;
   }
 
-  .why-lean__stat {
+  .why-lean__stats {
     display: none;
     position: absolute;
     bottom: -1.5rem;
     right: -1.5rem;
-    background-color: var(--color-primary);
-    color: var(--color-text-white);
-    padding: 2rem;
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xl);
+    gap: 0.75rem;
   }
 
   @media (min-width: 768px) {
-    .why-lean__stat {
-      display: block;
+    .why-lean__stats {
+      display: flex;
     }
   }
 
+  .why-lean__stat {
+    background-color: var(--color-primary);
+    color: #0f172a;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    text-align: center;
+    min-width: 5.5rem;
+  }
+
   .why-lean__stat-number {
-    font-size: 2.25rem;
+    font-size: 1.75rem;
     font-weight: 900;
+    line-height: 1;
   }
 
   .why-lean__stat-label {
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: 0.625rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    opacity: 0.8;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
   }
 
   .why-lean__content {
