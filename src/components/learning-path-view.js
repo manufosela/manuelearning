@@ -1,14 +1,16 @@
 import { LitElement, html, css } from 'lit';
-import { fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
+import { fetchAllModules, fetchModulesByCourse, fetchLessons } from '../lib/firebase/modules.js';
 import { buildLearningPath } from '../lib/learning-path.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 
 /**
  * @element learning-path-view
  * Displays the course learning path with modules and lessons.
+ * @property {string} course - Filter modules by course name (e.g. 'docker', 'javascript')
  */
 export class LearningPathView extends LitElement {
   static properties = {
+    course: { type: String },
     _path: { type: Array, state: true },
     _modules: { type: Array, state: true },
     _loading: { type: Boolean, state: true },
@@ -142,6 +144,7 @@ export class LearningPathView extends LitElement {
 
   constructor() {
     super();
+    this.course = '';
     this._path = [];
     this._modules = [];
     this._loading = true;
@@ -155,7 +158,9 @@ export class LearningPathView extends LitElement {
 
   async _loadPath() {
     this._loading = true;
-    const result = await fetchAllModules();
+    const result = this.course
+      ? await fetchModulesByCourse(this.course)
+      : await fetchAllModules();
 
     if (!result.success) {
       this._loading = false;

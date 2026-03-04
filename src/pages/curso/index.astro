@@ -6,7 +6,7 @@ import { SITE } from '../../config/site.config.js';
 <MainLayout title={`Temario | ${SITE.name}`}>
   <section class="course-page">
     <auth-guard>
-      <learning-path-view></learning-path-view>
+      <learning-path-view id="learningPath"></learning-path-view>
     </auth-guard>
   </section>
 </MainLayout>
@@ -14,6 +14,14 @@ import { SITE } from '../../config/site.config.js';
 <script>
   import '../../components/auth-guard.js';
   import '../../components/learning-path-view.js';
+
+  // Read course from query parameter: /curso?c=docker
+  const params = new URLSearchParams(window.location.search);
+  const course = params.get('c');
+  if (course) {
+    const el = document.querySelector('#learningPath');
+    if (el) el.setAttribute('course', course);
+  }
 </script>
 
 <style>
