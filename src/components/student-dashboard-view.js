@@ -169,7 +169,7 @@ export class StudentDashboardView extends LitElement {
     }
 
     .quick-link:hover {
-      background: #d11111;
+      background: #65a30d;
     }
 
     .quick-actions {
@@ -208,6 +208,41 @@ export class StudentDashboardView extends LitElement {
       padding: 3rem 2rem;
       max-width: 480px;
       margin: 2rem auto;
+    }
+
+    .course-section {
+      margin-bottom: 2rem;
+    }
+
+    .course-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .course-section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .course-section-percent {
+      font-size: 0.813rem;
+      font-weight: 700;
+      color: #84cc16;
+    }
+
+    .course-progress-bar {
+      background: #f1f5f9;
+      border-radius: 9999px;
+      height: 0.625rem;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .course-progress-bar .progress-bar {
+      height: 100%;
     }
 
     .expired-banner .material-symbols-outlined {
@@ -312,9 +347,11 @@ export class StudentDashboardView extends LitElement {
     const s = this._stats;
 
     return html`
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
       <div class="dashboard-header">
         <h1>Mi progreso</h1>
-        <p>Sigue tu avance en el curso de Construcción Lean</p>
+        <p>Sigue tu avance en tus cursos</p>
       </div>
 
       <div class="stats-grid">
@@ -327,8 +364,8 @@ export class StudentDashboardView extends LitElement {
           <div class="stat-value">${s.completedCount} / ${s.totalLessons}</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Módulos</div>
-          <div class="stat-value">${s.moduleStats.length}</div>
+          <div class="stat-label">Cursos</div>
+          <div class="stat-value">${s.courseGroups.length}</div>
         </div>
       </div>
 
@@ -340,22 +377,34 @@ export class StudentDashboardView extends LitElement {
         <div class="progress-text">${s.completedCount} de ${s.totalLessons} clases completadas</div>
       </div>
 
-      <div class="modules-section">
-        <h2>Progreso por módulo</h2>
-        ${s.moduleStats.map(
-          (mod) => html`
-            <div class="module-progress">
-              <div class="module-progress-header">
-                <span class="module-progress-title">${mod.moduleTitle}</span>
-                <span class="module-progress-percent">${mod.percent}%</span>
-              </div>
-              <div class="progress-bar-sm">
-                <div class="progress-bar" style="width: ${mod.percent}%"></div>
-              </div>
+      ${s.courseGroups.map(
+        (group) => html`
+          <div class="course-section">
+            <div class="course-section-header">
+              <span class="course-section-title">${group.course}</span>
+              <span class="course-section-percent">${group.percent}% — ${group.completedCount}/${group.totalLessons} clases</span>
             </div>
-          `
-        )}
-      </div>
+            <div class="course-progress-bar">
+              <div class="progress-bar" style="width: ${group.percent}%"></div>
+            </div>
+            <div class="modules-section">
+              ${group.modules.map(
+                (mod) => html`
+                  <div class="module-progress">
+                    <div class="module-progress-header">
+                      <span class="module-progress-title">${mod.moduleTitle}</span>
+                      <span class="module-progress-percent">${mod.percent}%</span>
+                    </div>
+                    <div class="progress-bar-sm">
+                      <div class="progress-bar" style="width: ${mod.percent}%"></div>
+                    </div>
+                  </div>
+                `
+              )}
+            </div>
+          </div>
+        `
+      )}
 
       <div class="quick-actions">
         ${s.nextLesson ? html`
@@ -364,16 +413,16 @@ export class StudentDashboardView extends LitElement {
             Continuar: ${s.nextLesson.lessonTitle}
           </a>
         ` : html`
-          <a href="/curso" class="quick-link">
+          <a href="/cursos" class="quick-link">
             <span class="material-symbols-outlined">check_circle</span>
-            Curso completado
+            Todos los cursos completados
           </a>
         `}
         <a href="/resultados" class="quick-link" style="background: #334155;">
           <span class="material-symbols-outlined">quiz</span>
           Mis quizzes
         </a>
-        <a href="/curso" class="quick-link" style="background: #334155;">
+        <a href="/cursos" class="quick-link" style="background: #334155;">
           <span class="material-symbols-outlined">menu_book</span>
           Ver temario
         </a>

@@ -5,8 +5,18 @@ import { buildLearningPath } from './learning-path.js';
  * @typedef {Object} ModuleStat
  * @property {string} moduleId
  * @property {string} moduleTitle
+ * @property {string} course
  * @property {number} completed
  * @property {number} total
+ * @property {number} percent
+ */
+
+/**
+ * @typedef {Object} CourseGroup
+ * @property {string} course
+ * @property {ModuleStat[]} modules
+ * @property {number} totalLessons
+ * @property {number} completedCount
  * @property {number} percent
  */
 
@@ -16,6 +26,7 @@ import { buildLearningPath } from './learning-path.js';
  * @property {number} totalLessons
  * @property {number} completedCount
  * @property {ModuleStat[]} moduleStats
+ * @property {CourseGroup[]} courseGroups
  * @property {{ moduleId: string, lessonId: string, lessonTitle: string }|null} nextLesson
  * @property {{ moduleId: string, lessonId: string, lessonTitle: string }|null} lastCompleted
  */
@@ -41,9 +52,31 @@ export function computeDashboardStats(modules, lessonsByModule, completedLessons
     return {
       moduleId: mod.id,
       moduleTitle: mod.title,
+      course: mod.course || '',
       completed: modCompleted,
       total: lessons.length,
       percent: calculateProgress(modCompleted, lessons.length),
+    };
+  });
+
+  const courseMap = new Map();
+  for (const stat of moduleStats) {
+    const key = stat.course || 'Sin curso';
+    if (!courseMap.has(key)) {
+      courseMap.set(key, []);
+    }
+    courseMap.get(key).push(stat);
+  }
+
+  const courseGroups = [...courseMap.entries()].map(([course, mods]) => {
+    const totalLessonsInCourse = mods.reduce((sum, m) => sum + m.total, 0);
+    const completedInCourse = mods.reduce((sum, m) => sum + m.completed, 0);
+    return {
+      course,
+      modules: mods,
+      totalLessons: totalLessonsInCourse,
+      completedCount: completedInCourse,
+      percent: calculateProgress(completedInCourse, totalLessonsInCourse),
     };
   });
 
@@ -69,6 +102,7 @@ export function computeDashboardStats(modules, lessonsByModule, completedLessons
     totalLessons,
     completedCount,
     moduleStats,
+    courseGroups,
     nextLesson,
     lastCompleted,
   };

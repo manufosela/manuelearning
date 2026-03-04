@@ -49,8 +49,17 @@ const {
         <img src="/logo.svg" alt={SITE.name} class="site-header__logo" />
       </a>
       {!hideAuthButton && (
-        <nav class="site-header__nav">
-          <a href="/login" class="btn btn--primary btn--sm">Acceder</a>
+        <nav class="site-header__nav" id="header-nav">
+          <a href="/login" class="btn btn--primary btn--sm" id="header-login-btn">Acceder</a>
+          <div class="header-user" id="header-user" style="display:none;">
+            <a href="/dashboard" class="header-user__link">
+              <img id="header-user-avatar" class="header-user__avatar" src="" alt="" />
+              <span id="header-user-name" class="header-user__name"></span>
+            </a>
+            <button id="header-logout-btn" class="header-user__logout" aria-label="Cerrar sesión">
+              <span class="material-symbols-outlined">logout</span>
+            </button>
+          </div>
         </nav>
       )}
       <button class="site-header__menu-toggle" aria-label="Abrir menú">
@@ -118,6 +127,40 @@ const {
       });
     }
   </script>
+  <script>
+    import { onAuthChange, logoutUser } from '../lib/firebase/auth.js';
+
+    const loginBtn = document.getElementById('header-login-btn');
+    const userBlock = document.getElementById('header-user');
+    const userAvatar = document.getElementById('header-user-avatar');
+    const userName = document.getElementById('header-user-name');
+    const logoutBtn = document.getElementById('header-logout-btn');
+
+    if (loginBtn && userBlock) {
+      onAuthChange((user) => {
+        if (user) {
+          loginBtn.style.display = 'none';
+          userBlock.style.display = 'flex';
+          userName.textContent = user.displayName || user.email;
+          if (user.photoURL) {
+            userAvatar.src = user.photoURL;
+            userAvatar.alt = user.displayName || '';
+            userAvatar.style.display = 'block';
+          } else {
+            userAvatar.style.display = 'none';
+          }
+        } else {
+          loginBtn.style.display = '';
+          userBlock.style.display = 'none';
+        }
+      });
+
+      logoutBtn?.addEventListener('click', async () => {
+        await logoutUser();
+        window.location.href = '/';
+      });
+    }
+  </script>
 </body>
 </html>
 
@@ -167,11 +210,60 @@ const {
     color: var(--color-text-primary);
   }
 
+  .header-user {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .header-user__link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--color-text-primary);
+  }
+
+  .header-user__avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+  }
+
+  .header-user__name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .header-user__logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+    transition: color var(--transition-fast);
+  }
+
+  .header-user__logout:hover {
+    color: #991b1b;
+  }
+
+  .header-user__logout .material-symbols-outlined {
+    font-size: 1.25rem;
+  }
+
   @media (min-width: 768px) {
     .site-header__nav {
       display: flex;
       flex: 1;
       justify-content: flex-end;
+      align-items: center;
       gap: 2.5rem;
     }
 
