@@ -10,6 +10,7 @@ vi.mock('firebase/auth', () => ({
 
 const mockGetDocs = vi.fn();
 const mockUpdateDoc = vi.fn();
+const mockAddDoc = vi.fn();
 
 vi.mock('firebase/firestore', () => ({
   getFirestore: vi.fn(() => ({})),
@@ -18,6 +19,7 @@ vi.mock('firebase/firestore', () => ({
   where: vi.fn(),
   getDocs: (...args) => mockGetDocs(...args),
   doc: vi.fn(),
+  addDoc: (...args) => mockAddDoc(...args),
   updateDoc: (...args) => mockUpdateDoc(...args),
   increment: vi.fn((n) => n),
 }));
@@ -26,6 +28,10 @@ import {
   validateInvitationCode,
   markCodeAsUsed,
   normalizeCode,
+  fetchCodesByCohort,
+  createInvitationCode,
+  toggleCodeActive,
+  generateCodeString,
 } from '../src/lib/firebase/invitation-codes.js';
 
 describe('normalizeCode', () => {
@@ -152,5 +158,107 @@ describe('markCodeAsUsed', () => {
 
     const result = await markCodeAsUsed('doc1');
     expect(result).toBe(false);
+  });
+});
+
+describe('generateCodeString', () => {
+  it('should generate an 8-character string', () => {
+    const code = generateCodeString();
+    expect(code).toHaveLength(8);
+  });
+
+  it('should only contain uppercase alphanumeric chars', () => {
+    const code = generateCodeString();
+    expect(code).toMatch(/^[A-Z2-9]+$/);
+  });
+
+  it('should not contain ambiguous characters (0, 1, I, O)', () => {
+    for (let i = 0; i < 50; i++) {
+      const code = generateCodeString();
+      expect(code).not.toMatch(/[01IO]/);
+    }
+  });
+});
+
+describe('fetchCodesByCohort', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return codes for a cohort', async () => {
+    mockGetDocs.mockResolvedValue({
+      docs: [
+        { id: 'c1', data: () => ({ code: 'ABC123', cohortId: 'cohort1', maxUses: 10, usedCount: 2, active: true }) },
+        { id: 'c2', data: () => ({ code: 'XYZ789', cohortId: 'cohort1', maxUses: 5, usedCount: 5, active: false }) },
+      ],
+    });
+
+    const result = await fetchCodesByCohort('cohort1');
+    expect(result.success).toBe(true);
+    expect(result.codes).toHaveLength(2);
+    expect(result.codes[0].code).toBe('ABC123');
+  });
+
+  it('should handle errors', async () => {
+    mockGetDocs.mockRejectedValue(new Error('Network error'));
+
+    const result = await fetchCodesByCohort('cohort1');
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('createInvitationCode', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should fail without cohortId', async () => {
+    const result = await createInvitationCode('');
+    expect(result.success).toBe(false);
+    expect(mockAddDoc).not.toHaveBeenCalled();
+  });
+
+  it('should create a code with default maxUses', async () => {
+    mockAddDoc.mockResolvedValue({ id: 'newDoc' });
+
+    const result = await createInvitationCode('cohort1');
+    expect(result.success).toBe(true);
+    expect(result.code).toHaveLength(8);
+    expect(mockAddDoc).toHaveBeenCalled();
+  });
+
+  it('should create a code with custom maxUses', async () => {
+    mockAddDoc.mockResolvedValue({ id: 'newDoc' });
+
+    const result = await createInvitationCode('cohort1', 25);
+    expect(result.success).toBe(true);
+  });
+
+  it('should handle Firestore errors', async () => {
+    mockAddDoc.mockRejectedValue(new Error('Permission denied'));
+
+    const result = await createInvitationCode('cohort1');
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('toggleCodeActive', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should update the active field', async () => {
+    mockUpdateDoc.mockResolvedValue();
+
+    const result = await toggleCodeActive('doc1', false);
+    expect(result.success).toBe(true);
+    expect(mockUpdateDoc).toHaveBeenCalled();
+  });
+
+  it('should handle errors', async () => {
+    mockUpdateDoc.mockRejectedValue(new Error('Error'));
+
+    const result = await toggleCodeActive('doc1', true);
+    expect(result.success).toBe(false);
   });
 });

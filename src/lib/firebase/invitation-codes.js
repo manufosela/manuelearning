@@ -4,6 +4,7 @@ import {
   where,
   getDocs,
   doc,
+  addDoc,
   updateDoc,
   increment,
 } from 'firebase/firestore';
@@ -91,4 +92,83 @@ export async function markCodeAsUsed(docId) {
  */
 export function normalizeCode(code) {
   return (code || '').trim().toUpperCase();
+}
+
+/**
+ * Fetch all invitation codes for a cohort.
+ * @param {string} cohortId
+ * @returns {Promise<{success: boolean, codes?: InvitationCode[], error?: string}>}
+ */
+export async function fetchCodesByCohort(cohortId) {
+  try {
+    const codesRef = collection(db, 'invitationCodes');
+    const q = query(codesRef, where('cohortId', '==', cohortId));
+    const snapshot = await getDocs(q);
+
+    const codes = snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+    }));
+
+    return { success: true, codes };
+  } catch (err) {
+    return { success: false, error: 'Error al cargar codigos de invitacion' };
+  }
+}
+
+/**
+ * Generate a random invitation code string.
+ * @returns {string}
+ */
+export function generateCodeString() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let result = '';
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+/**
+ * Create a new invitation code for a cohort.
+ * @param {string} cohortId
+ * @param {number} [maxUses=10]
+ * @returns {Promise<{success: boolean, code?: string, error?: string}>}
+ */
+export async function createInvitationCode(cohortId, maxUses = 10) {
+  if (!cohortId) {
+    return { success: false, error: 'cohortId es obligatorio' };
+  }
+
+  const code = generateCodeString();
+
+  try {
+    await addDoc(collection(db, 'invitationCodes'), {
+      code,
+      cohortId,
+      maxUses,
+      usedCount: 0,
+      active: true,
+    });
+
+    return { success: true, code };
+  } catch (err) {
+    return { success: false, error: 'Error al crear codigo de invitacion' };
+  }
+}
+
+/**
+ * Toggle the active state of an invitation code.
+ * @param {string} docId
+ * @param {boolean} active
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function toggleCodeActive(docId, active) {
+  try {
+    const codeRef = doc(db, 'invitationCodes', docId);
+    await updateDoc(codeRef, { active });
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: 'Error al actualizar el codigo' };
+  }
 }
