@@ -1,51 +1,26 @@
 # Changelog
 
-Todos los cambios notables en este proyecto serán documentados en este archivo.
+All notable changes to this project will be documented in this file.
 
-El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
-y este proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Sin versión] - Desarrollo inicial
+<!-- CHANGELOG_ENTRIES -->
 
-### Estado actual
-Actualmente, este repositorio no tiene Pull Requests (PRs) fusionados. El desarrollo se ha realizado directamente en la rama principal.
+## [1.0.0] - 2026-03-04
 
-### Commits realizados
-
-#### 2026-02-27
-- **feat: tracking de progreso marcar clases como vistas (LCT-TSK-0013)**
-  - Autor: manufosela
-  - Implementación inicial de la funcionalidad de seguimiento de progreso para marcar clases como vistas
-  - Commit: 7af9ac1
-
----
-
-## Notas
-
-### Para futuros PRs
-Este changelog se actualizará cuando se fusionen Pull Requests. Se recomienda seguir este formato:
-
-```markdown
-## [Versión] - YYYY-MM-DD
-
-### Añadido
-- Nueva funcionalidad A (#PR-número)
-- Nueva funcionalidad B (#PR-número)
-
-### Cambiado
-- Mejora en funcionalidad X (#PR-número)
-
-### Corregido
-- Corrección de bug Y (#PR-número)
-
-### Eliminado
-- Funcionalidad Z obsoleta (#PR-número)
-```
-
-### Categorías estándar
-- **Añadido** (Added): para nuevas funcionalidades
-- **Cambiado** (Changed): para cambios en funcionalidades existentes
-- **Obsoleto** (Deprecated): para funcionalidades que serán eliminadas
-- **Eliminado** (Removed): para funcionalidades eliminadas
-- **Corregido** (Fixed): para corrección de bugs
-- **Seguridad** (Security): en caso de vulnerabilidades
+### Added
+- Push notifications with student notification center (#13)
+- PWA support with service worker and offline fallback (#12)
+- Module and lesson reordering with up/down buttons (#11)
+- Cohort expiration management with visual indicators (#10)
+- Firestore composite indexes for all compound queries (#9)
+- Consistent loading, empty, and error states with retry (#8)
+- Search filters to admin users and modules panels (#7)
+- CSV export for users and quiz responses (#6)
+- Quiz results page for students (#5)
+- Admin dashboard with platform metrics (#4)
+- User profile page with display name editing (#3)
+- Invitation code management in admin cohorts panel (#2)
+- Google Sign-In authentication (#1)
+- Initial project setup and rebranding to ManuElearning
