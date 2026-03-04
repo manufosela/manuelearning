@@ -8,6 +8,7 @@ import {
   deleteDoc,
   query,
   orderBy,
+  where,
   serverTimestamp,
   writeBatch,
 } from 'firebase/firestore';
@@ -84,6 +85,47 @@ export async function fetchAllModules() {
     return { success: true, modules };
   } catch (err) {
     return { success: false, error: 'Error al cargar módulos' };
+  }
+}
+
+/**
+ * Fetch modules filtered by course name.
+ * @param {string} courseName
+ * @returns {Promise<{success: boolean, modules?: Module[], error?: string}>}
+ */
+export async function fetchModulesByCourse(courseName) {
+  if (!courseName) return fetchAllModules();
+
+  try {
+    const ref = collection(db, COLLECTION);
+    const q = query(ref, where('course', '==', courseName), orderBy('order', 'asc'));
+    const snapshot = await getDocs(q);
+
+    const modules = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    return { success: true, modules };
+  } catch (err) {
+    return { success: false, error: 'Error al cargar módulos del curso' };
+  }
+}
+
+/**
+ * Fetch distinct course names from modules.
+ * @returns {Promise<{success: boolean, courses?: string[], error?: string}>}
+ */
+export async function fetchCourseList() {
+  try {
+    const ref = collection(db, COLLECTION);
+    const snapshot = await getDocs(ref);
+
+    const courseSet = new Set();
+    snapshot.docs.forEach((d) => {
+      const course = d.data().course;
+      if (course) courseSet.add(course);
+    });
+
+    return { success: true, courses: [...courseSet].sort() };
+  } catch (err) {
+    return { success: false, error: 'Error al cargar lista de cursos' };
   }
 }
 
