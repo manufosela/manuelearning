@@ -6,21 +6,18 @@ import { SITE } from '../config/site.config.js';
 <MainLayout title={`Registro | ${SITE.name}`}>
   <section class="auth-page">
     <div class="auth-card">
-      <registration-gate>
-        <div class="auth-header">
-          <span class="material-symbols-outlined auth-icon">person_add</span>
-          <h1>Crear cuenta</h1>
-          <p>Únete a la plataforma de Construcción Lean</p>
-        </div>
-        <auth-form mode="register"></auth-form>
-      </registration-gate>
+      <div class="auth-header">
+        <span class="material-symbols-outlined auth-icon">person_add</span>
+        <h1>Crear cuenta</h1>
+        <p>Accede con tu cuenta de Google para registrarte en {SITE.name}</p>
+      </div>
+      <auth-form></auth-form>
     </div>
   </section>
 </MainLayout>
 
 <script>
   import '../components/auth-form.js';
-  import '../components/registration-gate.js';
 </script>
 
 <style>

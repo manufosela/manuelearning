@@ -1,10 +1,10 @@
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
   signOut,
   onAuthStateChanged,
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './config.js';
 import { validateInvitationCode, markCodeAsUsed } from './invitation-codes.js';
 
@@ -12,26 +12,47 @@ import { validateInvitationCode, markCodeAsUsed } from './invitation-codes.js';
  * @typedef {Object} AuthResult
  * @property {boolean} success
  * @property {import('firebase/auth').User} [user]
+ * @property {boolean} [isNewUser] - true if the user has no Firestore profile yet
  * @property {string} [error]
  */
 
+const googleProvider = new GoogleAuthProvider();
+
 /**
- * Register a new user with email, password and invitation code.
- * Validates the invitation code first, then creates the user and Firestore profile.
- * @param {string} email
- * @param {string} password
- * @param {string} [displayName]
- * @param {string} [invitationCode]
+ * Sign in with Google. If the user has no Firestore profile, returns isNewUser=true
+ * so the caller can request an invitation code before creating the profile.
  * @returns {Promise<AuthResult>}
  */
-export async function registerUser(email, password, displayName = '', invitationCode = '') {
-  const validation = validateCredentials(email, password);
-  if (!validation.valid) {
-    return { success: false, error: validation.error };
+export async function loginWithGoogle() {
+  try {
+    const credential = await signInWithPopup(auth, googleProvider);
+    const user = credential.user;
+
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    if (userDoc.exists()) {
+      return { success: true, user, isNewUser: false };
+    }
+
+    return { success: true, user, isNewUser: true };
+  } catch (err) {
+    return { success: false, error: mapFirebaseError(err.code) };
+  }
+}
+
+/**
+ * Complete registration for a new Google user by validating the invitation code
+ * and creating their Firestore profile.
+ * @param {import('firebase/auth').User} user
+ * @param {string} invitationCode
+ * @returns {Promise<AuthResult>}
+ */
+export async function completeRegistration(user, invitationCode) {
+  if (!user) {
+    return { success: false, error: 'Usuario no autenticado' };
   }
 
   if (!invitationCode || invitationCode.trim().length === 0) {
-    return { success: false, error: 'El código de invitación es obligatorio para registrarse' };
+    return { success: false, error: 'El codigo de invitacion es obligatorio' };
   }
 
   const codeValidation = await validateInvitationCode(invitationCode);
@@ -40,12 +61,9 @@ export async function registerUser(email, password, displayName = '', invitation
   }
 
   try {
-    const credential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = credential.user;
-
     await setDoc(doc(db, 'users', user.uid), {
       email: user.email,
-      displayName,
+      displayName: user.displayName || '',
       role: 'student',
       cohortId: codeValidation.cohortId,
       createdAt: serverTimestamp(),
@@ -54,26 +72,6 @@ export async function registerUser(email, password, displayName = '', invitation
     await markCodeAsUsed(codeValidation.docId);
 
     return { success: true, user };
-  } catch (err) {
-    return { success: false, error: mapFirebaseError(err.code) };
-  }
-}
-
-/**
- * Sign in with email and password.
- * @param {string} email
- * @param {string} password
- * @returns {Promise<AuthResult>}
- */
-export async function loginUser(email, password) {
-  const validation = validateCredentials(email, password);
-  if (!validation.valid) {
-    return { success: false, error: validation.error };
-  }
-
-  try {
-    const credential = await signInWithEmailAndPassword(auth, email, password);
-    return { success: true, user: credential.user };
   } catch (err) {
     return { success: false, error: mapFirebaseError(err.code) };
   }
@@ -110,47 +108,18 @@ export function getCurrentUser() {
 }
 
 /**
- * Validate email and password before sending to Firebase.
- * @param {string} email
- * @param {string} password
- * @returns {{ valid: boolean, error?: string }}
- */
-export function validateCredentials(email, password) {
-  if (!email || typeof email !== 'string') {
-    return { valid: false, error: 'El email es obligatorio' };
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email.trim())) {
-    return { valid: false, error: 'El formato del email no es válido' };
-  }
-
-  if (!password || typeof password !== 'string') {
-    return { valid: false, error: 'La contraseña es obligatoria' };
-  }
-
-  if (password.length < 6) {
-    return { valid: false, error: 'La contraseña debe tener al menos 6 caracteres' };
-  }
-
-  return { valid: true };
-}
-
-/**
  * Map Firebase error codes to user-friendly messages.
  * @param {string} code
  * @returns {string}
  */
 export function mapFirebaseError(code) {
   const errors = {
-    'auth/email-already-in-use': 'Este email ya está registrado',
-    'auth/invalid-email': 'El formato del email no es válido',
-    'auth/weak-password': 'La contraseña es demasiado débil',
-    'auth/user-not-found': 'No existe una cuenta con este email',
-    'auth/wrong-password': 'Contraseña incorrecta',
-    'auth/invalid-credential': 'Credenciales inválidas',
-    'auth/too-many-requests': 'Demasiados intentos. Intenta más tarde',
+    'auth/popup-closed-by-user': 'Se cerro la ventana de inicio de sesion',
+    'auth/popup-blocked': 'El navegador bloqueo la ventana emergente. Permite pop-ups e intenta de nuevo',
+    'auth/cancelled-popup-request': 'Se cancelo la solicitud de inicio de sesion',
+    'auth/account-exists-with-different-credential': 'Ya existe una cuenta con este email usando otro metodo',
+    'auth/too-many-requests': 'Demasiados intentos. Intenta mas tarde',
   };
 
-  return errors[code] || 'Error de autenticación. Intenta de nuevo';
+  return errors[code] || 'Error de autenticacion. Intenta de nuevo';
 }
