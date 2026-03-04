@@ -10,6 +10,8 @@ import {
   deleteLesson,
   validateModule,
   validateLesson,
+  reorderModule,
+  reorderLesson,
 } from '../lib/firebase/modules.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { filterBySearch } from '../lib/search-filter.js';
@@ -350,6 +352,48 @@ export class AdminModulesList extends LitElement {
       color: #94a3b8;
       font-size: 0.813rem;
     }
+
+    .reorder-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+
+    .reorder-btn {
+      background: none;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      padding: 0;
+      width: 1.5rem;
+      height: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      transition: all 0.15s;
+    }
+
+    .reorder-btn:hover {
+      background: #f1f5f9;
+      color: #ec1313;
+      border-color: #ec1313;
+    }
+
+    .reorder-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .reorder-btn:disabled:hover {
+      background: none;
+      color: #64748b;
+      border-color: #e2e8f0;
+    }
+
+    .reorder-btn .material-symbols-outlined {
+      font-size: 0.875rem;
+    }
   `;
 
   constructor() {
@@ -480,6 +524,22 @@ export class AdminModulesList extends LitElement {
     }
   }
 
+  /* ── Reordering ───── */
+
+  async _moveModule(moduleId, direction) {
+    const result = await reorderModule(this._modules, moduleId, direction);
+    if (result.success) await this._loadModules();
+  }
+
+  async _moveLesson(moduleId, lessonId, direction) {
+    const lessons = this._moduleLessons[moduleId] || [];
+    const result = await reorderLesson(moduleId, lessons, lessonId, direction);
+    if (result.success) {
+      const res = await fetchLessons(moduleId);
+      if (res.success) this._moduleLessons = { ...this._moduleLessons, [moduleId]: res.lessons };
+    }
+  }
+
   /* ── Lesson form ───── */
 
   _openCreateLesson(moduleId) {
@@ -606,11 +666,22 @@ export class AdminModulesList extends LitElement {
   _renderModule(mod) {
     const isExpanded = this._expandedModule === mod.id;
     const lessons = this._moduleLessons[mod.id] || [];
+    const modIndex = this._modules.findIndex((m) => m.id === mod.id);
+    const isFirst = modIndex === 0;
+    const isLast = modIndex === this._modules.length - 1;
 
     return html`
       <div class="module-card">
         <div class="module-header" @click=${() => this._toggleExpand(mod.id)}>
           <div class="module-info">
+            <div class="reorder-btns" @click=${(e) => e.stopPropagation()}>
+              <button class="reorder-btn" ?disabled=${isFirst} @click=${() => this._moveModule(mod.id, 'up')} title="Mover arriba">
+                <span class="material-symbols-outlined">keyboard_arrow_up</span>
+              </button>
+              <button class="reorder-btn" ?disabled=${isLast} @click=${() => this._moveModule(mod.id, 'down')} title="Mover abajo">
+                <span class="material-symbols-outlined">keyboard_arrow_down</span>
+              </button>
+            </div>
             <div class="module-order">${mod.order}</div>
             <div>
               <div class="module-title">${mod.title}</div>
@@ -635,9 +706,17 @@ export class AdminModulesList extends LitElement {
 
             ${lessons.length === 0
               ? html`<div class="no-lessons">No hay clases en este módulo</div>`
-              : lessons.map((lesson) => html`
+              : lessons.map((lesson, li) => html`
                   <div class="lesson-item">
                     <div class="lesson-info">
+                      <div class="reorder-btns">
+                        <button class="reorder-btn" ?disabled=${li === 0} @click=${() => this._moveLesson(mod.id, lesson.id, 'up')} title="Mover arriba">
+                          <span class="material-symbols-outlined">keyboard_arrow_up</span>
+                        </button>
+                        <button class="reorder-btn" ?disabled=${li === lessons.length - 1} @click=${() => this._moveLesson(mod.id, lesson.id, 'down')} title="Mover abajo">
+                          <span class="material-symbols-outlined">keyboard_arrow_down</span>
+                        </button>
+                      </div>
                       <div class="lesson-order">${lesson.order}</div>
                       <div class="lesson-title">${lesson.title}</div>
                     </div>
