@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 /**
  * Mock Firebase modules before importing auth functions.
- * This allows testing auth logic without actual Firebase connection.
  */
 vi.mock('firebase/app', () => ({
   initializeApp: vi.fn(() => ({})),
@@ -12,8 +11,8 @@ vi.mock('firebase/auth', () => {
   const mockAuth = { currentUser: null };
   return {
     getAuth: vi.fn(() => mockAuth),
-    createUserWithEmailAndPassword: vi.fn(),
-    signInWithEmailAndPassword: vi.fn(),
+    GoogleAuthProvider: vi.fn(),
+    signInWithPopup: vi.fn(),
     signOut: vi.fn(),
     onAuthStateChanged: vi.fn(),
   };
@@ -22,6 +21,7 @@ vi.mock('firebase/auth', () => {
 vi.mock('firebase/firestore', () => ({
   getFirestore: vi.fn(() => ({})),
   doc: vi.fn(),
+  getDoc: vi.fn(),
   setDoc: vi.fn(() => Promise.resolve()),
   serverTimestamp: vi.fn(() => 'SERVER_TIMESTAMP'),
   collection: vi.fn(),
@@ -38,192 +38,112 @@ vi.mock('../src/lib/firebase/invitation-codes.js', () => ({
 }));
 
 import {
-  validateCredentials,
-  mapFirebaseError,
-  registerUser,
-  loginUser,
+  loginWithGoogle,
+  completeRegistration,
   logoutUser,
   onAuthChange,
   getCurrentUser,
+  mapFirebaseError,
 } from '../src/lib/firebase/auth.js';
 
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
+  signInWithPopup,
   signOut,
   onAuthStateChanged,
   getAuth,
 } from 'firebase/auth';
 
-import { setDoc } from 'firebase/firestore';
+import { getDoc, setDoc } from 'firebase/firestore';
 import { validateInvitationCode, markCodeAsUsed } from '../src/lib/firebase/invitation-codes.js';
 
-describe('validateCredentials', () => {
-  it('should reject empty email', () => {
-    const result = validateCredentials('', 'password123');
-    expect(result.valid).toBe(false);
-    expect(result.error).toContain('email es obligatorio');
-  });
-
-  it('should reject null email', () => {
-    const result = validateCredentials(null, 'password123');
-    expect(result.valid).toBe(false);
-  });
-
-  it('should reject invalid email format', () => {
-    const result = validateCredentials('notanemail', 'password123');
-    expect(result.valid).toBe(false);
-    expect(result.error).toContain('formato del email');
-  });
-
-  it('should reject email without domain', () => {
-    const result = validateCredentials('user@', 'password123');
-    expect(result.valid).toBe(false);
-  });
-
-  it('should reject empty password', () => {
-    const result = validateCredentials('user@test.com', '');
-    expect(result.valid).toBe(false);
-    expect(result.error).toContain('contraseña es obligatoria');
-  });
-
-  it('should reject short password', () => {
-    const result = validateCredentials('user@test.com', '12345');
-    expect(result.valid).toBe(false);
-    expect(result.error).toContain('al menos 6 caracteres');
-  });
-
-  it('should accept valid credentials', () => {
-    const result = validateCredentials('user@test.com', 'password123');
-    expect(result.valid).toBe(true);
-    expect(result.error).toBeUndefined();
-  });
-
-  it('should trim email whitespace', () => {
-    const result = validateCredentials('  user@test.com  ', 'password123');
-    expect(result.valid).toBe(true);
-  });
-});
-
-describe('mapFirebaseError', () => {
-  it('should map auth/email-already-in-use', () => {
-    const msg = mapFirebaseError('auth/email-already-in-use');
-    expect(msg).toContain('ya está registrado');
-  });
-
-  it('should map auth/user-not-found', () => {
-    const msg = mapFirebaseError('auth/user-not-found');
-    expect(msg).toContain('No existe una cuenta');
-  });
-
-  it('should map auth/wrong-password', () => {
-    const msg = mapFirebaseError('auth/wrong-password');
-    expect(msg).toContain('Contraseña incorrecta');
-  });
-
-  it('should map auth/invalid-credential', () => {
-    const msg = mapFirebaseError('auth/invalid-credential');
-    expect(msg).toContain('Credenciales inválidas');
-  });
-
-  it('should map auth/too-many-requests', () => {
-    const msg = mapFirebaseError('auth/too-many-requests');
-    expect(msg).toContain('Demasiados intentos');
-  });
-
-  it('should return generic message for unknown codes', () => {
-    const msg = mapFirebaseError('auth/unknown-error');
-    expect(msg).toContain('Error de autenticación');
-  });
-});
-
-describe('registerUser', () => {
+describe('loginWithGoogle', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should fail with invalid email', async () => {
-    const result = await registerUser('invalid', 'password123', '', 'CODE1');
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('formato del email');
-    expect(createUserWithEmailAndPassword).not.toHaveBeenCalled();
+  it('should return isNewUser=false for existing users', async () => {
+    const mockUser = { uid: 'test-uid', email: 'user@test.com' };
+    signInWithPopup.mockResolvedValue({ user: mockUser });
+    getDoc.mockResolvedValue({ exists: () => true });
+
+    const result = await loginWithGoogle();
+    expect(result.success).toBe(true);
+    expect(result.isNewUser).toBe(false);
+    expect(result.user).toEqual(mockUser);
   });
 
-  it('should fail with short password', async () => {
-    const result = await registerUser('user@test.com', '123', '', 'CODE1');
+  it('should return isNewUser=true for new users', async () => {
+    const mockUser = { uid: 'new-uid', email: 'new@test.com' };
+    signInWithPopup.mockResolvedValue({ user: mockUser });
+    getDoc.mockResolvedValue({ exists: () => false });
+
+    const result = await loginWithGoogle();
+    expect(result.success).toBe(true);
+    expect(result.isNewUser).toBe(true);
+  });
+
+  it('should return error when popup is closed', async () => {
+    signInWithPopup.mockRejectedValue({ code: 'auth/popup-closed-by-user' });
+
+    const result = await loginWithGoogle();
     expect(result.success).toBe(false);
-    expect(createUserWithEmailAndPassword).not.toHaveBeenCalled();
+    expect(result.error).toContain('ventana de inicio');
+  });
+
+  it('should return error when popup is blocked', async () => {
+    signInWithPopup.mockRejectedValue({ code: 'auth/popup-blocked' });
+
+    const result = await loginWithGoogle();
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('pop-ups');
+  });
+});
+
+describe('completeRegistration', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should fail without user', async () => {
+    const result = await completeRegistration(null, 'CODE1');
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('no autenticado');
   });
 
   it('should fail without invitation code', async () => {
-    const result = await registerUser('user@test.com', 'password123', 'Name');
+    const mockUser = { uid: 'test-uid', email: 'user@test.com' };
+    const result = await completeRegistration(mockUser, '');
     expect(result.success).toBe(false);
-    expect(result.error).toContain('código de invitación es obligatorio');
+    expect(result.error).toContain('invitacion es obligatorio');
   });
 
   it('should fail with invalid invitation code', async () => {
-    validateInvitationCode.mockResolvedValue({ valid: false, error: 'Código no válido' });
+    validateInvitationCode.mockResolvedValue({ valid: false, error: 'Codigo no valido' });
+    const mockUser = { uid: 'test-uid', email: 'user@test.com' };
 
-    const result = await registerUser('user@test.com', 'password123', 'Name', 'BADCODE');
+    const result = await completeRegistration(mockUser, 'BADCODE');
     expect(result.success).toBe(false);
-    expect(result.error).toContain('Código no válido');
-    expect(createUserWithEmailAndPassword).not.toHaveBeenCalled();
+    expect(result.error).toContain('Codigo no valido');
+    expect(setDoc).not.toHaveBeenCalled();
   });
 
-  it('should create user with cohortId on valid invitation code', async () => {
+  it('should create user profile with valid code', async () => {
     validateInvitationCode.mockResolvedValue({ valid: true, cohortId: 'cohort1', docId: 'doc1' });
-    const mockUser = { uid: 'test-uid', email: 'user@test.com' };
-    createUserWithEmailAndPassword.mockResolvedValue({ user: mockUser });
+    const mockUser = { uid: 'test-uid', email: 'user@test.com', displayName: 'Test User' };
 
-    const result = await registerUser('user@test.com', 'password123', 'Test User', 'VALID123');
-
+    const result = await completeRegistration(mockUser, 'VALID123');
     expect(result.success).toBe(true);
-    expect(result.user).toEqual(mockUser);
-    expect(createUserWithEmailAndPassword).toHaveBeenCalled();
     expect(setDoc).toHaveBeenCalled();
     expect(markCodeAsUsed).toHaveBeenCalledWith('doc1');
   });
 
-  it('should return mapped error on Firebase failure', async () => {
-    validateInvitationCode.mockResolvedValue({ valid: true, cohortId: 'c1', docId: 'd1' });
-    createUserWithEmailAndPassword.mockRejectedValue({
-      code: 'auth/email-already-in-use',
-    });
+  it('should use empty string when displayName is null', async () => {
+    validateInvitationCode.mockResolvedValue({ valid: true, cohortId: 'cohort1', docId: 'doc1' });
+    const mockUser = { uid: 'test-uid', email: 'user@test.com', displayName: null };
 
-    const result = await registerUser('user@test.com', 'password123', '', 'CODE1');
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('ya está registrado');
-  });
-});
-
-describe('loginUser', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should fail with invalid credentials format', async () => {
-    const result = await loginUser('', 'password');
-    expect(result.success).toBe(false);
-    expect(signInWithEmailAndPassword).not.toHaveBeenCalled();
-  });
-
-  it('should return user on successful login', async () => {
-    const mockUser = { uid: 'test-uid', email: 'user@test.com' };
-    signInWithEmailAndPassword.mockResolvedValue({ user: mockUser });
-
-    const result = await loginUser('user@test.com', 'password123');
+    const result = await completeRegistration(mockUser, 'VALID123');
     expect(result.success).toBe(true);
-    expect(result.user).toEqual(mockUser);
-  });
-
-  it('should return mapped error on wrong credentials', async () => {
-    signInWithEmailAndPassword.mockRejectedValue({
-      code: 'auth/invalid-credential',
-    });
-
-    const result = await loginUser('user@test.com', 'wrongpass');
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('Credenciales inválidas');
+    expect(setDoc).toHaveBeenCalled();
   });
 });
 
@@ -276,5 +196,27 @@ describe('getCurrentUser', () => {
 
     const user = getCurrentUser();
     expect(user).toEqual({ uid: 'test-uid', email: 'user@test.com' });
+  });
+});
+
+describe('mapFirebaseError', () => {
+  it('should map auth/popup-closed-by-user', () => {
+    const msg = mapFirebaseError('auth/popup-closed-by-user');
+    expect(msg).toContain('ventana de inicio');
+  });
+
+  it('should map auth/popup-blocked', () => {
+    const msg = mapFirebaseError('auth/popup-blocked');
+    expect(msg).toContain('pop-ups');
+  });
+
+  it('should map auth/too-many-requests', () => {
+    const msg = mapFirebaseError('auth/too-many-requests');
+    expect(msg).toContain('Demasiados intentos');
+  });
+
+  it('should return generic message for unknown codes', () => {
+    const msg = mapFirebaseError('auth/unknown-error');
+    expect(msg).toContain('Error de autenticacion');
   });
 });
