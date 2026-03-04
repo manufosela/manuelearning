@@ -9,8 +9,10 @@ import {
   query,
   orderBy,
   serverTimestamp,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from './config.js';
+import { computeSwap } from '../reorder-utils.js';
 
 const COLLECTION = 'modules';
 
@@ -259,5 +261,52 @@ export async function deleteLesson(moduleId, lessonId) {
     return { success: true };
   } catch (err) {
     return { success: false, error: 'Error al eliminar la clase' };
+  }
+}
+
+/* ── Reordering ────────────────────────────────────────────── */
+
+/**
+ * Move a module up or down by swapping order with its neighbor.
+ * @param {{ id: string, order: number }[]} modules - Current modules sorted by order
+ * @param {string} moduleId
+ * @param {'up' | 'down'} direction
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function reorderModule(modules, moduleId, direction) {
+  const swap = computeSwap(modules, moduleId, direction);
+  if (!swap) return { success: false, error: 'No se puede mover en esa dirección' };
+
+  try {
+    const batch = writeBatch(db);
+    batch.update(doc(db, COLLECTION, swap.item.id), { order: swap.item.order });
+    batch.update(doc(db, COLLECTION, swap.neighbor.id), { order: swap.neighbor.order });
+    await batch.commit();
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: 'Error al reordenar el módulo' };
+  }
+}
+
+/**
+ * Move a lesson up or down by swapping order with its neighbor.
+ * @param {string} moduleId
+ * @param {{ id: string, order: number }[]} lessons - Current lessons sorted by order
+ * @param {string} lessonId
+ * @param {'up' | 'down'} direction
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function reorderLesson(moduleId, lessons, lessonId, direction) {
+  const swap = computeSwap(lessons, lessonId, direction);
+  if (!swap) return { success: false, error: 'No se puede mover en esa dirección' };
+
+  try {
+    const batch = writeBatch(db);
+    batch.update(doc(db, COLLECTION, moduleId, 'lessons', swap.item.id), { order: swap.item.order });
+    batch.update(doc(db, COLLECTION, moduleId, 'lessons', swap.neighbor.id), { order: swap.neighbor.order });
+    await batch.commit();
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: 'Error al reordenar la clase' };
   }
 }
