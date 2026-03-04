@@ -1,0 +1,38 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { SITE } from '../config/site.config.js';
+---
+
+<MainLayout title={`Mi perfil | ${SITE.name}`}>
+  <auth-guard>
+    <section class="profile-page">
+      <div class="profile-page__header">
+        <h1>Mi perfil</h1>
+      </div>
+      <user-profile></user-profile>
+    </section>
+  </auth-guard>
+</MainLayout>
+
+<script>
+  import '../components/auth-guard.js';
+  import '../components/user-profile.js';
+</script>
+
+<style>
+  .profile-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem var(--section-px);
+  }
+
+  .profile-page__header {
+    margin-bottom: 1.5rem;
+  }
+
+  .profile-page__header h1 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--color-text-primary);
+  }
+</style>

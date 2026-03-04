@@ -108,6 +108,27 @@ export async function toggleLifetimeAccess(uid, lifetimeAccess) {
 }
 
 /**
+ * Update a user's display name.
+ * @param {string} uid
+ * @param {string} displayName
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function updateUserDisplayName(uid, displayName) {
+  if (!uid) return { success: false, error: 'UID es obligatorio' };
+  if (!displayName || typeof displayName !== 'string' || displayName.trim().length === 0) {
+    return { success: false, error: 'El nombre es obligatorio' };
+  }
+
+  try {
+    const userRef = doc(db, 'users', uid);
+    await updateDoc(userRef, { displayName: displayName.trim() });
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: 'Error al actualizar el nombre' };
+  }
+}
+
+/**
  * Check if a user has admin role.
  * @param {string} uid
  * @returns {Promise<boolean>}
