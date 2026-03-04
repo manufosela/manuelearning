@@ -21,7 +21,6 @@ import { SITE } from '../config/site.config.js';
         </p>
         <div class="hero__actions">
           <a href="#services" class="btn btn--primary btn--lg hero__btn-white">Ver cursos disponibles</a>
-          <a href="#services" class="btn btn--outline btn--lg">Ver detalles del curso</a>
         </div>
       </div>
     </div>
@@ -30,8 +29,8 @@ import { SITE } from '../config/site.config.js';
   <!-- Services Section -->
   <section class="services" id="services">
     <div class="services__header">
-      <h2 class="section-label">Plan de estudios</h2>
-      <h3 class="section-title">¿Qué vas a aprender?</h3>
+      <h2 class="section-label">Cursos</h2>
+      <h3 class="section-title">¿Qué cursos ofrezco?</h3>
       <div class="section-divider"></div>
     </div>
     <div class="services__grid">
@@ -101,18 +100,11 @@ import { SITE } from '../config/site.config.js';
             <span>Soporte directo — puedes preguntarme a mí</span>
           </li>
         </ul>
-        <button class="btn btn--primary btn--md">Solicitar acceso</button>
+        <a href="/solicitar-acceso" class="btn btn--primary btn--md">Solicitar acceso</a>
       </div>
     </div>
   </section>
 
-  <!-- CTA Banner -->
-  <section class="cta-banner-wrapper">
-    <div class="cta-banner">
-      <a href="/registro" class="btn btn--primary btn--lg">Solicitar acceso</a>
-      <a href="/login" class="btn btn--secondary btn--lg">Acceso alumnos</a>
-    </div>
-  </section>
 </MainLayout>
 
 <style>
@@ -401,33 +393,4 @@ import { SITE } from '../config/site.config.js';
     flex-shrink: 0;
   }
 
-  /* --- CTA Banner --- */
-  .cta-banner-wrapper {
-    padding: 0 var(--section-px);
-    margin-bottom: -5rem;
-    position: relative;
-    z-index: 10;
-  }
-
-  .cta-banner {
-    max-width: var(--container-max);
-    margin-inline: auto;
-    background-color: var(--color-bg-white);
-    border-radius: var(--radius-2xl);
-    box-shadow: var(--shadow-2xl);
-    padding: 2rem 3rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem;
-    border: 1px solid #f1f5f9;
-  }
-
-  @media (min-width: 768px) {
-    .cta-banner {
-      flex-direction: row;
-      justify-content: center;
-    }
-  }
 </style>

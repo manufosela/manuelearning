@@ -1,0 +1,156 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { SITE } from '../config/site.config.js';
+---
+
+<MainLayout title={`Solicitar acceso | ${SITE.name}`}>
+  <section class="access-page">
+    <div class="access-card">
+      <div class="access-header">
+        <span class="material-symbols-outlined access-icon">lock_open</span>
+        <h1>Solicitar acceso</h1>
+        <p>Esta plataforma es privada y el acceso es solo por invitación.</p>
+      </div>
+
+      <div class="access-body">
+        <h2>¿Cómo funciona?</h2>
+        <ol class="access-steps">
+          <li>
+            <span class="material-symbols-outlined step-icon">edit_note</span>
+            <div>
+              <strong>Abre una solicitud en GitHub</strong>
+              <p>Crea una issue indicando quién eres y qué curso te interesa. No necesitas cuenta técnica, solo un usuario de GitHub.</p>
+            </div>
+          </li>
+          <li>
+            <span class="material-symbols-outlined step-icon">schedule</span>
+            <div>
+              <strong>Revisión personal</strong>
+              <p>Reviso cada solicitud manualmente. Si encajas, te envío una invitación por email.</p>
+            </div>
+          </li>
+          <li>
+            <span class="material-symbols-outlined step-icon">celebration</span>
+            <div>
+              <strong>Accedes a la plataforma</strong>
+              <p>Con tu cuenta de Google podrás entrar y acceder a los cursos asignados.</p>
+            </div>
+          </li>
+        </ol>
+
+        <a href="https://github.com/manufosela/manuelearning/issues/new?title=Solicitud+de+acceso&body=Hola+Mánu%2C%0A%0AMe+gustaría+acceder+a+la+plataforma.%0A%0A**Nombre**%3A+%0A**Curso+que+me+interesa**%3A+%0A**Cómo+te+conozco**%3A+%0A" target="_blank" rel="noopener" class="btn btn--primary btn--lg access-btn">
+          Abrir solicitud en GitHub
+        </a>
+
+        <div class="access-alt">
+          <p>¿No tienes GitHub? Escríbeme directamente a <a href="mailto:manufosela@gmail.com?subject=Solicitud%20de%20acceso%20ManuElearning">manufosela@gmail.com</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .access-page {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem var(--section-px);
+  }
+
+  .access-card {
+    width: 100%;
+    max-width: 600px;
+    background-color: var(--color-bg-white);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-xl);
+    padding: 3rem 2.5rem;
+  }
+
+  .access-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .access-icon {
+    font-size: 2.5rem;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .access-header h1 {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .access-header p {
+    color: var(--color-text-secondary);
+    font-size: 0.938rem;
+  }
+
+  .access-body h2 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 1.5rem;
+  }
+
+  .access-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    counter-reset: step;
+  }
+
+  .access-steps li {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .step-icon {
+    color: var(--color-primary);
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+  }
+
+  .access-steps li strong {
+    display: block;
+    color: var(--color-text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .access-steps li p {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .access-btn {
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  .access-alt {
+    text-align: center;
+  }
+
+  .access-alt p {
+    color: var(--color-text-secondary);
+    font-size: 0.813rem;
+  }
+
+  .access-alt a {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+
+  .access-alt a:hover {
+    text-decoration: underline;
+  }
+</style>
