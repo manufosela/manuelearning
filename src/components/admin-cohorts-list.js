@@ -3,8 +3,8 @@ import {
   fetchAllCohorts,
   createCohort,
   updateCohort,
-  validateCohort,
 } from '../lib/firebase/cohorts.js';
+import { validateCohort, getCohortStatus } from '../lib/cohort-utils.js';
 import {
   fetchCodesByCohort,
   createInvitationCode,
@@ -142,6 +142,15 @@ export class AdminCohortsList extends LitElement {
     .status-badge--inactive {
       background: #fef2f2;
       color: #991b1b;
+    }
+
+    .status-badge--expired {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .row--expired td {
+      opacity: 0.65;
     }
 
     .actions {
@@ -515,8 +524,11 @@ export class AdminCohortsList extends LitElement {
               </thead>
               <tbody>
                 ${this._cohorts.map(
-                  (c) => html`
-                    <tr>
+                  (c) => {
+                    const status = getCohortStatus(c);
+                    const statusLabels = { active: 'Activa', expired: 'Expirada', inactive: 'Inactiva' };
+                    return html`
+                    <tr class="${status === 'expired' ? 'row--expired' : ''}">
                       <td>
                         <button class="expand-btn" @click=${() => this._toggleCodes(c.id)}>
                           <span class="material-symbols-outlined">
@@ -529,8 +541,8 @@ export class AdminCohortsList extends LitElement {
                       <td class="hide-mobile">${c.startDate}</td>
                       <td class="hide-mobile">${c.expiryDate}</td>
                       <td>
-                        <span class="status-badge status-badge--${c.active ? 'active' : 'inactive'}">
-                          ${c.active ? 'Activa' : 'Inactiva'}
+                        <span class="status-badge status-badge--${status}">
+                          ${statusLabels[status]}
                         </span>
                       </td>
                       <td>
@@ -554,7 +566,7 @@ export class AdminCohortsList extends LitElement {
                           </td>
                         </tr>`
                       : ''}
-                  `
+                  `}
                 )}
               </tbody>
             </table>
