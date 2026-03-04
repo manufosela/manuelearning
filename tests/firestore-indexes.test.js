@@ -16,8 +16,8 @@ describe('firestore.indexes.json', () => {
     expect(Array.isArray(indexesContent.fieldOverrides)).toBe(true);
   });
 
-  it('should have 6 composite indexes', () => {
-    expect(indexesContent.indexes).toHaveLength(6);
+  it('should have 8 composite indexes', () => {
+    expect(indexesContent.indexes).toHaveLength(8);
   });
 
   it('each index should have required fields', () => {

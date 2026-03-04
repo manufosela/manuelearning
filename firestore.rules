@@ -100,6 +100,19 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // ── userNotifications ─────────────────────────────────────
+    match /userNotifications/{notifId} {
+      // Users can read their own notifications
+      allow read: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+      // Admins can create notifications for any user
+      allow create: if isAdmin();
+      // Users can mark their own notifications as read
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+      allow delete: if false;
+    }
+
     // ── notifications ────────────────────────────────────────
     match /notifications/{notifId} {
       // Admins can read all notifications
