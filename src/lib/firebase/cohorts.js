@@ -10,6 +10,8 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './config.js';
+export { isCohortExpired, getCohortStatus, validateCohort } from '../cohort-utils.js';
+import { validateCohort as _validateCohort } from '../cohort-utils.js';
 
 const COLLECTION = 'cohorts';
 
@@ -23,35 +25,6 @@ const COLLECTION = 'cohorts';
  * @property {boolean} active
  * @property {*} [createdAt]
  */
-
-/**
- * Validate cohort data before creating/updating.
- * @param {Partial<Cohort>} data
- * @returns {{ valid: boolean, error?: string }}
- */
-export function validateCohort(data) {
-  if (!data.name || data.name.trim().length === 0) {
-    return { valid: false, error: 'El nombre es obligatorio' };
-  }
-
-  if (!data.code || !/^\d{4}-\d{2}$/.test(data.code)) {
-    return { valid: false, error: 'El código debe tener formato YYYY-MM' };
-  }
-
-  if (!data.startDate) {
-    return { valid: false, error: 'La fecha de inicio es obligatoria' };
-  }
-
-  if (!data.expiryDate) {
-    return { valid: false, error: 'La fecha de caducidad es obligatoria' };
-  }
-
-  if (new Date(data.expiryDate) <= new Date(data.startDate)) {
-    return { valid: false, error: 'La fecha de caducidad debe ser posterior a la de inicio' };
-  }
-
-  return { valid: true };
-}
 
 /**
  * Fetch all cohorts ordered by startDate descending.
@@ -93,7 +66,7 @@ export async function fetchCohort(id) {
  * @returns {Promise<{success: boolean, id?: string, error?: string}>}
  */
 export async function createCohort(data) {
-  const validation = validateCohort(data);
+  const validation = _validateCohort(data);
   if (!validation.valid) return { success: false, error: validation.error };
 
   try {

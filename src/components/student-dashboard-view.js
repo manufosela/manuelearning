@@ -1,6 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
 import { getUserProgress } from '../lib/firebase/progress.js';
+import { fetchUser } from '../lib/firebase/users.js';
+import { fetchCohort } from '../lib/firebase/cohorts.js';
+import { isCohortExpired } from '../lib/cohort-utils.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { computeDashboardStats } from '../lib/dashboard-stats.js';
 
@@ -13,6 +16,7 @@ export class StudentDashboardView extends LitElement {
     _stats: { type: Object, state: true },
     _loading: { type: Boolean, state: true },
     _error: { type: String, state: true },
+    _cohortExpired: { type: Boolean, state: true },
   };
 
   static styles = css`
@@ -198,6 +202,31 @@ export class StudentDashboardView extends LitElement {
       padding: 3rem;
       color: #991b1b;
     }
+
+    .expired-banner {
+      text-align: center;
+      padding: 3rem 2rem;
+      max-width: 480px;
+      margin: 2rem auto;
+    }
+
+    .expired-banner .material-symbols-outlined {
+      font-size: 3rem;
+      color: #f59e0b;
+      margin-bottom: 1rem;
+    }
+
+    .expired-banner h2 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 0.75rem;
+    }
+
+    .expired-banner p {
+      color: #475569;
+      line-height: 1.7;
+    }
   `;
 
   constructor() {
@@ -205,6 +234,7 @@ export class StudentDashboardView extends LitElement {
     this._stats = null;
     this._loading = true;
     this._error = '';
+    this._cohortExpired = false;
   }
 
   connectedCallback() {
@@ -214,6 +244,16 @@ export class StudentDashboardView extends LitElement {
 
   async _loadDashboard(user) {
     this._loading = true;
+
+    const userResult = await fetchUser(user.uid);
+    if (userResult.success && userResult.user.cohortId && !userResult.user.lifetimeAccess) {
+      const cohortResult = await fetchCohort(userResult.user.cohortId);
+      if (cohortResult.success && isCohortExpired(cohortResult.cohort)) {
+        this._cohortExpired = true;
+        this._loading = false;
+        return;
+      }
+    }
 
     const [modulesResult, progressResult] = await Promise.all([
       fetchAllModules(),
@@ -254,6 +294,19 @@ export class StudentDashboardView extends LitElement {
 
     if (this._error) {
       return html`<div class="error-msg">${this._error}</div>`;
+    }
+
+    if (this._cohortExpired) {
+      return html`
+        <div class="expired-banner">
+          <span class="material-symbols-outlined">schedule</span>
+          <h2>Tu cohorte ha expirado</h2>
+          <p>
+            El periodo de acceso a los contenidos del curso ha finalizado.
+            Contacta al administrador si necesitas una extensión o acceso a una nueva cohorte.
+          </p>
+        </div>
+      `;
     }
 
     const s = this._stats;
