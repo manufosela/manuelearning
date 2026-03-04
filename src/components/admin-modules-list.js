@@ -17,6 +17,7 @@ import { fetchAllUsers } from '../lib/firebase/users.js';
 import { notifyUsers } from '../lib/firebase/user-notifications.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { filterBySearch } from '../lib/search-filter.js';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element admin-modules-list
@@ -660,6 +661,7 @@ export class AdminModulesList extends LitElement {
     const filtered = filterBySearch(this._modules, ['title', 'description'], this._searchQuery);
 
     return html`
+      ${materialIconsLink}
       <div class="toolbar">
         <span>${this._modules.length} módulo${this._modules.length !== 1 ? 's' : ''}</span>
         <button class="btn btn--primary" @click=${this._openCreateModule}>

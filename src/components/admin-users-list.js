@@ -4,6 +4,7 @@ import { fetchAllCohorts } from '../lib/firebase/cohorts.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { exportCsv } from '../lib/csv-export.js';
 import { filterBySearch } from '../lib/search-filter.js';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element admin-users-list
@@ -266,6 +267,7 @@ export class AdminUsersList extends LitElement {
     const filtered = filterBySearch(this._users, ['email', 'displayName', 'role'], this._searchQuery);
 
     return html`
+      ${materialIconsLink}
       <div class="toolbar">
         <span>${this._users.length} usuarios</span>
         <button class="export-btn" @click=${this._exportCsv}>

@@ -10,6 +10,7 @@ import { fetchAllUsers } from '../lib/firebase/users.js';
 import { notifyUsers } from '../lib/firebase/user-notifications.js';
 import { showBrowserNotification, getNotificationPermission } from '../lib/notification-utils.js';
 import { waitForAuth } from '../lib/auth-ready.js';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element admin-sessions-list
@@ -212,6 +213,7 @@ export class AdminSessionsList extends LitElement {
     if (this._error) return html`<div class="error-msg">${this._error}</div>`;
 
     return html`
+      ${materialIconsLink}
       <div class="toolbar">
         <span>${this._sessions.length} sesión${this._sessions.length !== 1 ? 'es' : ''}</span>
         <button class="btn btn--primary" @click=${this._openCreate}>

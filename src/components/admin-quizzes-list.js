@@ -8,6 +8,7 @@ import {
 } from '../lib/firebase/quizzes.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { exportCsv } from '../lib/csv-export.js';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element admin-quizzes-list
@@ -177,6 +178,7 @@ export class AdminQuizzesList extends LitElement {
     if (this._error) return html`<div class="error-msg">${this._error}</div>`;
 
     return html`
+      ${materialIconsLink}
       <div class="toolbar">
         <span>${this._quizzes.length} quiz${this._quizzes.length !== 1 ? 'zes' : ''}</span>
         <button class="btn btn--primary" @click=${this._openCreate}>

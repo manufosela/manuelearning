@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { getUserQuizResults } from '../lib/firebase/quizzes.js';
 import { waitForAuth } from '../lib/auth-ready.js';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element quiz-results-view
@@ -253,6 +254,7 @@ export class QuizResultsView extends LitElement {
     }
 
     return html`
+      ${materialIconsLink}
       <div class="results-header">
         <h2>Mis resultados de quizzes</h2>
         <p>${this._results.length > 0
