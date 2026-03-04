@@ -11,6 +11,7 @@ import {
   toggleCodeActive,
 } from '../lib/firebase/invitation-codes.js';
 import { waitForAuth } from '../lib/auth-ready.js';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element admin-cohorts-list
@@ -494,6 +495,7 @@ export class AdminCohortsList extends LitElement {
     }
 
     return html`
+      ${materialIconsLink}
       <div class="toolbar">
         <span>${this._cohorts.length} cohorte${this._cohorts.length !== 1 ? 's' : ''}</span>
         <button class="btn btn--primary" @click=${this._openCreate}>

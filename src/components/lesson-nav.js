@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element lesson-nav
@@ -88,6 +89,7 @@ export class LessonNav extends LitElement {
     const nextUrl = hasNext ? `/leccion?m=${this.nextModule}&l=${this.nextLesson}` : '#';
 
     return html`
+      ${materialIconsLink}
       <div class="nav">
         <a href=${prevUrl} class="nav-btn ${hasPrev ? '' : 'nav-btn--hidden'}">
           <span class="material-symbols-outlined">arrow_back</span>

@@ -12,6 +12,7 @@ import {
   formatNotification,
 } from '../lib/notification-utils.js';
 import { waitForAuth } from '../lib/auth-ready.js';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element notification-center
@@ -300,6 +301,7 @@ export class NotificationCenter extends LitElement {
 
   render() {
     return html`
+      ${materialIconsLink}
       <div class="notif-card">
         <div class="notif-header" @click=${this._toggleExpand}>
           <div class="notif-header-left">

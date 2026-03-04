@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { getSiteSettings, setRegistrationOpen } from '../lib/firebase/settings.js';
 import { stateStyles } from '../lib/shared-styles.js';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element registration-toggle
@@ -157,6 +158,7 @@ export class RegistrationToggle extends LitElement {
 
     if (this._error && !this._isOpen) {
       return html`
+        ${materialIconsLink}
         <div class="state-error">
           <p>${this._error}</p>
           <button class="state-retry-btn" @click=${this._loadSettings}>

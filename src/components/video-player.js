@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { extractYouTubeId, buildEmbedUrl } from '../lib/youtube.js';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element video-player
@@ -67,6 +68,7 @@ export class VideoPlayer extends LitElement {
 
     if (!videoId) {
       return html`
+        ${materialIconsLink}
         <div class="no-video">
           <span class="material-symbols-outlined">videocam_off</span>
           <p>No hay video disponible para esta clase</p>

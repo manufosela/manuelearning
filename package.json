@@ -1,7 +1,7 @@
 {
   "name": "manuelearning",
   "type": "module",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "scripts": {
     "prepare": "git config --local core.hooksPath scripts/git-hooks",
     "dev": "astro dev",

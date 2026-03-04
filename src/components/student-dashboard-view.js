@@ -6,6 +6,7 @@ import { fetchCohort } from '../lib/firebase/cohorts.js';
 import { isCohortExpired } from '../lib/cohort-utils.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { computeDashboardStats } from '../lib/dashboard-stats.js';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element student-dashboard-view
@@ -221,10 +222,32 @@ export class StudentDashboardView extends LitElement {
       margin-bottom: 0.75rem;
     }
 
+    .course-section-title-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      text-decoration: none;
+      color: #0f172a;
+      transition: color 0.15s;
+    }
+
+    .course-section-title-link:hover {
+      color: #84cc16;
+    }
+
+    .course-section-arrow {
+      font-size: 1.125rem;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .course-section-title-link:hover .course-section-arrow {
+      opacity: 1;
+    }
+
     .course-section-title {
       font-size: 1rem;
       font-weight: 700;
-      color: #0f172a;
     }
 
     .course-section-percent {
@@ -333,6 +356,7 @@ export class StudentDashboardView extends LitElement {
 
     if (this._cohortExpired) {
       return html`
+        ${materialIconsLink}
         <div class="expired-banner">
           <span class="material-symbols-outlined">schedule</span>
           <h2>Tu cohorte ha expirado</h2>
@@ -347,7 +371,7 @@ export class StudentDashboardView extends LitElement {
     const s = this._stats;
 
     return html`
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+      ${materialIconsLink}
 
       <div class="dashboard-header">
         <h1>Mi progreso</h1>
@@ -381,7 +405,10 @@ export class StudentDashboardView extends LitElement {
         (group) => html`
           <div class="course-section">
             <div class="course-section-header">
-              <span class="course-section-title">${group.course}</span>
+              <a href="/curso?c=${encodeURIComponent(group.course)}" class="course-section-title-link">
+                <span class="course-section-title">${group.course}</span>
+                <span class="material-symbols-outlined course-section-arrow">arrow_forward</span>
+              </a>
               <span class="course-section-percent">${group.percent}% — ${group.completedCount}/${group.totalLessons} clases</span>
             </div>
             <div class="course-progress-bar">

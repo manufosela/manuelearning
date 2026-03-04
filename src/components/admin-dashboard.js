@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { fetchAdminDashboardStats } from '../lib/firebase/admin-stats.js';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element admin-dashboard
@@ -195,6 +196,7 @@ export class AdminDashboard extends LitElement {
     }
 
     return html`
+      ${materialIconsLink}
       <div class="metrics-grid">
         ${this._renderMetricCard('group', 'Usuarios totales', this._stats.totalUsers, 'registrados')}
         ${this._renderMetricCard('trending_up', 'Activos (7 días)', this._stats.activeUsersLast7Days, 'con actividad reciente')}

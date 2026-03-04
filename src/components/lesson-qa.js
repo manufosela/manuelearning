@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { fetchQuestionsByLesson, createQuestion } from '../lib/firebase/questions.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { stateStyles } from '../lib/shared-styles.js';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element lesson-qa
@@ -118,6 +119,7 @@ export class LessonQA extends LitElement {
 
   render() {
     return html`
+      ${materialIconsLink}
       <h3>Preguntas y respuestas</h3>
 
       ${this.userId ? html`

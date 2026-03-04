@@ -49,7 +49,7 @@ const {
         <img src="/logo.svg" alt={SITE.name} class="site-header__logo" />
       </a>
       {!hideAuthButton && (
-        <nav class="site-header__nav" id="header-nav">
+        <div class="site-header__auth" id="header-auth">
           <a href="/login" class="btn btn--primary btn--sm" id="header-login-btn">Acceder</a>
           <div class="header-user" id="header-user" style="display:none;">
             <a href="/dashboard" class="header-user__link">
@@ -60,11 +60,8 @@ const {
               <span class="material-symbols-outlined">logout</span>
             </button>
           </div>
-        </nav>
+        </div>
       )}
-      <button class="site-header__menu-toggle" aria-label="Abrir menú">
-        <span class="material-symbols-outlined">menu</span>
-      </button>
     </header>
 
     <!-- Main content -->
@@ -201,13 +198,9 @@ const {
     width: auto;
   }
 
-  .site-header__nav {
-    display: none;
-  }
-
-  .site-header__menu-toggle {
-    display: block;
-    color: var(--color-text-primary);
+  .site-header__auth {
+    display: flex;
+    align-items: center;
   }
 
   .header-user {
@@ -231,15 +224,6 @@ const {
     object-fit: cover;
   }
 
-  .header-user__name {
-    font-size: 0.875rem;
-    font-weight: 600;
-    max-width: 150px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
   .header-user__logout {
     display: flex;
     align-items: center;
@@ -258,17 +242,19 @@ const {
     font-size: 1.25rem;
   }
 
-  @media (min-width: 768px) {
-    .site-header__nav {
-      display: flex;
-      flex: 1;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 2.5rem;
-    }
+  .header-user__name {
+    display: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-    .site-header__menu-toggle {
-      display: none;
+  @media (min-width: 768px) {
+    .header-user__name {
+      display: inline;
     }
   }
 

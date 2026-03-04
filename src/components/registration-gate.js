@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { getSiteSettings } from '../lib/firebase/settings.js';
 import { stateStyles } from '../lib/shared-styles.js';
+import { materialIconsLink } from './shared/material-icons.js';
 
 /**
  * @element registration-gate
@@ -112,6 +113,7 @@ export class RegistrationGate extends LitElement {
 
     if (this._error) {
       return html`
+        ${materialIconsLink}
         <div class="state-error">
           <p>No se pudo verificar el estado del registro</p>
           <button class="state-retry-btn" @click=${this._checkRegistration}>
@@ -124,6 +126,7 @@ export class RegistrationGate extends LitElement {
 
     if (!this._isOpen) {
       return html`
+        ${materialIconsLink}
         <div class="closed-message">
           <span class="material-symbols-outlined closed-icon">lock</span>
           <h2>Registro cerrado</h2>
