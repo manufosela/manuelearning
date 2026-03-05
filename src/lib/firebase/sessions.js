@@ -54,7 +54,7 @@ export function validateSession(data) {
     return { valid: false, error: 'El módulo es obligatorio' };
   }
   if (!data.cohortId) {
-    return { valid: false, error: 'La cohorte es obligatoria' };
+    return { valid: false, error: 'La convocatoria es obligatoria' };
   }
   return { valid: true };
 }
@@ -167,6 +167,6 @@ export async function fetchSessionsByCohort(cohortId) {
     const sessions = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
     return { success: true, sessions };
   } catch (err) {
-    return { success: false, error: 'Error al cargar sesiones de la cohorte' };
+    return { success: false, error: 'Error al cargar sesiones de la convocatoria' };
   }
 }

@@ -359,10 +359,10 @@ export class StudentDashboardView extends LitElement {
         ${materialIconsLink}
         <div class="expired-banner">
           <span class="material-symbols-outlined">schedule</span>
-          <h2>Tu cohorte ha expirado</h2>
+          <h2>Tu convocatoria ha expirado</h2>
           <p>
             El periodo de acceso a los contenidos del curso ha finalizado.
-            Contacta al administrador si necesitas una extensión o acceso a una nueva cohorte.
+            Contacta al administrador si necesitas una extensión o acceso a una nueva convocatoria.
           </p>
         </div>
       `;

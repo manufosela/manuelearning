@@ -226,7 +226,7 @@ export class AdminUsersList extends LitElement {
   }
 
   _exportCsv() {
-    const headers = ['Email', 'Nombre', 'Rol', 'Cohorte'];
+    const headers = ['Email', 'Nombre', 'Rol', 'Convocatoria'];
     const rows = this._users.map((u) => [
       u.email,
       u.displayName || '',
@@ -293,7 +293,7 @@ export class AdminUsersList extends LitElement {
                 <th>Email</th>
                 <th class="hide-mobile">Nombre</th>
                 <th>Rol</th>
-                <th class="hide-mobile">Cohorte</th>
+                <th class="hide-mobile">Convocatoria</th>
                 <th>Acciones</th>
               </tr>
             </thead>

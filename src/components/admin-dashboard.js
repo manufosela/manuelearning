@@ -207,7 +207,7 @@ export class AdminDashboard extends LitElement {
       ${this._stats.progressByCohort.length > 0
         ? html`
             <div class="cohort-section">
-              <h3>Progreso medio por cohorte</h3>
+              <h3>Progreso medio por convocatoria</h3>
               <div class="cohort-list">
                 ${this._stats.progressByCohort.map(
                   (c) => html`

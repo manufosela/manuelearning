@@ -39,7 +39,7 @@ export async function fetchAllCohorts() {
     const cohorts = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
     return { success: true, cohorts };
   } catch (err) {
-    return { success: false, error: 'Error al cargar cohortes' };
+    return { success: false, error: 'Error al cargar convocatorias' };
   }
 }
 
@@ -53,10 +53,10 @@ export async function fetchCohort(id) {
 
   try {
     const snap = await getDoc(doc(db, COLLECTION, id));
-    if (!snap.exists()) return { success: false, error: 'Cohorte no encontrada' };
+    if (!snap.exists()) return { success: false, error: 'Convocatoria no encontrada' };
     return { success: true, cohort: { id: snap.id, ...snap.data() } };
   } catch (err) {
-    return { success: false, error: 'Error al cargar la cohorte' };
+    return { success: false, error: 'Error al cargar la convocatoria' };
   }
 }
 
@@ -80,7 +80,7 @@ export async function createCohort(data) {
     });
     return { success: true, id: ref.id };
   } catch (err) {
-    return { success: false, error: 'Error al crear la cohorte' };
+    return { success: false, error: 'Error al crear la convocatoria' };
   }
 }
 
@@ -97,6 +97,6 @@ export async function updateCohort(id, updates) {
     await updateDoc(doc(db, COLLECTION, id), updates);
     return { success: true };
   } catch (err) {
-    return { success: false, error: 'Error al actualizar la cohorte' };
+    return { success: false, error: 'Error al actualizar la convocatoria' };
   }
 }
