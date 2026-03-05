@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { fetchAllQuestions, addAnswer, deleteQuestion } from '../lib/firebase/questions.js';
+import { fetchAllQuestions, addAnswer, deleteQuestion, updateQuestionVisibility } from '../lib/firebase/questions.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 
 /**
@@ -33,6 +33,10 @@ export class AdminQuestionsList extends LitElement {
     .btn--danger:hover { background: #fee2e2; }
     .btn--small { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
     .btn--active { background: #0f172a; color: #fff; }
+    .btn--visibility { background: #eff6ff; color: #1e40af; }
+    .btn--visibility:hover { background: #dbeafe; }
+    .btn--visibility.is-public { background: #dcfce7; color: #166534; }
+    .btn--visibility.is-public:hover { background: #bbf7d0; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .question-card { background: #fff; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); margin-bottom: 1rem; }
@@ -127,6 +131,12 @@ export class AdminQuestionsList extends LitElement {
     }
   }
 
+  async _toggleVisibility(question) {
+    const newValue = !(question.public === true);
+    const result = await updateQuestionVisibility(question.id, newValue);
+    if (result.success) await this._loadQuestions();
+  }
+
   async _handleDelete(id) {
     const result = await deleteQuestion(id);
     if (result.success) await this._loadQuestions();
@@ -166,6 +176,14 @@ export class AdminQuestionsList extends LitElement {
           <div class="question-actions">
             <button class="btn btn--primary btn--small" @click=${() => this._toggleAnswer(q.id)}>
               ${isAnswering ? 'Cancelar' : 'Responder'}
+            </button>
+            <button
+              class="btn btn--visibility btn--small ${q.public === true ? 'is-public' : ''}"
+              ?disabled=${pending}
+              title=${pending ? 'Responde primero antes de hacer pública' : ''}
+              @click=${() => this._toggleVisibility(q)}
+            >
+              ${q.public === true ? 'Pública' : 'Privada'}
             </button>
             <button class="btn btn--danger btn--small" @click=${() => this._handleDelete(q.id)}>Eliminar</button>
           </div>
