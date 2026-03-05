@@ -32,6 +32,7 @@ const QUESTIONS = 'questions';
  * @property {string} userName
  * @property {string} lessonId
  * @property {string} moduleId
+ * @property {boolean} [public] - Whether the question is visible to all students (default: false)
  * @property {Answer[]} [answers]
  * @property {*} [createdAt]
  */
@@ -74,18 +75,27 @@ export async function fetchAllQuestions() {
 }
 
 /**
- * Fetch questions for a lesson.
+ * Fetch questions for a lesson filtered by visibility.
+ * Students see only their own questions + public ones.
  * @param {string} lessonId
+ * @param {string} [currentUserId] - If provided, filters to own + public questions
  * @returns {Promise<{success: boolean, questions?: Question[], error?: string}>}
  */
-export async function fetchQuestionsByLesson(lessonId) {
+export async function fetchQuestionsByLesson(lessonId, currentUserId) {
   if (!lessonId) return { success: false, error: 'lessonId es obligatorio' };
 
   try {
     const ref = collection(db, QUESTIONS);
     const q = query(ref, where('lessonId', '==', lessonId), orderBy('createdAt', 'desc'));
     const snapshot = await getDocs(q);
-    const questions = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    let questions = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+    if (currentUserId) {
+      questions = questions.filter(
+        (q) => q.userId === currentUserId || q.public === true
+      );
+    }
+
     return { success: true, questions };
   } catch (err) {
     return { success: false, error: 'Error al cargar preguntas' };
@@ -108,6 +118,7 @@ export async function createQuestion(data) {
       userName: data.userName || '',
       lessonId: data.lessonId,
       moduleId: data.moduleId,
+      public: false,
       answers: [],
       createdAt: serverTimestamp(),
     });
@@ -149,6 +160,23 @@ export async function addAnswer(questionId, answer) {
     return { success: true };
   } catch (err) {
     return { success: false, error: 'Error al añadir la respuesta' };
+  }
+}
+
+/**
+ * Toggle the public visibility of a question.
+ * @param {string} questionId
+ * @param {boolean} isPublic
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function updateQuestionVisibility(questionId, isPublic) {
+  if (!questionId) return { success: false, error: 'questionId es obligatorio' };
+
+  try {
+    await updateDoc(doc(db, QUESTIONS, questionId), { public: isPublic });
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: 'Error al actualizar la visibilidad' };
   }
 }
 
