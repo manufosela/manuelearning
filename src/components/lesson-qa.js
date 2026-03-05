@@ -55,6 +55,8 @@ export class LessonQA extends LitElement {
 
     .question-text { font-size: 0.938rem; color: #0f172a; margin-bottom: 0.375rem; }
     .question-meta { font-size: 0.75rem; color: #94a3b8; }
+    .privacy-badge { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.688rem; color: #64748b; background: #f1f5f9; padding: 0.125rem 0.5rem; border-radius: 9999px; margin-left: 0.5rem; }
+    .privacy-badge .material-symbols-outlined { font-size: 0.75rem; }
 
     .answer-list { margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid #e2e8f0; }
     .answer-item { padding: 0.5rem 0; }
@@ -88,7 +90,7 @@ export class LessonQA extends LitElement {
   async _loadQuestions() {
     this._loading = true;
     this._error = '';
-    const result = await fetchQuestionsByLesson(this.lessonId);
+    const result = await fetchQuestionsByLesson(this.lessonId, this.userId);
     this._loading = false;
     if (result.success) {
       this._questions = result.questions;
@@ -155,7 +157,14 @@ export class LessonQA extends LitElement {
       ${this._questions.map((q) => html`
         <div class="question-item">
           <div class="question-text">${q.text}</div>
-          <div class="question-meta">${q.userName || 'Anónimo'} · ${this._formatDate(q.createdAt)}</div>
+          <div class="question-meta">
+            ${q.userName || 'Anónimo'} · ${this._formatDate(q.createdAt)}
+            ${q.userId === this.userId && q.public !== true ? html`
+              <span class="privacy-badge">
+                <span class="material-symbols-outlined">lock</span>Solo tú y el profesor
+              </span>
+            ` : ''}
+          </div>
           ${q.answers && q.answers.length > 0 ? html`
             <div class="answer-list">
               ${q.answers.map((a) => html`
