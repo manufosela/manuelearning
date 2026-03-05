@@ -350,7 +350,7 @@ export class UserProfile extends LitElement {
           </div>
 
           <div class="field">
-            <span class="field__label">Cohorte</span>
+            <span class="field__label">Convocatoria</span>
             <span class="field__value">${this._user.cohortId || '-'}</span>
           </div>
 

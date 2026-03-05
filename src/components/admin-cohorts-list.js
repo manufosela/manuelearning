@@ -485,7 +485,7 @@ export class AdminCohortsList extends LitElement {
       return html`
         <div class="loading">
           <div class="spinner"></div>
-          <p>Cargando cohortes...</p>
+          <p>Cargando convocatorias...</p>
         </div>
       `;
     }
@@ -497,10 +497,10 @@ export class AdminCohortsList extends LitElement {
     return html`
       ${materialIconsLink}
       <div class="toolbar">
-        <span>${this._cohorts.length} cohorte${this._cohorts.length !== 1 ? 's' : ''}</span>
+        <span>${this._cohorts.length} convocatoria${this._cohorts.length !== 1 ? 's' : ''}</span>
         <button class="btn btn--primary" @click=${this._openCreate}>
           <span class="material-symbols-outlined">add</span>
-          Nueva cohorte
+          Nueva convocatoria
         </button>
       </div>
 
@@ -508,7 +508,7 @@ export class AdminCohortsList extends LitElement {
         ? html`
             <div class="empty-state">
               <span class="material-symbols-outlined">school</span>
-              <p>No hay cohortes registradas</p>
+              <p>No hay convocatorias registradas</p>
             </div>
           `
         : html`
@@ -646,7 +646,7 @@ export class AdminCohortsList extends LitElement {
         </div>
 
         ${this._codes.length === 0
-          ? html`<p class="codes-empty">No hay codigos para esta cohorte</p>`
+          ? html`<p class="codes-empty">No hay códigos para esta convocatoria</p>`
           : html`
             <div class="codes-list">
               ${this._codes.map((code) => html`
@@ -671,7 +671,7 @@ export class AdminCohortsList extends LitElement {
   }
 
   _renderForm() {
-    const title = this._editingId ? 'Editar cohorte' : 'Nueva cohorte';
+    const title = this._editingId ? 'Editar convocatoria' : 'Nueva convocatoria';
 
     return html`
       <div class="form-overlay" @click=${this._closeForm}>
@@ -686,7 +686,7 @@ export class AdminCohortsList extends LitElement {
                 type="text"
                 .value=${this._formData.name}
                 @input=${this._handleInput}
-                placeholder="Cohorte Marzo 2026"
+                placeholder="Convocatoria Marzo 2026"
                 required
               />
             </div>

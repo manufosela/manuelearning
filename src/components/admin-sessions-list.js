@@ -250,7 +250,7 @@ export class AdminSessionsList extends LitElement {
           <span class="session-meta-item">${s.time}h</span>
           <span class="session-meta-item">${s.duration} min</span>
           <span class="session-meta-item">Módulo: ${s.moduleId}</span>
-          <span class="session-meta-item">Cohorte: ${s.cohortId}</span>
+          <span class="session-meta-item">Conv.: ${s.cohortId}</span>
         </div>
         <a class="session-link" href="${s.zoomUrl}" target="_blank" rel="noopener noreferrer">${s.zoomUrl}</a>
       </div>
@@ -294,7 +294,7 @@ export class AdminSessionsList extends LitElement {
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label for="session-cohort">ID de Cohorte</label>
+                <label for="session-cohort">ID de Convocatoria</label>
                 <input id="session-cohort" name="cohortId" type="text" .value=${this._formData.cohortId} @input=${this._handleInput} required />
               </div>
               <div class="form-group">
