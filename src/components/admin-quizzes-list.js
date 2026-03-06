@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import {
   fetchAllQuizzes,
   createQuiz,
+  updateQuiz,
   deleteQuiz,
   getQuizResponses,
   validateQuiz,
@@ -20,6 +21,7 @@ export class AdminQuizzesList extends LitElement {
     _loading: { type: Boolean, state: true },
     _error: { type: String, state: true },
     _showForm: { type: Boolean, state: true },
+    _editingId: { type: String, state: true },
     _formData: { type: Object, state: true },
     _formError: { type: String, state: true },
     _saving: { type: Boolean, state: true },
@@ -79,6 +81,7 @@ export class AdminQuizzesList extends LitElement {
     this._loading = true;
     this._error = '';
     this._showForm = false;
+    this._editingId = null;
     this._formData = this._emptyForm();
     this._formError = '';
     this._saving = false;
@@ -108,12 +111,25 @@ export class AdminQuizzesList extends LitElement {
   }
 
   _openCreate() {
+    this._editingId = null;
     this._formData = this._emptyForm();
     this._formError = '';
     this._showForm = true;
   }
 
-  _closeForm() { this._showForm = false; this._formError = ''; }
+  _openEdit(quiz) {
+    this._editingId = quiz.id;
+    this._formData = {
+      title: quiz.title || '',
+      moduleId: quiz.moduleId || '',
+      lessonId: quiz.lessonId || '',
+      questions: (quiz.questions || []).map((q) => ({ ...q, options: q.options || [] })),
+    };
+    this._formError = '';
+    this._showForm = true;
+  }
+
+  _closeForm() { this._showForm = false; this._editingId = null; this._formError = ''; }
 
   _handleInput(e) {
     const input = /** @type {HTMLInputElement} */ (e.target);
@@ -145,7 +161,17 @@ export class AdminQuizzesList extends LitElement {
     if (!validation.valid) { this._formError = validation.error; return; }
 
     this._saving = true;
-    const result = await createQuiz(this._formData);
+    let result;
+    if (this._editingId) {
+      result = await updateQuiz(this._editingId, {
+        title: this._formData.title.trim(),
+        moduleId: this._formData.moduleId,
+        lessonId: this._formData.lessonId || '',
+        questions: this._formData.questions,
+      });
+    } else {
+      result = await createQuiz(this._formData);
+    }
     this._saving = false;
     if (result.success) { this._closeForm(); await this._loadQuizzes(); } else { this._formError = result.error; }
   }
@@ -201,6 +227,7 @@ export class AdminQuizzesList extends LitElement {
         <div class="quiz-header">
           <span class="quiz-title">${q.title}</span>
           <div class="quiz-actions">
+            <button class="btn btn--secondary btn--small" @click=${() => this._openEdit(q)}>Editar</button>
             <button class="btn btn--secondary btn--small" @click=${() => this._toggleResponses(q.id)}>
               ${isViewing ? 'Ocultar' : 'Respuestas'}
             </button>
@@ -237,7 +264,7 @@ export class AdminQuizzesList extends LitElement {
     return html`
       <div class="form-overlay" @click=${this._closeForm}>
         <div class="form-card" @click=${(e) => e.stopPropagation()}>
-          <h3>Nuevo quiz</h3>
+          <h3>${this._editingId ? 'Editar quiz' : 'Nuevo quiz'}</h3>
           <form @submit=${this._handleSubmit}>
             <div class="form-group">
               <label for="quiz-title">Título</label>
@@ -291,7 +318,7 @@ export class AdminQuizzesList extends LitElement {
             ${this._formError ? html`<div class="form-error">${this._formError}</div>` : ''}
             <div class="form-actions">
               <button type="button" class="btn btn--secondary" @click=${this._closeForm}>Cancelar</button>
-              <button type="submit" class="btn btn--primary" ?disabled=${this._saving}>${this._saving ? 'Guardando...' : 'Crear'}</button>
+              <button type="submit" class="btn btn--primary" ?disabled=${this._saving}>${this._saving ? 'Guardando...' : this._editingId ? 'Guardar' : 'Crear'}</button>
             </div>
           </form>
         </div>
