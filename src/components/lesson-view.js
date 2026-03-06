@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { fetchLesson, fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
 import { getNextLesson, getPrevLesson } from '../lib/learning-path.js';
+import { markLessonCompleted, isLessonCompleted } from '../lib/firebase/progress.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import './video-player.js';
 import './markdown-content.js';
@@ -20,6 +21,8 @@ export class LessonView extends LitElement {
     _error: { type: String, state: true },
     _prevRef: { type: Object, state: true },
     _nextRef: { type: Object, state: true },
+    _completed: { type: Boolean, state: true },
+    _completing: { type: Boolean, state: true },
   };
 
   static styles = css`
@@ -93,6 +96,43 @@ export class LessonView extends LitElement {
       padding: 3rem;
       color: #991b1b;
     }
+
+    .complete-section {
+      display: flex;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+
+    .complete-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border: 2px solid #84cc16;
+      border-radius: 0.5rem;
+      font-size: 0.938rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fff;
+      color: #365314;
+    }
+
+    .complete-btn:hover:not(:disabled) {
+      background: #84cc16;
+      color: #fff;
+    }
+
+    .complete-btn:disabled {
+      cursor: default;
+    }
+
+    .complete-btn--done {
+      background: #f0fdf4;
+      border-color: #22c55e;
+      color: #166534;
+    }
   `;
 
   constructor() {
@@ -102,6 +142,9 @@ export class LessonView extends LitElement {
     this._error = '';
     this._prevRef = null;
     this._nextRef = null;
+    this._completed = false;
+    this._completing = false;
+    this._userId = null;
   }
 
   connectedCallback() {
@@ -110,7 +153,10 @@ export class LessonView extends LitElement {
     this._moduleId = this.dataset.moduleId || params.get('m');
     this._lessonId = this.dataset.lessonId || params.get('l');
     if (this._moduleId && this._lessonId) {
-      waitForAuth().then(() => this._loadLesson(this._moduleId, this._lessonId));
+      waitForAuth().then((user) => {
+        this._userId = user.uid;
+        this._loadLesson(this._moduleId, this._lessonId);
+      });
     } else {
       this._loading = false;
       this._error = 'No se encontró la clase';
@@ -124,6 +170,9 @@ export class LessonView extends LitElement {
     if (result.success) {
       this._lesson = result.lesson;
       await this._loadNavigation(moduleId, lessonId);
+      if (this._userId) {
+        this._completed = await isLessonCompleted(this._userId, moduleId, lessonId);
+      }
     } else {
       this._error = result.error;
     }
@@ -143,6 +192,16 @@ export class LessonView extends LitElement {
 
     this._prevRef = getPrevLesson(modulesResult.modules, lessonsByModule, moduleId, lessonId);
     this._nextRef = getNextLesson(modulesResult.modules, lessonsByModule, moduleId, lessonId);
+  }
+
+  async _markComplete() {
+    if (this._completed || this._completing) return;
+    this._completing = true;
+    const result = await markLessonCompleted(this._userId, this._moduleId, this._lessonId);
+    this._completing = false;
+    if (result.success) {
+      this._completed = true;
+    }
   }
 
   render() {
@@ -170,6 +229,17 @@ export class LessonView extends LitElement {
           <markdown-content .content=${this._lesson.documentation}></markdown-content>
         </div>
       ` : ''}
+
+      <div class="complete-section">
+        ${this._completed
+          ? html`<button class="complete-btn complete-btn--done" disabled>✓ Completada</button>`
+          : html`<button
+              class="complete-btn"
+              @click=${this._markComplete}
+              ?disabled=${this._completing}
+            >${this._completing ? 'Guardando...' : 'Marcar como completada'}</button>`
+        }
+      </div>
 
       <lesson-qa
         lessonId=${this._lessonId || ''}
