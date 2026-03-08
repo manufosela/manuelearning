@@ -1,6 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { getLessonQuiz } from '../services/quiz-service.js';
-import { submitLessonQuizResponse, getStudentQuizResponse } from '../lib/firebase/quizzes.js';
+import { fetchQuizzesByLessonId, submitLessonQuizResponse, getStudentQuizResponse } from '../lib/firebase/quizzes.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { stateStyles } from '../lib/shared-styles.js';
 import { materialIconsLink } from './shared/material-icons.js';
@@ -297,7 +296,7 @@ export class LessonQuiz extends LitElement {
     this._loading = true;
     this._error = '';
 
-    const result = await getLessonQuiz(this.lessonId);
+    const result = await fetchQuizzesByLessonId(this.lessonId);
 
     if (!result.success) {
       this._error = result.error;
@@ -305,13 +304,23 @@ export class LessonQuiz extends LitElement {
       return;
     }
 
-    if (!result.quiz) {
+    if (!result.quizzes || result.quizzes.length === 0) {
       this._quiz = null;
       this._loading = false;
       return;
     }
 
-    this._quiz = result.quiz;
+    const raw = result.quizzes[0];
+    this._quiz = {
+      id: raw.id,
+      lessonId: raw.lessonId,
+      questions: (raw.questions || []).map((q) => ({
+        question: q.text || q.question || '',
+        options: q.options || [],
+        correctIndex: q.correctAnswer ?? q.correctIndex ?? 0,
+        explanation: q.explanation || '',
+      })),
+    };
     this._answers = new Array(this._quiz.questions.length).fill(null);
     this._currentQuestion = 0;
     this._confirmedQuestions = new Array(this._quiz.questions.length).fill(false);
@@ -384,6 +393,7 @@ export class LessonQuiz extends LitElement {
 
     if (result.success) {
       this._submitted = true;
+      this.dispatchEvent(new CustomEvent('quiz-completed', { bubbles: true, composed: true }));
     } else {
       this._error = result.error;
     }
