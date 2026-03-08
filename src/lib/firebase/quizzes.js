@@ -22,6 +22,8 @@ const RESPONSES = 'quizResponses';
  * @property {string} text
  * @property {'open'|'multiple'} type
  * @property {string[]} [options]
+ * @property {number} [correctAnswer]
+ * @property {string} [explanation]
  */
 
 /**
@@ -150,6 +152,27 @@ export async function deleteQuiz(id) {
     return { success: true };
   } catch (err) {
     return { success: false, error: 'Error al eliminar el quiz' };
+  }
+}
+
+/**
+ * Fetch quiz for a specific lesson.
+ * @param {string} moduleId
+ * @param {string} lessonId
+ * @returns {Promise<{success: boolean, quiz?: Quiz|null, error?: string}>}
+ */
+export async function fetchQuizByLesson(moduleId, lessonId) {
+  if (!moduleId || !lessonId) return { success: false, error: 'moduleId y lessonId son obligatorios' };
+
+  try {
+    const ref = collection(db, QUIZZES);
+    const q = query(ref, where('moduleId', '==', moduleId), where('lessonId', '==', lessonId));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.docs.length === 0) return { success: true, quiz: null };
+    return { success: true, quiz: { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } };
+  } catch (err) {
+    return { success: false, error: 'Error al cargar el quiz de la clase' };
   }
 }
 

@@ -31,6 +31,7 @@ import {
   validateQuiz,
   fetchAllQuizzes,
   fetchQuiz,
+  fetchQuizByLesson,
   createQuiz,
   updateQuiz,
   deleteQuiz,
@@ -119,6 +120,41 @@ describe('fetchQuiz', () => {
   it('should return error when not found', async () => {
     mockGetDoc.mockResolvedValue({ exists: () => false });
     expect((await fetchQuiz('x')).success).toBe(false);
+  });
+});
+
+/* ── fetchQuizByLesson ──────────────────────────────────────── */
+describe('fetchQuizByLesson', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('should reject empty moduleId', async () => {
+    expect((await fetchQuizByLesson('', 'l1')).success).toBe(false);
+  });
+
+  it('should reject empty lessonId', async () => {
+    expect((await fetchQuizByLesson('m1', '')).success).toBe(false);
+  });
+
+  it('should return null when no quiz exists', async () => {
+    mockGetDocs.mockResolvedValue({ docs: [] });
+    const result = await fetchQuizByLesson('m1', 'l1');
+    expect(result.success).toBe(true);
+    expect(result.quiz).toBeNull();
+  });
+
+  it('should return quiz when exists', async () => {
+    mockGetDocs.mockResolvedValue({
+      docs: [{ id: 'q1', data: () => ({ title: 'Quiz Clase 1', moduleId: 'm1', lessonId: 'l1' }) }],
+    });
+    const result = await fetchQuizByLesson('m1', 'l1');
+    expect(result.success).toBe(true);
+    expect(result.quiz.id).toBe('q1');
+    expect(result.quiz.title).toBe('Quiz Clase 1');
+  });
+
+  it('should handle errors', async () => {
+    mockGetDocs.mockRejectedValue(new Error('err'));
+    expect((await fetchQuizByLesson('m1', 'l1')).success).toBe(false);
   });
 });
 
