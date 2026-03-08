@@ -2,6 +2,8 @@ import { LitElement, html, css } from 'lit';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import {
   fetchAllModules,
+  fetchModulesByCourse,
+  fetchCourseList,
   createModule,
   updateModule,
   deleteModule,
@@ -60,6 +62,8 @@ export class AdminModulesList extends LitElement {
     _quizFormError: { type: String, state: true },
     _quizLoading: { type: Boolean, state: true },
     _lessonQuizMap: { type: Object, state: true },
+    _courses: { type: Array, state: true },
+    _selectedCourse: { type: String, state: true },
   };
 
   static styles = css`
@@ -564,6 +568,47 @@ export class AdminModulesList extends LitElement {
       color: #166534;
       font-weight: 600;
     }
+
+    .course-filter {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .course-filter label {
+      font-size: 0.813rem;
+      font-weight: 600;
+      color: #334155;
+      white-space: nowrap;
+    }
+
+    .course-filter select {
+      flex: 1;
+      max-width: 300px;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      font-family: inherit;
+      background: #fff;
+      color: #0f172a;
+    }
+
+    .course-filter select:focus {
+      outline: none;
+      border-color: #84cc16;
+      box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.1);
+    }
+
+    .module-course {
+      font-size: 0.688rem;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      background: #f0f9ff;
+      color: #0369a1;
+      font-weight: 600;
+    }
   `;
 
   constructor() {
@@ -595,15 +640,27 @@ export class AdminModulesList extends LitElement {
     this._quizFormError = '';
     this._quizLoading = false;
     this._lessonQuizMap = {};
+    this._courses = [];
+    this._selectedCourse = '';
   }
 
   connectedCallback() {
     super.connectedCallback();
-    waitForAuth().then(() => this._loadModules());
+    waitForAuth().then(() => {
+      this._loadCourses();
+      this._loadModules();
+    });
+  }
+
+  async _loadCourses() {
+    const result = await fetchCourseList();
+    if (result.success) {
+      this._courses = result.courses;
+    }
   }
 
   _emptyModuleForm() {
-    return { title: '', description: '', order: 0 };
+    return { title: '', description: '', order: 0, course: '' };
   }
 
   _emptyLessonForm() {
@@ -613,13 +670,21 @@ export class AdminModulesList extends LitElement {
   async _loadModules() {
     this._loading = true;
     this._error = '';
-    const result = await fetchAllModules();
+    const result = this._selectedCourse
+      ? await fetchModulesByCourse(this._selectedCourse)
+      : await fetchAllModules();
     this._loading = false;
     if (result.success) {
       this._modules = result.modules;
     } else {
       this._error = result.error;
     }
+  }
+
+  _handleCourseFilter(e) {
+    this._selectedCourse = e.target.value;
+    this._expandedModule = null;
+    this._loadModules();
   }
 
   async _toggleExpand(moduleId) {
@@ -640,14 +705,14 @@ export class AdminModulesList extends LitElement {
 
   _openCreateModule() {
     this._editingModuleId = null;
-    this._moduleFormData = { ...this._emptyModuleForm(), order: this._modules.length + 1 };
+    this._moduleFormData = { ...this._emptyModuleForm(), order: this._modules.length + 1, course: this._selectedCourse };
     this._moduleFormError = '';
     this._showModuleForm = true;
   }
 
   _openEditModule(mod) {
     this._editingModuleId = mod.id;
-    this._moduleFormData = { title: mod.title, description: mod.description || '', order: mod.order };
+    this._moduleFormData = { title: mod.title, description: mod.description || '', order: mod.order, course: mod.course || '' };
     this._moduleFormError = '';
     this._showModuleForm = true;
   }
@@ -681,6 +746,7 @@ export class AdminModulesList extends LitElement {
       this._saving = false;
       if (result.success) {
         this._closeModuleForm();
+        this._loadCourses();
         await this._loadModules();
       } else {
         this._moduleFormError = result.error;
@@ -693,6 +759,7 @@ export class AdminModulesList extends LitElement {
           this._sendModuleNotification(this._moduleFormData.title);
         }
         this._closeModuleForm();
+        this._loadCourses();
         await this._loadModules();
       } else {
         this._moduleFormError = result.error;
@@ -998,6 +1065,16 @@ export class AdminModulesList extends LitElement {
         </button>
       </div>
 
+      ${this._courses.length > 0 ? html`
+        <div class="course-filter">
+          <label for="course-select">Curso:</label>
+          <select id="course-select" .value=${this._selectedCourse} @change=${this._handleCourseFilter}>
+            <option value="">Todos los cursos</option>
+            ${this._courses.map((c) => html`<option value=${c} ?selected=${c === this._selectedCourse}>${c}</option>`)}
+          </select>
+        </div>
+      ` : ''}
+
       <input
         class="search-input"
         type="text"
@@ -1039,7 +1116,7 @@ export class AdminModulesList extends LitElement {
             </div>
             <div class="module-order">${mod.order}</div>
             <div>
-              <div class="module-title">${mod.title}</div>
+              <div class="module-title">${mod.title} ${mod.course ? html`<span class="module-course">${mod.course}</span>` : ''}</div>
               ${mod.description ? html`<div class="module-desc">${mod.description}</div>` : ''}
             </div>
           </div>
@@ -1110,6 +1187,13 @@ export class AdminModulesList extends LitElement {
             <div class="form-group">
               <label for="mod-desc">Descripción</label>
               <input id="mod-desc" name="description" type="text" .value=${this._moduleFormData.description} @input=${this._handleModuleInput} />
+            </div>
+            <div class="form-group">
+              <label for="mod-course">Curso</label>
+              <input id="mod-course" name="course" type="text" list="course-options" .value=${this._moduleFormData.course} @input=${this._handleModuleInput} placeholder="Nombre del curso" />
+              <datalist id="course-options">
+                ${this._courses.map((c) => html`<option value=${c}></option>`)}
+              </datalist>
             </div>
             <div class="form-group">
               <label for="mod-order">Orden</label>

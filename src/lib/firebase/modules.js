@@ -160,6 +160,7 @@ export async function createModule(data) {
       title: data.title.trim(),
       description: data.description || '',
       order: data.order,
+      course: data.course || '',
       createdAt: serverTimestamp(),
     });
     return { success: true, id: ref.id };
