@@ -6,6 +6,7 @@ import {
   updateDoc,
   orderBy,
   query,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './config.js';
 
@@ -125,6 +126,29 @@ export async function updateUserDisplayName(uid, displayName) {
     return { success: true };
   } catch (err) {
     return { success: false, error: 'Error al actualizar el nombre' };
+  }
+}
+
+/**
+ * Track user activity. Updates lastActivity timestamp on the user profile.
+ * Throttled: only writes if last update was >5 minutes ago (stored in sessionStorage).
+ * @param {string} uid
+ * @returns {Promise<void>}
+ */
+export async function trackActivity(uid) {
+  if (!uid) return;
+
+  const key = `lastActivityTrack_${uid}`;
+  const last = sessionStorage.getItem(key);
+  const now = Date.now();
+  if (last && now - Number(last) < 5 * 60 * 1000) return;
+
+  try {
+    const userRef = doc(db, 'users', uid);
+    await updateDoc(userRef, { lastActivity: new Date().toISOString() });
+    sessionStorage.setItem(key, String(now));
+  } catch {
+    // Non-critical, fail silently
   }
 }
 
