@@ -3,6 +3,7 @@ import { computeRetentionStats } from '../lib/retention.js';
 import { fetchAllUsers } from '../lib/firebase/users.js';
 import { getUserProgress } from '../lib/firebase/progress.js';
 import { fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
+import { getRetentionConfig, saveRetentionConfig, DEFAULT_RETENTION_CONFIG } from '../lib/firebase/settings.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 
 /**
@@ -15,6 +16,10 @@ export class AdminRetentionDashboard extends LitElement {
     _loading: { type: Boolean, state: true },
     _error: { type: String, state: true },
     _filter: { type: String, state: true },
+    _showConfig: { type: Boolean, state: true },
+    _config: { type: Object, state: true },
+    _saving: { type: Boolean, state: true },
+    _students: { type: Array, state: true },
   };
 
   static styles = css`
@@ -79,6 +84,34 @@ export class AdminRetentionDashboard extends LitElement {
     .factor-mini__fill--velocity { background: #f59e0b; }
     .factor-mini__fill--consistency { background: #8b5cf6; }
 
+    .config-toggle { margin-bottom: 1.5rem; }
+
+    .config-panel { background: #fff; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); margin-bottom: 2rem; }
+    .config-panel h3 { font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 1rem; }
+    .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+    .config-group { margin-bottom: 0.25rem; }
+    .config-group h4 { font-size: 0.813rem; font-weight: 600; color: #475569; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    .config-field { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.625rem; }
+    .config-field label { font-size: 0.813rem; color: #334155; min-width: 120px; flex-shrink: 0; }
+    .config-field input[type="number"] { width: 70px; padding: 0.375rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; font-size: 0.813rem; font-family: inherit; text-align: center; }
+    .config-field input[type="number"]:focus { outline: none; border-color: #84cc16; box-shadow: 0 0 0 2px rgb(132 204 22 / 0.15); }
+    .config-field .unit { font-size: 0.75rem; color: #94a3b8; }
+
+    .config-weight-bar { display: flex; align-items: center; gap: 0.5rem; }
+    .config-weight-bar input[type="range"] { flex: 1; accent-color: #84cc16; }
+    .config-weight-bar .weight-value { font-size: 0.75rem; font-weight: 700; color: #334155; min-width: 2rem; text-align: right; }
+    .weight-total { font-size: 0.75rem; margin-top: 0.5rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem; }
+    .weight-total--ok { background: #dcfce7; color: #166534; }
+    .weight-total--error { background: #fee2e2; color: #991b1b; }
+
+    .config-actions { display: flex; gap: 0.5rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #f1f5f9; }
+    .btn--primary { background: #84cc16; color: #fff; }
+    .btn--primary:hover { background: #65a30d; }
+    .btn--primary:disabled { opacity: 0.5; cursor: default; }
+    .btn--ghost { background: transparent; color: #64748b; }
+    .btn--ghost:hover { background: #f1f5f9; }
+
     .loading, .error-msg { text-align: center; padding: 3rem; color: #475569; }
     .error-msg { color: #991b1b; }
     .spinner { width: 1.5rem; height: 1.5rem; border: 3px solid #e2e8f0; border-top-color: #84cc16; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 0.75rem; }
@@ -92,6 +125,10 @@ export class AdminRetentionDashboard extends LitElement {
     this._loading = true;
     this._error = '';
     this._filter = 'all';
+    this._showConfig = false;
+    this._config = { ...DEFAULT_RETENTION_CONFIG };
+    this._saving = false;
+    this._students = [];
   }
 
   connectedCallback() {
@@ -101,10 +138,15 @@ export class AdminRetentionDashboard extends LitElement {
 
   async _loadData() {
     this._loading = true;
-    const [usersResult, modulesResult] = await Promise.all([
+    const [usersResult, modulesResult, configResult] = await Promise.all([
       fetchAllUsers(),
       fetchAllModules(),
+      getRetentionConfig(),
     ]);
+
+    if (configResult.success) {
+      this._config = configResult.config;
+    }
 
     if (!usersResult.success) {
       this._error = usersResult.error;
@@ -123,7 +165,7 @@ export class AdminRetentionDashboard extends LitElement {
 
     // Enrich each student with progress data
     const nonAdmins = usersResult.users.filter((u) => u.role !== 'admin');
-    const students = await Promise.all(
+    this._students = await Promise.all(
       nonAdmins.map(async (u) => {
         const progressResult = await getUserProgress(u.uid);
         const lessonsCompleted = progressResult.success
@@ -145,8 +187,30 @@ export class AdminRetentionDashboard extends LitElement {
       })
     );
 
-    this._stats = computeRetentionStats(students);
+    this._stats = computeRetentionStats(this._students, this._config);
     this._loading = false;
+  }
+
+  _recompute() {
+    if (this._students.length > 0) {
+      this._stats = computeRetentionStats(this._students, this._config);
+    }
+  }
+
+  _updateConfig(field, value) {
+    this._config = { ...this._config, [field]: Number(value) };
+    this._recompute();
+  }
+
+  async _saveConfig() {
+    this._saving = true;
+    await saveRetentionConfig(this._config);
+    this._saving = false;
+  }
+
+  _resetConfig() {
+    this._config = { ...DEFAULT_RETENTION_CONFIG };
+    this._recompute();
   }
 
   get _filteredStudents() {
@@ -161,6 +225,8 @@ export class AdminRetentionDashboard extends LitElement {
     if (!this._stats) return html`<div class="empty-state">No hay datos</div>`;
 
     const eng = this._stats.engagement;
+    const cfg = this._config;
+    const weightTotal = cfg.weightRecency + cfg.weightProgress + cfg.weightVelocity + cfg.weightConsistency;
 
     return html`
       <div class="summary">
@@ -170,21 +236,123 @@ export class AdminRetentionDashboard extends LitElement {
         </div>
         <div class="summary-card summary-card--green">
           <div class="summary-card__value">${this._stats.green}</div>
-          <div class="summary-card__label">Activos (&lt;3 días)</div>
+          <div class="summary-card__label">Activos (&lt;${cfg.greenDays} días)</div>
         </div>
         <div class="summary-card summary-card--yellow">
           <div class="summary-card__value">${this._stats.yellow}</div>
-          <div class="summary-card__label">En riesgo (3-7 días)</div>
+          <div class="summary-card__label">En riesgo (${cfg.greenDays}-${cfg.yellowDays} días)</div>
         </div>
         <div class="summary-card summary-card--red">
           <div class="summary-card__value">${this._stats.red}</div>
-          <div class="summary-card__label">Abandono (&gt;7 días)</div>
+          <div class="summary-card__label">Abandono (&gt;${cfg.yellowDays} días)</div>
         </div>
         <div class="summary-card">
           <div class="summary-card__value">${eng.avgScore}</div>
           <div class="summary-card__label">Engagement medio</div>
         </div>
       </div>
+
+      <div class="config-toggle">
+        <button class="btn btn--small ${this._showConfig ? 'btn--active' : 'btn--secondary'}" @click=${() => { this._showConfig = !this._showConfig; }}>
+          Configurar algoritmo
+        </button>
+      </div>
+
+      ${this._showConfig ? html`
+        <div class="config-panel">
+          <h3>Parámetros del algoritmo</h3>
+          <div class="config-grid">
+            <div class="config-group">
+              <h4>Clasificación por actividad</h4>
+              <div class="config-field">
+                <label>Activo si &lt;</label>
+                <input type="number" min="1" max="30" .value=${String(cfg.greenDays)} @input=${(e) => this._updateConfig('greenDays', e.target.value)}>
+                <span class="unit">días</span>
+              </div>
+              <div class="config-field">
+                <label>En riesgo si &le;</label>
+                <input type="number" min="2" max="60" .value=${String(cfg.yellowDays)} @input=${(e) => this._updateConfig('yellowDays', e.target.value)}>
+                <span class="unit">días</span>
+              </div>
+            </div>
+
+            <div class="config-group">
+              <h4>Pesos del engagement</h4>
+              <div class="config-field">
+                <label>Recencia</label>
+                <div class="config-weight-bar">
+                  <input type="range" min="0" max="100" .value=${String(cfg.weightRecency)} @input=${(e) => this._updateConfig('weightRecency', e.target.value)}>
+                  <span class="weight-value">${cfg.weightRecency}%</span>
+                </div>
+              </div>
+              <div class="config-field">
+                <label>Progreso</label>
+                <div class="config-weight-bar">
+                  <input type="range" min="0" max="100" .value=${String(cfg.weightProgress)} @input=${(e) => this._updateConfig('weightProgress', e.target.value)}>
+                  <span class="weight-value">${cfg.weightProgress}%</span>
+                </div>
+              </div>
+              <div class="config-field">
+                <label>Velocidad</label>
+                <div class="config-weight-bar">
+                  <input type="range" min="0" max="100" .value=${String(cfg.weightVelocity)} @input=${(e) => this._updateConfig('weightVelocity', e.target.value)}>
+                  <span class="weight-value">${cfg.weightVelocity}%</span>
+                </div>
+              </div>
+              <div class="config-field">
+                <label>Constancia</label>
+                <div class="config-weight-bar">
+                  <input type="range" min="0" max="100" .value=${String(cfg.weightConsistency)} @input=${(e) => this._updateConfig('weightConsistency', e.target.value)}>
+                  <span class="weight-value">${cfg.weightConsistency}%</span>
+                </div>
+              </div>
+              <div class="weight-total ${weightTotal === 100 ? 'weight-total--ok' : 'weight-total--error'}">
+                Total: ${weightTotal}% ${weightTotal !== 100 ? '(debe sumar 100%)' : ''}
+              </div>
+            </div>
+
+            <div class="config-group">
+              <h4>Parámetros del cálculo</h4>
+              <div class="config-field">
+                <label>Decaimiento</label>
+                <input type="number" min="0.01" max="1" step="0.01" .value=${String(cfg.decayFactor)} @input=${(e) => this._updateConfig('decayFactor', e.target.value)}>
+                <span class="unit">factor</span>
+              </div>
+              <div class="config-field">
+                <label>Objetivo velocidad</label>
+                <input type="number" min="1" max="10" .value=${String(cfg.targetLessonsPerWeek)} @input=${(e) => this._updateConfig('targetLessonsPerWeek', e.target.value)}>
+                <span class="unit">clases/sem</span>
+              </div>
+            </div>
+
+            <div class="config-group">
+              <h4>Umbrales de riesgo</h4>
+              <div class="config-field">
+                <label>Bajo si &ge;</label>
+                <input type="number" min="0" max="100" .value=${String(cfg.churnLow)} @input=${(e) => this._updateConfig('churnLow', e.target.value)}>
+                <span class="unit">puntos</span>
+              </div>
+              <div class="config-field">
+                <label>Medio si &ge;</label>
+                <input type="number" min="0" max="100" .value=${String(cfg.churnMedium)} @input=${(e) => this._updateConfig('churnMedium', e.target.value)}>
+                <span class="unit">puntos</span>
+              </div>
+              <div class="config-field">
+                <label>Alto si &ge;</label>
+                <input type="number" min="0" max="100" .value=${String(cfg.churnHigh)} @input=${(e) => this._updateConfig('churnHigh', e.target.value)}>
+                <span class="unit">puntos</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="config-actions">
+            <button class="btn btn--primary" @click=${this._saveConfig} ?disabled=${this._saving || weightTotal !== 100}>
+              ${this._saving ? 'Guardando...' : 'Guardar configuración'}
+            </button>
+            <button class="btn btn--ghost" @click=${this._resetConfig}>Restaurar valores por defecto</button>
+          </div>
+        </div>
+      ` : ''}
 
       <div class="engagement-section">
         <h3>Distribución de riesgo de abandono</h3>
