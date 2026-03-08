@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { fetchLesson, fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
 import { getNextLesson, getPrevLesson } from '../lib/learning-path.js';
 import { markLessonCompleted, isLessonCompleted } from '../lib/firebase/progress.js';
+import { fetchQuizzesByLessonId, getUserQuizResponse } from '../lib/firebase/quizzes.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import './video-player.js';
 import './markdown-content.js';
@@ -24,6 +25,8 @@ export class LessonView extends LitElement {
     _nextRef: { type: Object, state: true },
     _completed: { type: Boolean, state: true },
     _completing: { type: Boolean, state: true },
+    _quizRequired: { type: Boolean, state: true },
+    _quizAnswered: { type: Boolean, state: true },
   };
 
   static styles = css`
@@ -100,7 +103,8 @@ export class LessonView extends LitElement {
 
     .complete-section {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
       margin: 2rem 0;
     }
 
@@ -134,6 +138,19 @@ export class LessonView extends LitElement {
       border-color: #22c55e;
       color: #166534;
     }
+
+    .complete-btn--locked {
+      opacity: 0.5;
+      border-color: #cbd5e1;
+      color: #94a3b8;
+    }
+
+    .complete-hint {
+      text-align: center;
+      margin-top: 0.5rem;
+      font-size: 0.813rem;
+      color: #94a3b8;
+    }
   `;
 
   constructor() {
@@ -145,11 +162,15 @@ export class LessonView extends LitElement {
     this._nextRef = null;
     this._completed = false;
     this._completing = false;
+    this._quizRequired = false;
+    this._quizAnswered = false;
     this._userId = null;
   }
 
   connectedCallback() {
     super.connectedCallback();
+    this._onQuizCompleted = () => { this._quizAnswered = true; };
+    this.addEventListener('quiz-completed', this._onQuizCompleted);
     const params = new URLSearchParams(window.location.search);
     this._moduleId = this.dataset.moduleId || params.get('m');
     this._lessonId = this.dataset.lessonId || params.get('l');
@@ -164,6 +185,11 @@ export class LessonView extends LitElement {
     }
   }
 
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('quiz-completed', this._onQuizCompleted);
+  }
+
   async _loadLesson(moduleId, lessonId) {
     this._loading = true;
     const result = await fetchLesson(moduleId, lessonId);
@@ -174,11 +200,36 @@ export class LessonView extends LitElement {
       if (this._userId) {
         this._completed = await isLessonCompleted(this._userId, moduleId, lessonId);
       }
+      await this._checkQuizStatus(lessonId);
     } else {
       this._error = result.error;
     }
 
     this._loading = false;
+  }
+
+  async _checkQuizStatus(lessonId) {
+    const result = await fetchQuizzesByLessonId(lessonId);
+
+    if (!result.success || result.quizzes.length === 0) {
+      this._quizRequired = false;
+      this._quizAnswered = false;
+      return;
+    }
+
+    this._quizRequired = true;
+    if (this._userId) {
+      const quiz = result.quizzes[0];
+      const totalQuestions = quiz.questions?.length || 0;
+      const resp = await getUserQuizResponse(this._userId, quiz.id);
+      if (resp.success && resp.response !== null) {
+        const answers = resp.response.answers || [];
+        const answeredCount = answers.filter((a) => a && String(a).trim() !== '').length;
+        this._quizAnswered = answeredCount >= totalQuestions && totalQuestions > 0;
+      } else {
+        this._quizAnswered = false;
+      }
+    }
   }
 
   async _loadNavigation(moduleId, lessonId) {
@@ -235,11 +286,14 @@ export class LessonView extends LitElement {
         ${this._completed
           ? html`<button class="complete-btn complete-btn--done" disabled>✓ Completada</button>`
           : html`<button
-              class="complete-btn"
+              class="complete-btn ${this._quizRequired && !this._quizAnswered ? 'complete-btn--locked' : ''}"
               @click=${this._markComplete}
-              ?disabled=${this._completing}
+              ?disabled=${this._completing || (this._quizRequired && !this._quizAnswered)}
             >${this._completing ? 'Guardando...' : 'Marcar como completada'}</button>`
         }
+        ${this._quizRequired && !this._quizAnswered && !this._completed
+          ? html`<p class="complete-hint">Responde el cuestionario para poder completar la lección</p>`
+          : ''}
       </div>
 
       <lesson-quiz lessonId=${this._lessonId || ''} lessonTitle=${this._lesson?.title || ''}></lesson-quiz>
