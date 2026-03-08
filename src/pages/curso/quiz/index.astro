@@ -1,0 +1,39 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { SITE } from '../../../config/site.config.js';
+---
+
+<MainLayout title={`Quiz | ${SITE.name}`}>
+  <section class="quiz-page">
+    <auth-guard>
+      <quiz-player id="quizPlayer"></quiz-player>
+    </auth-guard>
+  </section>
+</MainLayout>
+
+<script>
+  import '../../../components/auth-guard.js';
+  import '../../../components/quiz-player.js';
+
+  // Fallback for quiz IDs not pre-rendered at build time.
+  // Extracts quiz ID from URL: /curso/quiz/{quizId}
+  const path = window.location.pathname.replace(/\/$/, '');
+  const segments = path.split('/');
+  const quizId = segments.length >= 4 ? segments[segments.length - 1] : '';
+
+  const el = document.querySelector('#quizPlayer');
+  if (el && quizId && quizId !== 'quiz') {
+    el.dataset.quizId = quizId;
+  } else if (el && !quizId) {
+    // No quiz ID in URL — redirect to courses
+    window.location.href = '/cursos';
+  }
+</script>
+
+<style>
+  .quiz-page {
+    padding: 2rem var(--section-px);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+</style>
