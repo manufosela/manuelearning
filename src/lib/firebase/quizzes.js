@@ -4,6 +4,7 @@ import {
   getDoc,
   getDocs,
   addDoc,
+  setDoc,
   updateDoc,
   deleteDoc,
   query,
@@ -21,7 +22,8 @@ const RESPONSES = 'quizResponses';
  * @property {string} text
  * @property {'open'|'multiple'} type
  * @property {string[]} [options]
- * @property {string} [correctAnswer]
+ * @property {number} [correctAnswer]
+ * @property {string} [explanation]
  */
 
 /**
@@ -62,6 +64,25 @@ export function validateQuiz(data) {
   }
 
   return { valid: true };
+}
+
+/**
+ * Fetch quizzes for a specific lesson.
+ * @param {string} lessonId
+ * @returns {Promise<{success: boolean, quizzes?: Quiz[], error?: string}>}
+ */
+export async function fetchQuizzesByLessonId(lessonId) {
+  if (!lessonId) return { success: false, error: 'lessonId es obligatorio' };
+
+  try {
+    const ref = collection(db, QUIZZES);
+    const q = query(ref, where('lessonId', '==', lessonId));
+    const snapshot = await getDocs(q);
+    const quizzes = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    return { success: true, quizzes };
+  } catch (err) {
+    return { success: false, error: 'Error al cargar quizzes de la lección' };
+  }
 }
 
 /**
@@ -153,6 +174,27 @@ export async function deleteQuiz(id) {
   }
 }
 
+/**
+ * Fetch quiz for a specific lesson.
+ * @param {string} moduleId
+ * @param {string} lessonId
+ * @returns {Promise<{success: boolean, quiz?: Quiz|null, error?: string}>}
+ */
+export async function fetchQuizByLesson(moduleId, lessonId) {
+  if (!moduleId || !lessonId) return { success: false, error: 'moduleId y lessonId son obligatorios' };
+
+  try {
+    const ref = collection(db, QUIZZES);
+    const q = query(ref, where('moduleId', '==', moduleId), where('lessonId', '==', lessonId));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.docs.length === 0) return { success: true, quiz: null };
+    return { success: true, quiz: { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } };
+  } catch (err) {
+    return { success: false, error: 'Error al cargar el quiz de la clase' };
+  }
+}
+
 /* ── Quiz Responses ─────────────────────────────────────────── */
 
 /**
@@ -218,6 +260,93 @@ export async function getQuizResponses(quizId) {
     return { success: true, responses };
   } catch (err) {
     return { success: false, error: 'Error al cargar las respuestas' };
+  }
+}
+
+/* ── Post-Lesson Quiz Responses ────────────────────────────── */
+
+/**
+ * @typedef {Object} LessonQuizResponse
+ * @property {string} [id]
+ * @property {string} lessonId
+ * @property {string} lessonTitle
+ * @property {string} quizId
+ * @property {string} studentId
+ * @property {string} studentEmail
+ * @property {string} selectedAnswer
+ * @property {boolean} isCorrect
+ * @property {*} [answeredAt]
+ */
+
+/**
+ * Submit a post-lesson quiz response for a student.
+ * @param {Omit<LessonQuizResponse, 'id'|'answeredAt'>} data
+ * @returns {Promise<{success: boolean, id?: string, error?: string}>}
+ */
+export async function submitLessonQuizResponse(data) {
+  if (!data.lessonId) return { success: false, error: 'lessonId es obligatorio' };
+  if (!data.quizId) return { success: false, error: 'quizId es obligatorio' };
+  if (!data.studentId) return { success: false, error: 'studentId es obligatorio' };
+  if (!data.studentEmail) return { success: false, error: 'studentEmail es obligatorio' };
+  if (!data.selectedAnswer) return { success: false, error: 'selectedAnswer es obligatorio' };
+  if (typeof data.isCorrect !== 'boolean') return { success: false, error: 'isCorrect es obligatorio' };
+
+  try {
+    const docId = `${data.studentId}_${data.lessonId}_${data.quizId}`;
+    const ref = doc(db, RESPONSES, docId);
+    await setDoc(ref, {
+      lessonId: data.lessonId,
+      lessonTitle: data.lessonTitle || '',
+      quizId: data.quizId,
+      studentId: data.studentId,
+      studentEmail: data.studentEmail,
+      selectedAnswer: data.selectedAnswer,
+      isCorrect: data.isCorrect,
+      answeredAt: serverTimestamp(),
+    });
+    return { success: true, id: docId };
+  } catch (err) {
+    return { success: false, error: 'Error al guardar la respuesta del quiz' };
+  }
+}
+
+/**
+ * Check if a student has already answered a specific lesson quiz.
+ * @param {string} studentId
+ * @param {string} lessonId
+ * @param {string} quizId
+ * @returns {Promise<{success: boolean, answered?: boolean, error?: string}>}
+ */
+export async function hasStudentAnsweredQuiz(studentId, lessonId, quizId) {
+  if (!studentId || !lessonId || !quizId) return { success: false, error: 'studentId, lessonId y quizId son obligatorios' };
+
+  try {
+    const docId = `${studentId}_${lessonId}_${quizId}`;
+    const snap = await getDoc(doc(db, RESPONSES, docId));
+    return { success: true, answered: snap.exists() };
+  } catch (err) {
+    return { success: false, error: 'Error al verificar respuesta del quiz' };
+  }
+}
+
+/**
+ * Retrieve a student's previous response to a lesson quiz.
+ * @param {string} studentId
+ * @param {string} lessonId
+ * @param {string} quizId
+ * @returns {Promise<{success: boolean, response?: LessonQuizResponse|null, error?: string}>}
+ */
+export async function getStudentQuizResponse(studentId, lessonId, quizId) {
+  if (!studentId || !lessonId || !quizId) return { success: false, error: 'studentId, lessonId y quizId son obligatorios' };
+
+  try {
+    const docId = `${studentId}_${lessonId}_${quizId}`;
+    const snap = await getDoc(doc(db, RESPONSES, docId));
+
+    if (!snap.exists()) return { success: true, response: null };
+    return { success: true, response: { id: snap.id, ...snap.data() } };
+  } catch (err) {
+    return { success: false, error: 'Error al obtener la respuesta del quiz' };
   }
 }
 
