@@ -101,11 +101,17 @@ export class LessonView extends LitElement {
       color: #991b1b;
     }
 
-    .complete-section {
+    .lesson-footer {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .footer-complete {
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 2rem 0;
+      margin-bottom: 1.25rem;
     }
 
     .complete-btn {
@@ -150,6 +156,55 @@ export class LessonView extends LitElement {
       margin-top: 0.5rem;
       font-size: 0.813rem;
       color: #94a3b8;
+    }
+
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.625rem 1.25rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      background: #fff;
+      color: #334155;
+      font-size: 0.875rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .nav-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .nav-btn--next {
+      background: #84cc16;
+      color: #fff;
+      border-color: #84cc16;
+    }
+
+    .nav-btn--next:hover {
+      background: #65a30d;
+    }
+
+    .nav-btn--disabled {
+      opacity: 0.4;
+      pointer-events: none;
+      cursor: default;
+    }
+
+    .nav-btn--hidden {
+      visibility: hidden;
     }
   `;
 
@@ -278,20 +333,6 @@ export class LessonView extends LitElement {
         </div>
       ` : ''}
 
-      <div class="complete-section">
-        ${this._completed
-          ? html`<button class="complete-btn complete-btn--done" disabled>✓ Completada</button>`
-          : html`<button
-              class="complete-btn ${this._quizRequired && !this._quizAnswered ? 'complete-btn--locked' : ''}"
-              @click=${this._markComplete}
-              ?disabled=${this._completing || (this._quizRequired && !this._quizAnswered)}
-            >${this._completing ? 'Guardando...' : 'Marcar como completada'}</button>`
-        }
-        ${this._quizRequired && !this._quizAnswered && !this._completed
-          ? html`<p class="complete-hint">Responde el cuestionario para poder completar la lección</p>`
-          : ''}
-      </div>
-
       <lesson-quiz lessonId=${this._lessonId || ''} lessonTitle=${this._lesson?.title || ''}></lesson-quiz>
 
       <lesson-qa
@@ -299,12 +340,35 @@ export class LessonView extends LitElement {
         moduleId=${this._moduleId || ''}
       ></lesson-qa>
 
-      <lesson-nav
-        prev-module=${this._prevRef?.moduleId || ''}
-        prev-lesson=${this._prevRef?.lessonId || ''}
-        next-module=${this._nextRef?.moduleId || ''}
-        next-lesson=${this._nextRef?.lessonId || ''}
-      ></lesson-nav>
+      <div class="lesson-footer">
+        <div class="footer-complete">
+          ${this._completed
+            ? html`<button class="complete-btn complete-btn--done" disabled>✓ Completada</button>`
+            : html`<button
+                class="complete-btn ${this._quizRequired && !this._quizAnswered ? 'complete-btn--locked' : ''}"
+                @click=${this._markComplete}
+                ?disabled=${this._completing || (this._quizRequired && !this._quizAnswered)}
+              >${this._completing ? 'Guardando...' : 'Marcar como completada'}</button>`
+          }
+          ${this._quizRequired && !this._quizAnswered && !this._completed
+            ? html`<p class="complete-hint">Responde el cuestionario para poder completar la lección</p>`
+            : ''}
+          ${!this._completed && !(this._quizRequired && !this._quizAnswered)
+            ? html`<p class="complete-hint">Completa la lección para acceder a la siguiente</p>`
+            : ''}
+        </div>
+        <div class="footer-nav">
+          ${this._prevRef
+            ? html`<a href="/leccion?m=${this._prevRef.moduleId}&l=${this._prevRef.lessonId}" class="nav-btn">← Anterior</a>`
+            : html`<span class="nav-btn nav-btn--hidden">← Anterior</span>`
+          }
+          <a href="/cursos" class="nav-btn">Temario</a>
+          ${this._nextRef
+            ? html`<a href="/leccion?m=${this._nextRef.moduleId}&l=${this._nextRef.lessonId}" class="nav-btn nav-btn--next ${this._completed ? '' : 'nav-btn--disabled'}">Siguiente →</a>`
+            : html`<span class="nav-btn nav-btn--hidden">Siguiente →</span>`
+          }
+        </div>
+      </div>
     `;
   }
 }
