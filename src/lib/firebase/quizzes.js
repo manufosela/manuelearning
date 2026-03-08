@@ -304,6 +304,7 @@ export async function submitLessonQuizResponse(data) {
       lessonId: data.lessonId,
       lessonTitle: data.lessonTitle || '',
       quizId: data.quizId,
+      userId: data.studentId,
       studentId: data.studentId,
       studentEmail: data.studentEmail,
       answers: data.answers,
