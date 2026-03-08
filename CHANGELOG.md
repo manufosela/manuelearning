@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- CHANGELOG_ENTRIES -->
+## [1.0.23] - 2026-03-08
+- chore: remove .kj/run.log from tracking and add .kj/ to gitignore
+
+## [1.0.21] - 2026-03-08
+- feat: MEL-TSK-0050: Create legal pages (privacy policy, terms of service, cook
+
+## [1.0.21] - 2026-03-08
+- feat: MEL-TSK-0049: Create "Sobre Mánu" about page. Two things needed: 1) Upda
+
 ## [1.0.20] - 2026-03-06
 - feat: add quiz editing capability for admin
 

@@ -1,0 +1,41 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import { SITE } from '../../../config/site.config.js';
+
+export async function getStaticPaths() {
+  let quizIds = [];
+  try {
+    const { fetchAllQuizzes } = await import('../../../lib/firebase/quizzes.js');
+    const result = await fetchAllQuizzes();
+    if (result.success && result.quizzes) {
+      quizIds = result.quizzes.map((q) => q.id);
+    }
+  } catch {
+    // Firestore may be unreachable at build time; no pre-rendered quiz pages
+  }
+  return quizIds.map((id) => ({ params: { id } }));
+}
+
+const { id } = Astro.params;
+---
+
+<MainLayout title={`Quiz | ${SITE.name}`}>
+  <section class="quiz-page">
+    <auth-guard>
+      <quiz-player id="quizPlayer" data-quiz-id={id}></quiz-player>
+    </auth-guard>
+  </section>
+</MainLayout>
+
+<script>
+  import '../../../components/auth-guard.js';
+  import '../../../components/quiz-player.js';
+</script>
+
+<style>
+  .quiz-page {
+    padding: 2rem var(--section-px);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+</style>
