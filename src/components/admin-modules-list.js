@@ -888,13 +888,12 @@ export class AdminModulesList extends LitElement {
 
   /* ── Quiz form ───── */
 
+  _emptyQuestion() {
+    return { questionText: '', options: ['', '', ''], correctAnswer: 0, explanation: '' };
+  }
+
   _emptyQuizForm() {
-    return {
-      questionText: '',
-      options: ['', '', ''],
-      correctAnswer: 0,
-      explanation: '',
-    };
+    return { questions: [this._emptyQuestion()] };
   }
 
   async _openQuizForm(moduleId, lesson) {
@@ -913,13 +912,13 @@ export class AdminModulesList extends LitElement {
 
       if (result.success && result.quiz) {
         this._editingQuizId = result.quiz.id;
-        const q = result.quiz.questions?.[0] || {};
-        this._quizFormData = {
+        const questions = (result.quiz.questions || []).map((q) => ({
           questionText: q.text || '',
           options: q.options?.length >= 3 ? [...q.options] : ['', '', ''],
           correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
           explanation: q.explanation || '',
-        };
+        }));
+        this._quizFormData = { questions: questions.length > 0 ? questions : [this._emptyQuestion()] };
       } else if (!result.success) {
         this._quizFormError = result.error || 'Error al cargar el quiz';
       }
@@ -937,89 +936,119 @@ export class AdminModulesList extends LitElement {
     this._quizFormError = '';
   }
 
-  _handleQuizQuestionInput(e) {
-    this._quizFormData = { ...this._quizFormData, questionText: e.target.value };
-  }
-
-  _handleQuizOptionInput(index, value) {
-    const options = [...this._quizFormData.options];
-    options[index] = value;
-    this._quizFormData = { ...this._quizFormData, options };
-  }
-
-  _handleCorrectAnswerChange(index) {
-    this._quizFormData = { ...this._quizFormData, correctAnswer: index };
-  }
-
-  _addQuizOption() {
+  _addQuizQuestion() {
+    if (this._quizFormData.questions.length >= 3) return;
     this._quizFormData = {
       ...this._quizFormData,
-      options: [...this._quizFormData.options, ''],
+      questions: [...this._quizFormData.questions, this._emptyQuestion()],
     };
   }
 
-  _removeQuizOption(index) {
-    if (this._quizFormData.options.length <= 3) return;
-    const options = this._quizFormData.options.filter((_, i) => i !== index);
-    let { correctAnswer } = this._quizFormData;
-    if (correctAnswer >= options.length) correctAnswer = 0;
-    else if (index < correctAnswer) correctAnswer--;
-    this._quizFormData = { ...this._quizFormData, options, correctAnswer };
+  _removeQuizQuestion(qi) {
+    if (this._quizFormData.questions.length <= 1) return;
+    this._quizFormData = {
+      ...this._quizFormData,
+      questions: this._quizFormData.questions.filter((_, i) => i !== qi),
+    };
   }
 
-  _handleQuizExplanationInput(e) {
-    this._quizFormData = { ...this._quizFormData, explanation: e.target.value };
+  _handleQuizQuestionInput(qi, e) {
+    const questions = [...this._quizFormData.questions];
+    questions[qi] = { ...questions[qi], questionText: e.target.value };
+    this._quizFormData = { ...this._quizFormData, questions };
+  }
+
+  _handleQuizOptionInput(qi, oi, value) {
+    const questions = [...this._quizFormData.questions];
+    const options = [...questions[qi].options];
+    options[oi] = value;
+    questions[qi] = { ...questions[qi], options };
+    this._quizFormData = { ...this._quizFormData, questions };
+  }
+
+  _handleCorrectAnswerChange(qi, oi) {
+    const questions = [...this._quizFormData.questions];
+    questions[qi] = { ...questions[qi], correctAnswer: oi };
+    this._quizFormData = { ...this._quizFormData, questions };
+  }
+
+  _addQuizOption(qi) {
+    const questions = [...this._quizFormData.questions];
+    questions[qi] = { ...questions[qi], options: [...questions[qi].options, ''] };
+    this._quizFormData = { ...this._quizFormData, questions };
+  }
+
+  _removeQuizOption(qi, oi) {
+    const questions = [...this._quizFormData.questions];
+    const q = questions[qi];
+    if (q.options.length <= 3) return;
+    const options = q.options.filter((_, i) => i !== oi);
+    let { correctAnswer } = q;
+    if (correctAnswer >= options.length) correctAnswer = 0;
+    else if (oi < correctAnswer) correctAnswer--;
+    questions[qi] = { ...q, options, correctAnswer };
+    this._quizFormData = { ...this._quizFormData, questions };
+  }
+
+  _handleQuizExplanationInput(qi, e) {
+    const questions = [...this._quizFormData.questions];
+    questions[qi] = { ...questions[qi], explanation: e.target.value };
+    this._quizFormData = { ...this._quizFormData, questions };
   }
 
   async _handleQuizSubmit(e) {
     e.preventDefault();
     this._quizFormError = '';
 
-    const { questionText, options, correctAnswer, explanation } = this._quizFormData;
+    const builtQuestions = [];
+    for (let qi = 0; qi < this._quizFormData.questions.length; qi++) {
+      const { questionText, options, correctAnswer, explanation } = this._quizFormData.questions[qi];
+      const num = qi + 1;
 
-    if (!questionText.trim()) {
-      this._quizFormError = 'El texto de la pregunta es obligatorio';
-      return;
-    }
-
-    const selectedText = options[correctAnswer];
-    if (!selectedText || !selectedText.trim()) {
-      this._quizFormError = 'La respuesta correcta no puede estar vacía';
-      return;
-    }
-
-    const filteredOptions = [];
-    let adjustedCorrectAnswer = -1;
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].trim()) {
-        if (i === correctAnswer) adjustedCorrectAnswer = filteredOptions.length;
-        filteredOptions.push(options[i]);
+      if (!questionText.trim()) {
+        this._quizFormError = `Pregunta ${num}: el texto es obligatorio`;
+        return;
       }
-    }
 
-    if (filteredOptions.length < 3) {
-      this._quizFormError = 'Debe haber al menos 3 opciones con texto';
-      return;
-    }
+      const selectedText = options[correctAnswer];
+      if (!selectedText || !selectedText.trim()) {
+        this._quizFormError = `Pregunta ${num}: la respuesta correcta no puede estar vacía`;
+        return;
+      }
 
-    if (adjustedCorrectAnswer === -1) {
-      this._quizFormError = 'Selecciona una respuesta correcta válida';
-      return;
-    }
+      const filteredOptions = [];
+      let adjustedCorrectAnswer = -1;
+      for (let i = 0; i < options.length; i++) {
+        if (options[i].trim()) {
+          if (i === correctAnswer) adjustedCorrectAnswer = filteredOptions.length;
+          filteredOptions.push(options[i]);
+        }
+      }
 
-    const question = {
-      text: questionText.trim(),
-      type: 'multiple',
-      options: filteredOptions,
-      correctAnswer: adjustedCorrectAnswer,
-      explanation: explanation.trim(),
-    };
+      if (filteredOptions.length < 3) {
+        this._quizFormError = `Pregunta ${num}: debe haber al menos 3 opciones con texto`;
+        return;
+      }
+
+      if (adjustedCorrectAnswer === -1) {
+        this._quizFormError = `Pregunta ${num}: selecciona una respuesta correcta válida`;
+        return;
+      }
+
+      builtQuestions.push({
+        text: questionText.trim(),
+        type: 'multiple',
+        options: filteredOptions,
+        correctAnswer: adjustedCorrectAnswer,
+        explanation: explanation.trim(),
+      });
+    }
 
     const quizData = {
       title: `Quiz: ${this._quizFormLessonTitle}`,
       moduleId: this._quizFormModuleId,
       lessonId: this._quizFormLessonId,
-      questions: [question],
+      questions: builtQuestions,
     };
 
     this._saving = true;
@@ -1271,9 +1300,10 @@ export class AdminModulesList extends LitElement {
   }
   _renderQuizForm() {
     const title = this._editingQuizId ? 'Editar quiz de clase' : 'Nuevo quiz de clase';
+    const questions = this._quizFormData.questions || [];
     return html`
       <div class="form-overlay" @click=${this._closeQuizForm}>
-        <div class="form-card" @click=${(e) => e.stopPropagation()}>
+        <div class="form-card" style="max-width: 600px;" @click=${(e) => e.stopPropagation()}>
           <h3>${title}</h3>
           <p style="font-size: 0.813rem; color: #64748b; margin: -1rem 0 1.25rem;">
             Clase: <strong>${this._quizFormLessonTitle}</strong>
@@ -1283,60 +1313,74 @@ export class AdminModulesList extends LitElement {
             <div class="loading"><div class="spinner"></div><p>Cargando quiz...</p></div>
           ` : html`
             <form @submit=${this._handleQuizSubmit}>
-              <div class="form-group">
-                <label for="quiz-question">Pregunta</label>
-                <textarea
-                  id="quiz-question"
-                  .value=${this._quizFormData.questionText}
-                  @input=${this._handleQuizQuestionInput}
-                  placeholder="Escribe la pregunta..."
-                  rows="3"
-                  required
-                ></textarea>
-              </div>
-
-              <div class="form-group">
-                <label>Opciones de respuesta <span style="font-weight: 400; color: #94a3b8;">(selecciona la correcta)</span></label>
-                ${this._quizFormData.options.map((opt, i) => html`
-                  <div class="option-row">
-                    <input
-                      type="radio"
-                      name="correctAnswer"
-                      .checked=${this._quizFormData.correctAnswer === i}
-                      @change=${() => this._handleCorrectAnswerChange(i)}
-                      title="Marcar como respuesta correcta"
-                    />
-                    <input
-                      type="text"
-                      .value=${opt}
-                      @input=${(e) => this._handleQuizOptionInput(i, e.target.value)}
-                      placeholder="Opción ${i + 1}"
-                    />
-                    ${this._quizFormData.options.length > 3 ? html`
-                      <button type="button" class="remove-option" @click=${() => this._removeQuizOption(i)} title="Eliminar opción">
-                        <span class="material-symbols-outlined" style="font-size: 1rem;">close</span>
-                      </button>
+              ${questions.map((q, qi) => html`
+                <fieldset style="border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                  <legend style="font-size: 0.813rem; font-weight: 700; color: #334155; padding: 0 0.5rem;">
+                    Pregunta ${qi + 1}
+                    ${questions.length > 1 ? html`
+                      <button type="button" class="btn btn--danger btn--small" style="margin-left: 0.5rem; padding: 0.125rem 0.5rem;" @click=${() => this._removeQuizQuestion(qi)}>Eliminar</button>
                     ` : ''}
+                  </legend>
+                  <div class="form-group">
+                    <label>Texto de la pregunta</label>
+                    <textarea
+                      .value=${q.questionText}
+                      @input=${(e) => this._handleQuizQuestionInput(qi, e)}
+                      placeholder="Escribe la pregunta..."
+                      rows="2"
+                      required
+                    ></textarea>
                   </div>
-                `)}
-                ${this._quizFormData.correctAnswer < this._quizFormData.options.length && this._quizFormData.options[this._quizFormData.correctAnswer]?.trim()
-                  ? html`<span class="correct-label">Correcta: Opción ${this._quizFormData.correctAnswer + 1}</span>`
-                  : ''}
-                <button type="button" class="btn btn--secondary btn--small" @click=${this._addQuizOption} style="margin-top: 0.5rem;">
-                  + Añadir opción
-                </button>
-              </div>
 
-              <div class="form-group">
-                <label for="quiz-explanation">Explicación (opcional)</label>
-                <textarea
-                  id="quiz-explanation"
-                  .value=${this._quizFormData.explanation}
-                  @input=${this._handleQuizExplanationInput}
-                  placeholder="Explicación de la respuesta correcta..."
-                  rows="2"
-                ></textarea>
-              </div>
+                  <div class="form-group">
+                    <label>Opciones <span style="font-weight: 400; color: #94a3b8;">(selecciona la correcta)</span></label>
+                    ${q.options.map((opt, oi) => html`
+                      <div class="option-row">
+                        <input
+                          type="radio"
+                          name="correct-${qi}"
+                          .checked=${q.correctAnswer === oi}
+                          @change=${() => this._handleCorrectAnswerChange(qi, oi)}
+                          title="Marcar como respuesta correcta"
+                        />
+                        <input
+                          type="text"
+                          .value=${opt}
+                          @input=${(e) => this._handleQuizOptionInput(qi, oi, e.target.value)}
+                          placeholder="Opción ${oi + 1}"
+                        />
+                        ${q.options.length > 3 ? html`
+                          <button type="button" class="remove-option" @click=${() => this._removeQuizOption(qi, oi)} title="Eliminar opción">
+                            <span class="material-symbols-outlined" style="font-size: 1rem;">close</span>
+                          </button>
+                        ` : ''}
+                      </div>
+                    `)}
+                    <button type="button" class="btn btn--secondary btn--small" @click=${() => this._addQuizOption(qi)} style="margin-top: 0.5rem;">
+                      + Añadir opción
+                    </button>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Explicación (opcional)</label>
+                    <textarea
+                      .value=${q.explanation}
+                      @input=${(e) => this._handleQuizExplanationInput(qi, e)}
+                      placeholder="Explicación de la respuesta correcta..."
+                      rows="2"
+                    ></textarea>
+                  </div>
+                </fieldset>
+              `)}
+
+              ${questions.length < 3 ? html`
+                <button type="button" class="btn btn--secondary" @click=${this._addQuizQuestion} style="margin-bottom: 1rem; width: 100%;">
+                  <span class="material-symbols-outlined" style="font-size: 1rem;">add</span>
+                  Añadir pregunta (${questions.length}/3)
+                </button>
+              ` : html`
+                <p style="text-align: center; font-size: 0.75rem; color: #94a3b8; margin-bottom: 1rem;">Máximo 3 preguntas</p>
+              `}
 
               ${this._quizFormError ? html`<div class="form-error">${this._quizFormError}</div>` : ''}
               <div class="form-actions">
