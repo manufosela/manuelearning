@@ -6,16 +6,19 @@ vi.mock('firebase/auth', () => ({ getAuth: vi.fn(() => ({ currentUser: null })) 
 const mockGetDocs = vi.fn();
 const mockGetDoc = vi.fn();
 const mockAddDoc = vi.fn();
+const mockSetDoc = vi.fn();
 const mockUpdateDoc = vi.fn();
 const mockDeleteDoc = vi.fn();
+const mockDoc = vi.fn();
 
 vi.mock('firebase/firestore', () => ({
   getFirestore: vi.fn(() => ({})),
   collection: vi.fn(),
-  doc: vi.fn(),
+  doc: (...a) => mockDoc(...a),
   getDocs: (...a) => mockGetDocs(...a),
   getDoc: (...a) => mockGetDoc(...a),
   addDoc: (...a) => mockAddDoc(...a),
+  setDoc: (...a) => mockSetDoc(...a),
   updateDoc: (...a) => mockUpdateDoc(...a),
   deleteDoc: (...a) => mockDeleteDoc(...a),
   query: vi.fn(),
@@ -35,6 +38,9 @@ import {
   getUserQuizResponse,
   getQuizResponses,
   getUserQuizResults,
+  submitLessonQuizResponse,
+  hasStudentAnsweredQuiz,
+  getStudentQuizResponse,
 } from '../src/lib/firebase/quizzes.js';
 
 /* ── validateQuiz ───────────────────────────────────────────── */
@@ -331,5 +337,138 @@ describe('getUserQuizResults', () => {
     const result = await getUserQuizResults('u1');
     expect(result.success).toBe(false);
     expect(result.error).toContain('resultados');
+  });
+});
+
+/* ── submitLessonQuizResponse ─────────────────────────────── */
+describe('submitLessonQuizResponse', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const validData = {
+    lessonId: 'l1',
+    lessonTitle: 'Intro JS',
+    quizId: 'q1',
+    studentId: 'u1',
+    studentEmail: 'u1@test.com',
+    selectedAnswer: 'B',
+    isCorrect: true,
+  };
+
+  it('should reject missing lessonId', async () => {
+    expect((await submitLessonQuizResponse({ ...validData, lessonId: '' })).success).toBe(false);
+  });
+
+  it('should reject missing quizId', async () => {
+    expect((await submitLessonQuizResponse({ ...validData, quizId: '' })).success).toBe(false);
+  });
+
+  it('should reject missing studentId', async () => {
+    expect((await submitLessonQuizResponse({ ...validData, studentId: '' })).success).toBe(false);
+  });
+
+  it('should reject missing studentEmail', async () => {
+    expect((await submitLessonQuizResponse({ ...validData, studentEmail: '' })).success).toBe(false);
+  });
+
+  it('should reject missing selectedAnswer', async () => {
+    expect((await submitLessonQuizResponse({ ...validData, selectedAnswer: '' })).success).toBe(false);
+  });
+
+  it('should reject missing isCorrect', async () => {
+    expect((await submitLessonQuizResponse({ ...validData, isCorrect: undefined })).success).toBe(false);
+  });
+
+  it('should save response with deterministic doc ID', async () => {
+    mockDoc.mockReturnValue('doc-ref');
+    mockSetDoc.mockResolvedValue();
+    const result = await submitLessonQuizResponse(validData);
+    expect(result.success).toBe(true);
+    expect(result.id).toBe('u1_l1_q1');
+    expect(mockSetDoc).toHaveBeenCalled();
+  });
+
+  it('should overwrite existing response (no duplicates)', async () => {
+    mockDoc.mockReturnValue('doc-ref');
+    mockSetDoc.mockResolvedValue();
+    await submitLessonQuizResponse(validData);
+    await submitLessonQuizResponse({ ...validData, selectedAnswer: 'C', isCorrect: false });
+    expect(mockSetDoc).toHaveBeenCalledTimes(2);
+  });
+
+  it('should handle Firestore errors', async () => {
+    mockDoc.mockReturnValue('doc-ref');
+    mockSetDoc.mockRejectedValue(new Error('err'));
+    expect((await submitLessonQuizResponse(validData)).success).toBe(false);
+  });
+});
+
+/* ── hasStudentAnsweredQuiz ────────────────────────────────── */
+describe('hasStudentAnsweredQuiz', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('should reject empty params', async () => {
+    expect((await hasStudentAnsweredQuiz('', 'l1', 'q1')).success).toBe(false);
+    expect((await hasStudentAnsweredQuiz('u1', '', 'q1')).success).toBe(false);
+    expect((await hasStudentAnsweredQuiz('u1', 'l1', '')).success).toBe(false);
+  });
+
+  it('should return false when not answered', async () => {
+    mockDoc.mockReturnValue('doc-ref');
+    mockGetDoc.mockResolvedValue({ exists: () => false });
+    const result = await hasStudentAnsweredQuiz('u1', 'l1', 'q1');
+    expect(result.success).toBe(true);
+    expect(result.answered).toBe(false);
+  });
+
+  it('should return true when answered', async () => {
+    mockDoc.mockReturnValue('doc-ref');
+    mockGetDoc.mockResolvedValue({ exists: () => true, id: 'u1_l1_q1', data: () => ({}) });
+    const result = await hasStudentAnsweredQuiz('u1', 'l1', 'q1');
+    expect(result.success).toBe(true);
+    expect(result.answered).toBe(true);
+  });
+
+  it('should handle errors', async () => {
+    mockDoc.mockReturnValue('doc-ref');
+    mockGetDoc.mockRejectedValue(new Error('err'));
+    expect((await hasStudentAnsweredQuiz('u1', 'l1', 'q1')).success).toBe(false);
+  });
+});
+
+/* ── getStudentQuizResponse ───────────────────────────────── */
+describe('getStudentQuizResponse', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('should reject empty params', async () => {
+    expect((await getStudentQuizResponse('', 'l1', 'q1')).success).toBe(false);
+    expect((await getStudentQuizResponse('u1', '', 'q1')).success).toBe(false);
+    expect((await getStudentQuizResponse('u1', 'l1', '')).success).toBe(false);
+  });
+
+  it('should return null when no response exists', async () => {
+    mockDoc.mockReturnValue('doc-ref');
+    mockGetDoc.mockResolvedValue({ exists: () => false });
+    const result = await getStudentQuizResponse('u1', 'l1', 'q1');
+    expect(result.success).toBe(true);
+    expect(result.response).toBeNull();
+  });
+
+  it('should return response when exists', async () => {
+    mockDoc.mockReturnValue('doc-ref');
+    mockGetDoc.mockResolvedValue({
+      exists: () => true,
+      id: 'u1_l1_q1',
+      data: () => ({ selectedAnswer: 'B', isCorrect: true }),
+    });
+    const result = await getStudentQuizResponse('u1', 'l1', 'q1');
+    expect(result.success).toBe(true);
+    expect(result.response.selectedAnswer).toBe('B');
+    expect(result.response.isCorrect).toBe(true);
+  });
+
+  it('should handle errors', async () => {
+    mockDoc.mockReturnValue('doc-ref');
+    mockGetDoc.mockRejectedValue(new Error('err'));
+    expect((await getStudentQuizResponse('u1', 'l1', 'q1')).success).toBe(false);
   });
 });
