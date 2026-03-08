@@ -138,7 +138,7 @@ export class AdminQuizzesList extends LitElement {
       title: '',
       moduleId: '',
       lessonId: '',
-      questions: [{ text: '', type: 'open', options: [] }],
+      questions: [{ text: '', type: 'open', options: [], explanation: '' }],
     };
   }
 
@@ -162,7 +162,7 @@ export class AdminQuizzesList extends LitElement {
       title: quiz.title || '',
       moduleId: quiz.moduleId || '',
       lessonId: quiz.lessonId || '',
-      questions: (quiz.questions || []).map((q) => ({ ...q, options: q.options || [] })),
+      questions: (quiz.questions || []).map((q) => ({ ...q, options: q.options || [], explanation: q.explanation || '' })),
     };
     this._formError = '';
     this._showForm = true;
@@ -182,9 +182,10 @@ export class AdminQuizzesList extends LitElement {
   }
 
   _addQuestion() {
+    if (this._formData.questions.length >= 3) return;
     this._formData = {
       ...this._formData,
-      questions: [...this._formData.questions, { text: '', type: 'open', options: [] }],
+      questions: [...this._formData.questions, { text: '', type: 'open', options: [], explanation: '' }],
     };
   }
 
@@ -536,12 +537,25 @@ export class AdminQuizzesList extends LitElement {
                     </select>
                   </div>
                 ` : ''}
+                <div class="form-group">
+                  <label>Explicación (opcional)</label>
+                  <textarea
+                    .value=${q.explanation || ''}
+                    @input=${(e) => this._handleQuestionInput(i, 'explanation', e.target.value)}
+                    placeholder="Explicación que se mostrará al alumno tras responder"
+                    rows="2"
+                  ></textarea>
+                </div>
               </div>
             `)}
 
-            <button type="button" class="btn btn--secondary" @click=${this._addQuestion} style="margin-bottom: 1rem;">
-              + Añadir pregunta
-            </button>
+            ${this._formData.questions.length < 3 ? html`
+              <button type="button" class="btn btn--secondary" @click=${this._addQuestion} style="margin-bottom: 1rem;">
+                + Añadir pregunta
+              </button>
+            ` : html`
+              <p style="font-size: 0.813rem; color: #94a3b8; margin-bottom: 1rem;">Máximo 3 preguntas por quiz</p>
+            `}
 
             ${this._formError ? html`<div class="form-error">${this._formError}</div>` : ''}
             <div class="form-actions">
