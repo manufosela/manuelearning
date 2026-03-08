@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- CHANGELOG_ENTRIES -->
 ## [1.0.23] - 2026-03-08
+- fix: restore quiz gate on lesson complete button
+
+## [1.0.23] - 2026-03-08
 - chore: remove .kj/run.log from tracking and add .kj/ to gitignore
 
 ## [1.0.21] - 2026-03-08

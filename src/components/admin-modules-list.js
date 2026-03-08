@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import {
   fetchAllModules,
   createModule,
@@ -24,6 +25,7 @@ import { notifyUsers } from '../lib/firebase/user-notifications.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { filterBySearch } from '../lib/search-filter.js';
 import { materialIconsLink } from './shared/material-icons.js';
+import { renderMarkdown } from '../lib/markdown.js';
 
 /**
  * @element admin-modules-list
@@ -48,6 +50,7 @@ export class AdminModulesList extends LitElement {
     _saving: { type: Boolean, state: true },
     _searchQuery: { type: String, state: true },
     _notifyStudents: { type: Boolean, state: true },
+    _docsTab: { type: String, state: true },
     _showQuizForm: { type: Boolean, state: true },
     _quizFormModuleId: { type: String, state: true },
     _quizFormLessonId: { type: String, state: true },
@@ -284,6 +287,71 @@ export class AdminModulesList extends LitElement {
       resize: vertical;
     }
 
+    .form-group textarea.docs-editor {
+      min-height: 350px;
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 0.813rem;
+      line-height: 1.6;
+    }
+
+    .md-editor {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .md-editor__tabs {
+      display: none;
+      gap: 0;
+      margin-bottom: 0.5rem;
+    }
+
+    .md-editor__tab {
+      padding: 0.375rem 1rem;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #64748b;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .md-editor__tab:first-child { border-radius: 0.375rem 0 0 0.375rem; }
+    .md-editor__tab:last-child { border-radius: 0 0.375rem 0.375rem 0; }
+
+    .md-editor__tab--active {
+      background: #84cc16;
+      color: #fff;
+      border-color: #84cc16;
+    }
+
+    .md-preview {
+      border: 1px solid #e2e8f0;
+      border-radius: 0.375rem;
+      padding: 0.75rem;
+      min-height: 350px;
+      max-height: 400px;
+      overflow-y: auto;
+      background: #fff;
+    }
+
+    .md-preview-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 0.375rem;
+    }
+
+    @media (max-width: 768px) {
+      .md-editor { grid-template-columns: 1fr; }
+      .md-editor__tabs { display: flex; }
+      .md-editor__write { display: block; }
+      .md-editor__preview { display: block; }
+      .md-editor--tab-write .md-editor__preview { display: none; }
+      .md-editor--tab-preview .md-editor__write { display: none; }
+    }
+
     .form-group input:focus,
     .form-group textarea:focus {
       outline: none;
@@ -510,6 +578,7 @@ export class AdminModulesList extends LitElement {
     this._saving = false;
     this._searchQuery = '';
     this._notifyStudents = false;
+    this._docsTab = 'write';
     this._showQuizForm = false;
     this._quizFormModuleId = null;
     this._quizFormLessonId = null;
@@ -1062,7 +1131,7 @@ export class AdminModulesList extends LitElement {
     const title = this._editingLessonId ? 'Editar clase' : 'Nueva clase';
     return html`
       <div class="form-overlay" @click=${this._closeLessonForm}>
-        <div class="form-card" @click=${(e) => e.stopPropagation()}>
+        <div class="form-card" style="max-width: 900px;" @click=${(e) => e.stopPropagation()}>
           <h3>${title}</h3>
           <form @submit=${this._handleLessonSubmit}>
             <div class="form-group">
@@ -1083,7 +1152,19 @@ export class AdminModulesList extends LitElement {
             </div>
             <div class="form-group">
               <label for="les-docs">Documentación (Markdown)</label>
-              <textarea id="les-docs" name="documentation" .value=${this._lessonFormData.documentation} @input=${this._handleLessonInput} placeholder="# Título de la clase..."></textarea>
+              <div class="md-editor__tabs">
+                <button type="button" class="md-editor__tab ${this._docsTab === 'write' ? 'md-editor__tab--active' : ''}" @click=${() => { this._docsTab = 'write'; }}>Escribir</button>
+                <button type="button" class="md-editor__tab ${this._docsTab === 'preview' ? 'md-editor__tab--active' : ''}" @click=${() => { this._docsTab = 'preview'; }}>Vista previa</button>
+              </div>
+              <div class="md-editor md-editor--tab-${this._docsTab}">
+                <div class="md-editor__write">
+                  <textarea id="les-docs" name="documentation" class="docs-editor" .value=${this._lessonFormData.documentation} @input=${this._handleLessonInput} placeholder="# Título de la clase..."></textarea>
+                </div>
+                <div class="md-editor__preview">
+                  <div class="md-preview-label">Vista previa</div>
+                  <div class="md-preview">${unsafeHTML(renderMarkdown(this._lessonFormData.documentation || ''))}</div>
+                </div>
+              </div>
             </div>
             ${this._lessonFormError ? html`<div class="form-error">${this._lessonFormError}</div>` : ''}
             <div class="form-actions">
