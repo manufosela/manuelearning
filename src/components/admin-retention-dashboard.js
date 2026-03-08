@@ -163,10 +163,9 @@ export class AdminRetentionDashboard extends LitElement {
       }
     }
 
-    // Enrich each student with progress data
-    const nonAdmins = usersResult.users.filter((u) => u.role !== 'admin');
+    // Enrich each user with progress data
     this._students = await Promise.all(
-      nonAdmins.map(async (u) => {
+      usersResult.users.map(async (u) => {
         const progressResult = await getUserProgress(u.uid);
         const lessonsCompleted = progressResult.success
           ? progressResult.completedLessons.length

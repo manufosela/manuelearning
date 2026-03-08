@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- CHANGELOG_ENTRIES -->
+## [1.0.35] - 2026-03-08
+- feat: add configurable retention algorithm panel in admin dashboard
+
+## [1.0.34] - 2026-03-08
+- feat: add engagement scoring algorithm and churn prediction to retention dashboard
+
 ## [1.0.27] - 2026-03-08
 - feat: support 1-3 questions per quiz in admin module form
 
