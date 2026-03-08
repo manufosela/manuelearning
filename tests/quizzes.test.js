@@ -420,8 +420,7 @@ describe('submitLessonQuizResponse', () => {
     quizId: 'q1',
     studentId: 'u1',
     studentEmail: 'u1@test.com',
-    selectedAnswer: 'B',
-    isCorrect: true,
+    answers: [{ selectedIndex: 1, isCorrect: true }],
   };
 
   it('should reject missing lessonId', async () => {
@@ -440,12 +439,12 @@ describe('submitLessonQuizResponse', () => {
     expect((await submitLessonQuizResponse({ ...validData, studentEmail: '' })).success).toBe(false);
   });
 
-  it('should reject missing selectedAnswer', async () => {
-    expect((await submitLessonQuizResponse({ ...validData, selectedAnswer: '' })).success).toBe(false);
+  it('should reject missing answers', async () => {
+    expect((await submitLessonQuizResponse({ ...validData, answers: [] })).success).toBe(false);
   });
 
-  it('should reject missing isCorrect', async () => {
-    expect((await submitLessonQuizResponse({ ...validData, isCorrect: undefined })).success).toBe(false);
+  it('should reject undefined answers', async () => {
+    expect((await submitLessonQuizResponse({ ...validData, answers: undefined })).success).toBe(false);
   });
 
   it('should save response with deterministic doc ID', async () => {
@@ -461,7 +460,7 @@ describe('submitLessonQuizResponse', () => {
     mockDoc.mockReturnValue('doc-ref');
     mockSetDoc.mockResolvedValue();
     await submitLessonQuizResponse(validData);
-    await submitLessonQuizResponse({ ...validData, selectedAnswer: 'C', isCorrect: false });
+    await submitLessonQuizResponse({ ...validData, answers: [{ selectedIndex: 0, isCorrect: false }] });
     expect(mockSetDoc).toHaveBeenCalledTimes(2);
   });
 

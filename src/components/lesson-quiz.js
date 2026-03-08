@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
-import { fetchQuizzesByLessonId, submitQuizResponse, getUserQuizResponse } from '../lib/firebase/quizzes.js';
+import { getLessonQuiz } from '../services/quiz-service.js';
+import { submitLessonQuizResponse, getStudentQuizResponse } from '../lib/firebase/quizzes.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { stateStyles } from '../lib/shared-styles.js';
 import { materialIconsLink } from './shared/material-icons.js';
@@ -12,6 +13,7 @@ import { materialIconsLink } from './shared/material-icons.js';
 export class LessonQuiz extends LitElement {
   static properties = {
     lessonId: { type: String },
+    lessonTitle: { type: String },
     _quiz: { type: Object, state: true },
     _loading: { type: Boolean, state: true },
     _error: { type: String, state: true },
@@ -19,6 +21,8 @@ export class LessonQuiz extends LitElement {
     _submitted: { type: Boolean, state: true },
     _submitting: { type: Boolean, state: true },
     _previousResponse: { type: Object, state: true },
+    _currentQuestion: { type: Number, state: true },
+    _confirmedQuestions: { type: Array, state: true },
   };
 
   static styles = [
@@ -234,6 +238,13 @@ export class LessonQuiz extends LitElement {
         cursor: default;
       }
 
+      .progress-text {
+        margin-left: auto;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #94a3b8;
+      }
+
       .completed-badge {
         display: inline-flex;
         align-items: center;
@@ -255,6 +266,7 @@ export class LessonQuiz extends LitElement {
   constructor() {
     super();
     this.lessonId = '';
+    this.lessonTitle = '';
     this._quiz = null;
     this._loading = true;
     this._error = '';
@@ -262,7 +274,10 @@ export class LessonQuiz extends LitElement {
     this._submitted = false;
     this._submitting = false;
     this._previousResponse = null;
+    this._currentQuestion = 0;
+    this._confirmedQuestions = [];
     this._userId = null;
+    this._userEmail = '';
   }
 
   connectedCallback() {
@@ -270,6 +285,7 @@ export class LessonQuiz extends LitElement {
     if (this.lessonId) {
       waitForAuth().then((user) => {
         this._userId = user.uid;
+        this._userEmail = user.email || '';
         this._loadQuiz();
       });
     } else {
@@ -281,7 +297,7 @@ export class LessonQuiz extends LitElement {
     this._loading = true;
     this._error = '';
 
-    const result = await fetchQuizzesByLessonId(this.lessonId);
+    const result = await getLessonQuiz(this.lessonId);
 
     if (!result.success) {
       this._error = result.error;
@@ -289,54 +305,82 @@ export class LessonQuiz extends LitElement {
       return;
     }
 
-    if (result.quizzes.length === 0) {
+    if (!result.quiz) {
       this._quiz = null;
       this._loading = false;
       return;
     }
 
-    this._quiz = result.quizzes[0];
-    this._answers = new Array(this._quiz.questions.length).fill('');
+    this._quiz = result.quiz;
+    this._answers = new Array(this._quiz.questions.length).fill(null);
+    this._currentQuestion = 0;
+    this._confirmedQuestions = new Array(this._quiz.questions.length).fill(false);
 
     if (this._userId) {
-      const responseResult = await getUserQuizResponse(this._userId, this._quiz.id);
+      const responseResult = await getStudentQuizResponse(this._userId, this.lessonId, this.lessonId);
       if (responseResult.success && responseResult.response) {
         this._previousResponse = responseResult.response;
-        this._answers = responseResult.response.answers || [];
+        this._answers = (responseResult.response.answers || []).map((a) => a.selectedIndex);
         this._submitted = true;
+        this._confirmedQuestions = new Array(this._quiz.questions.length).fill(true);
+        this._currentQuestion = this._quiz.questions.length - 1;
       }
     }
 
     this._loading = false;
   }
 
-  _selectOption(questionIndex, option) {
-    if (this._submitted) return;
+  _selectOption(questionIndex, optionIndex) {
+    if (this._submitted || this._confirmedQuestions[questionIndex]) return;
     const updated = [...this._answers];
-    updated[questionIndex] = option;
+    updated[questionIndex] = optionIndex;
     this._answers = updated;
   }
 
-  _handleOpenAnswer(questionIndex, value) {
+  _confirmAnswer() {
     if (this._submitted) return;
-    const updated = [...this._answers];
-    updated[questionIndex] = value;
-    this._answers = updated;
+    const currentIdx = this._currentQuestion;
+    if (this._answers[currentIdx] === null) {
+      this._error = 'Selecciona una respuesta antes de continuar.';
+      return;
+    }
+    this._error = '';
+
+    // Step 1: Confirm the answer and show feedback
+    if (!this._confirmedQuestions[currentIdx]) {
+      const updated = [...this._confirmedQuestions];
+      updated[currentIdx] = true;
+      this._confirmedQuestions = updated;
+      return;
+    }
+
+    // Step 2: Advance to next question or submit
+    if (currentIdx < this._quiz.questions.length - 1) {
+      this._currentQuestion = currentIdx + 1;
+    } else {
+      this._submitQuiz();
+    }
   }
 
   async _submitQuiz() {
     if (this._submitting || this._submitted) return;
 
-    const unanswered = this._answers.some((a) => !a || a.trim() === '');
-    if (unanswered) {
-      this._error = 'Por favor, responde todas las preguntas antes de enviar.';
-      return;
-    }
-
     this._submitting = true;
     this._error = '';
 
-    const result = await submitQuizResponse(this._userId, this._quiz.id, this._answers);
+    const answers = this._quiz.questions.map((q, i) => ({
+      selectedIndex: this._answers[i],
+      isCorrect: this._answers[i] === q.correctIndex,
+    }));
+
+    const result = await submitLessonQuizResponse({
+      lessonId: this.lessonId,
+      lessonTitle: this.lessonTitle || '',
+      quizId: this.lessonId,
+      studentId: this._userId,
+      studentEmail: this._userEmail,
+      answers,
+    });
 
     if (result.success) {
       this._submitted = true;
@@ -347,32 +391,27 @@ export class LessonQuiz extends LitElement {
     this._submitting = false;
   }
 
-  _getOptionClass(question, option, questionIndex) {
-    const selected = this._answers[questionIndex] === option;
-    const hasCorrectAnswer = question.correctAnswer !== undefined && question.correctAnswer !== '';
+  _getOptionClass(question, optionIndex, questionIndex) {
+    const selected = this._answers[questionIndex] === optionIndex;
+    const showFeedback = this._submitted || this._confirmedQuestions[questionIndex];
 
-    if (!this._submitted) {
+    if (!showFeedback) {
       return selected ? 'option-label option-label--selected' : 'option-label';
     }
 
     const classes = ['option-label', 'option-label--disabled'];
 
-    if (hasCorrectAnswer) {
-      if (option === question.correctAnswer) {
-        classes.push('option-label--correct');
-      } else if (selected) {
-        classes.push('option-label--incorrect');
-      }
+    if (optionIndex === question.correctIndex) {
+      classes.push('option-label--correct');
     } else if (selected) {
-      classes.push('option-label--selected');
+      classes.push('option-label--incorrect');
     }
 
     return classes.join(' ');
   }
 
   _isAnswerCorrect(question, questionIndex) {
-    if (!question.correctAnswer) return null;
-    return this._answers[questionIndex] === question.correctAnswer;
+    return this._answers[questionIndex] === question.correctIndex;
   }
 
   render() {
@@ -382,12 +421,18 @@ export class LessonQuiz extends LitElement {
 
     if (!this._quiz) return '';
 
+    const totalQuestions = this._quiz.questions.length;
+    const progressText = totalQuestions > 1
+      ? `Pregunta ${Math.min(this._currentQuestion + 1, totalQuestions)} de ${totalQuestions}`
+      : '';
+
     return html`
       ${materialIconsLink}
       <div class="quiz-container">
         <div class="quiz-header">
           <span class="material-symbols-outlined">quiz</span>
-          <h3>${this._quiz.title}</h3>
+          <h3>Comprobación de comprensión</h3>
+          ${progressText ? html`<span class="progress-text">${progressText}</span>` : ''}
           ${this._submitted
             ? html`<span class="completed-badge">
                 <span class="material-symbols-outlined">check_circle</span>
@@ -400,7 +445,9 @@ export class LessonQuiz extends LitElement {
           ${this._error && !this._submitted
             ? html`<div class="state-error" style="margin-bottom: 1rem"><p>${this._error}</p></div>`
             : ''}
-          ${this._quiz.questions.map((q, i) => this._renderQuestion(q, i))}
+          ${this._submitted
+            ? this._quiz.questions.map((q, i) => this._renderQuestion(q, i))
+            : this._renderQuestion(this._quiz.questions[this._currentQuestion], this._currentQuestion)}
         </div>
 
         ${!this._submitted
@@ -408,10 +455,16 @@ export class LessonQuiz extends LitElement {
               <div class="quiz-actions">
                 <button
                   class="submit-btn"
-                  @click=${this._submitQuiz}
-                  ?disabled=${this._submitting}
+                  @click=${this._confirmAnswer}
+                  ?disabled=${this._submitting || this._answers[this._currentQuestion] === null}
                 >
-                  ${this._submitting ? 'Enviando...' : 'Enviar respuestas'}
+                  ${this._submitting
+                    ? 'Enviando...'
+                    : !this._confirmedQuestions[this._currentQuestion]
+                      ? 'Confirmar'
+                      : this._currentQuestion < totalQuestions - 1
+                        ? 'Siguiente'
+                        : 'Enviar respuestas'}
                 </button>
               </div>
             `
@@ -421,27 +474,42 @@ export class LessonQuiz extends LitElement {
   }
 
   _renderQuestion(question, index) {
-    const isCorrect = this._submitted ? this._isAnswerCorrect(question, index) : null;
+    const showFeedback = this._submitted || this._confirmedQuestions[index];
+    const isCorrect = showFeedback ? this._isAnswerCorrect(question, index) : null;
+    const isDisabled = showFeedback || (index !== this._currentQuestion && !this._submitted);
 
     return html`
       <div class="question-block">
         <div class="question-label">Pregunta ${index + 1}</div>
-        <div class="question-text">${question.text}</div>
+        <div class="question-text">${question.question}</div>
 
-        ${question.type === 'multiple' && question.options
-          ? this._renderMultipleChoice(question, index)
-          : this._renderOpenAnswer(question, index)}
+        <div class="options-list">
+          ${question.options.map(
+            (opt, optIdx) => html`
+              <label class=${this._getOptionClass(question, optIdx, index)}>
+                <input
+                  type="radio"
+                  name="q-${index}"
+                  .checked=${this._answers[index] === optIdx}
+                  ?disabled=${isDisabled}
+                  @change=${() => this._selectOption(index, optIdx)}
+                />
+                ${opt}
+              </label>
+            `,
+          )}
+        </div>
 
-        ${this._submitted && isCorrect !== null
+        ${showFeedback && isCorrect !== null
           ? html`
               <div class="feedback-icon ${isCorrect ? 'feedback-icon--correct' : 'feedback-icon--incorrect'}">
                 <span class="material-symbols-outlined">${isCorrect ? 'check_circle' : 'cancel'}</span>
-                ${isCorrect ? 'Correcto' : 'Incorrecto'}
+                ${isCorrect ? '¡Correcto!' : `Incorrecto — La respuesta correcta es: ${question.options[question.correctIndex]}`}
               </div>
             `
           : ''}
 
-        ${this._submitted && question.explanation
+        ${showFeedback && question.explanation
           ? html`
               <div class="explanation">
                 <span class="material-symbols-outlined">info</span>
@@ -450,39 +518,6 @@ export class LessonQuiz extends LitElement {
             `
           : ''}
       </div>
-    `;
-  }
-
-  _renderMultipleChoice(question, index) {
-    return html`
-      <div class="options-list">
-        ${question.options.map(
-          (opt) => html`
-            <label class=${this._getOptionClass(question, opt, index)}>
-              <input
-                type="radio"
-                name="q-${index}"
-                .checked=${this._answers[index] === opt}
-                ?disabled=${this._submitted}
-                @change=${() => this._selectOption(index, opt)}
-              />
-              ${opt}
-            </label>
-          `,
-        )}
-      </div>
-    `;
-  }
-
-  _renderOpenAnswer(question, index) {
-    return html`
-      <textarea
-        class="open-answer"
-        placeholder="Escribe tu respuesta..."
-        .value=${this._answers[index] || ''}
-        ?disabled=${this._submitted}
-        @input=${(e) => this._handleOpenAnswer(index, e.target.value)}
-      ></textarea>
     `;
   }
 }
