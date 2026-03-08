@@ -10,15 +10,48 @@ import { db } from '../lib/firebase/config.js';
 const COLLECTION = 'quizzes';
 
 /**
- * @typedef {Object} LessonQuiz
- * @property {string} lessonId
+ * @typedef {Object} LessonQuizQuestion
  * @property {string} question - The question text
  * @property {string[]} options - Array of answer options
  * @property {number} correctIndex - Index of the correct answer in options
  * @property {string} [explanation] - Optional explanation shown after answering
+ */
+
+/**
+ * @typedef {Object} LessonQuiz
+ * @property {string} lessonId
+ * @property {LessonQuizQuestion[]} questions - Array of 1-3 questions
  * @property {*} [createdAt]
  * @property {*} [updatedAt]
  */
+
+/**
+ * Validate a single question object.
+ * @param {Partial<LessonQuizQuestion>} q
+ * @param {number} index
+ * @returns {{ valid: boolean, error?: string }}
+ */
+function validateQuestion(q, index) {
+  const prefix = `Pregunta ${index + 1}:`;
+  if (!q.question || q.question.trim().length === 0) {
+    return { valid: false, error: `${prefix} el texto es obligatorio` };
+  }
+  if (!Array.isArray(q.options) || q.options.length < 2) {
+    return { valid: false, error: `${prefix} se necesitan al menos 2 opciones` };
+  }
+  for (const opt of q.options) {
+    if (!opt || (typeof opt === 'string' && opt.trim().length === 0)) {
+      return { valid: false, error: `${prefix} todas las opciones deben tener texto` };
+    }
+  }
+  if (q.correctIndex == null || !Number.isInteger(q.correctIndex)) {
+    return { valid: false, error: `${prefix} el índice de respuesta correcta es obligatorio` };
+  }
+  if (q.correctIndex < 0 || q.correctIndex >= q.options.length) {
+    return { valid: false, error: `${prefix} el índice de respuesta correcta está fuera de rango` };
+  }
+  return { valid: true };
+}
 
 /**
  * Validate lesson quiz data.
@@ -29,22 +62,15 @@ export function validateLessonQuiz(data) {
   if (!data.lessonId) {
     return { valid: false, error: 'lessonId es obligatorio' };
   }
-  if (!data.question || data.question.trim().length === 0) {
-    return { valid: false, error: 'La pregunta es obligatoria' };
+  if (!Array.isArray(data.questions) || data.questions.length === 0) {
+    return { valid: false, error: 'Se necesita al menos 1 pregunta' };
   }
-  if (!Array.isArray(data.options) || data.options.length < 2) {
-    return { valid: false, error: 'Se necesitan al menos 2 opciones de respuesta' };
+  if (data.questions.length > 3) {
+    return { valid: false, error: 'Un quiz puede tener máximo 3 preguntas' };
   }
-  for (const opt of data.options) {
-    if (!opt || (typeof opt === 'string' && opt.trim().length === 0)) {
-      return { valid: false, error: 'Todas las opciones deben tener texto' };
-    }
-  }
-  if (data.correctIndex == null || !Number.isInteger(data.correctIndex)) {
-    return { valid: false, error: 'El índice de respuesta correcta es obligatorio' };
-  }
-  if (data.correctIndex < 0 || data.correctIndex >= data.options.length) {
-    return { valid: false, error: 'El índice de respuesta correcta está fuera de rango' };
+  for (let i = 0; i < data.questions.length; i++) {
+    const result = validateQuestion(data.questions[i], i);
+    if (!result.valid) return result;
   }
   return { valid: true };
 }
@@ -80,11 +106,15 @@ export async function saveLessonQuiz(data) {
     const ref = doc(db, COLLECTION, data.lessonId);
     const existing = await getDoc(ref);
 
+    const questions = data.questions.map((q) => ({
+      question: q.question.trim(),
+      options: q.options.map((o) => (typeof o === 'string' ? o.trim() : o)),
+      correctIndex: q.correctIndex,
+      explanation: q.explanation ? q.explanation.trim() : null,
+    }));
+
     await setDoc(ref, {
-      question: data.question.trim(),
-      options: data.options.map((o) => (typeof o === 'string' ? o.trim() : o)),
-      correctIndex: data.correctIndex,
-      explanation: data.explanation ? data.explanation.trim() : null,
+      questions,
       ...(existing.exists() ? { updatedAt: serverTimestamp() } : { createdAt: serverTimestamp() }),
     });
     return { success: true };
@@ -110,24 +140,29 @@ export async function deleteLessonQuiz(lessonId) {
 }
 
 /**
- * Check if a user's answer is correct for a lesson quiz.
+ * Check answers for a lesson quiz (supports multiple questions).
  * @param {string} lessonId
- * @param {number} selectedIndex - The index the user selected
- * @returns {Promise<{success: boolean, correct?: boolean, explanation?: string|null, error?: string}>}
+ * @param {number[]} selectedIndexes - Array of selected indexes, one per question
+ * @returns {Promise<{success: boolean, results?: Array<{correct: boolean, explanation: string|null}>, error?: string}>}
  */
-export async function checkLessonQuizAnswer(lessonId, selectedIndex) {
+export async function checkLessonQuizAnswers(lessonId, selectedIndexes) {
   if (!lessonId) return { success: false, error: 'lessonId es obligatorio' };
-  if (selectedIndex == null || !Number.isInteger(selectedIndex)) {
-    return { success: false, error: 'selectedIndex debe ser un entero' };
+  if (!Array.isArray(selectedIndexes) || selectedIndexes.length === 0) {
+    return { success: false, error: 'selectedIndexes debe ser un array no vacío' };
   }
 
   const { success, quiz, error } = await getLessonQuiz(lessonId);
   if (!success) return { success: false, error };
   if (!quiz) return { success: false, error: 'No hay quiz para esta lección' };
 
-  return {
-    success: true,
-    correct: selectedIndex === quiz.correctIndex,
-    explanation: quiz.explanation || null,
-  };
+  if (selectedIndexes.length !== quiz.questions.length) {
+    return { success: false, error: 'El número de respuestas no coincide con el número de preguntas' };
+  }
+
+  const results = quiz.questions.map((q, i) => ({
+    correct: selectedIndexes[i] === q.correctIndex,
+    explanation: q.explanation || null,
+  }));
+
+  return { success: true, results };
 }

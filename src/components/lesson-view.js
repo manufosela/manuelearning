@@ -242,7 +242,7 @@ export class LessonView extends LitElement {
         }
       </div>
 
-      <lesson-quiz lessonId=${this._lessonId || ''}></lesson-quiz>
+      <lesson-quiz lessonId=${this._lessonId || ''} lessonTitle=${this._lesson?.title || ''}></lesson-quiz>
 
       <lesson-qa
         lessonId=${this._lessonId || ''}

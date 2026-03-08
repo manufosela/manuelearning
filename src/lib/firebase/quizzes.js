@@ -266,6 +266,12 @@ export async function getQuizResponses(quizId) {
 /* ── Post-Lesson Quiz Responses ────────────────────────────── */
 
 /**
+ * @typedef {Object} QuestionResponse
+ * @property {number} selectedIndex - Index of the selected option
+ * @property {boolean} isCorrect - Whether the answer was correct
+ */
+
+/**
  * @typedef {Object} LessonQuizResponse
  * @property {string} [id]
  * @property {string} lessonId
@@ -273,8 +279,7 @@ export async function getQuizResponses(quizId) {
  * @property {string} quizId
  * @property {string} studentId
  * @property {string} studentEmail
- * @property {string} selectedAnswer
- * @property {boolean} isCorrect
+ * @property {QuestionResponse[]} answers - Array of answers, one per question
  * @property {*} [answeredAt]
  */
 
@@ -288,8 +293,9 @@ export async function submitLessonQuizResponse(data) {
   if (!data.quizId) return { success: false, error: 'quizId es obligatorio' };
   if (!data.studentId) return { success: false, error: 'studentId es obligatorio' };
   if (!data.studentEmail) return { success: false, error: 'studentEmail es obligatorio' };
-  if (!data.selectedAnswer) return { success: false, error: 'selectedAnswer es obligatorio' };
-  if (typeof data.isCorrect !== 'boolean') return { success: false, error: 'isCorrect es obligatorio' };
+  if (!Array.isArray(data.answers) || data.answers.length === 0) {
+    return { success: false, error: 'answers es obligatorio' };
+  }
 
   try {
     const docId = `${data.studentId}_${data.lessonId}_${data.quizId}`;
@@ -300,8 +306,7 @@ export async function submitLessonQuizResponse(data) {
       quizId: data.quizId,
       studentId: data.studentId,
       studentEmail: data.studentEmail,
-      selectedAnswer: data.selectedAnswer,
-      isCorrect: data.isCorrect,
+      answers: data.answers,
       answeredAt: serverTimestamp(),
     });
     return { success: true, id: docId };
