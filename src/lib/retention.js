@@ -6,14 +6,17 @@
 
 /**
  * Classify a student based on their last activity.
- * - green: <3 days
- * - yellow: 3-7 days
- * - red: >7 days or no activity
  *
  * @param {string|null} lastActivityDate - ISO date string
+ * @param {Object} [cfg] - Optional config overrides
+ * @param {number} [cfg.greenDays=3] - Max days for "active"
+ * @param {number} [cfg.yellowDays=7] - Max days for "at risk"
  * @returns {StudentClassification}
  */
-export function classifyStudent(lastActivityDate) {
+export function classifyStudent(lastActivityDate, cfg = {}) {
+  const greenDays = cfg.greenDays ?? 3;
+  const yellowDays = cfg.yellowDays ?? 7;
+
   if (!lastActivityDate) {
     return { status: 'red', daysSinceActivity: Infinity };
   }
@@ -23,8 +26,8 @@ export function classifyStudent(lastActivityDate) {
   const diffMs = now.getTime() - last.getTime();
   const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (days < 3) return { status: 'green', daysSinceActivity: days };
-  if (days <= 7) return { status: 'yellow', daysSinceActivity: days };
+  if (days < greenDays) return { status: 'green', daysSinceActivity: days };
+  if (days <= yellowDays) return { status: 'yellow', daysSinceActivity: days };
   return { status: 'red', daysSinceActivity: days };
 }
 
@@ -43,6 +46,7 @@ export function classifyStudent(lastActivityDate) {
  * @param {number} params.lessonsCompleted - Total lessons completed
  * @param {string|null} params.enrolledAt - ISO date of enrollment
  * @param {string[]} [params.activityDates] - Array of ISO date strings of activity
+ * @param {Object} [params.cfg] - Algorithm config overrides
  * @returns {{ score: number, churnRisk: 'low'|'medium'|'high'|'critical', factors: Object }}
  */
 export function computeEngagement({
@@ -51,30 +55,39 @@ export function computeEngagement({
   lessonsCompleted,
   enrolledAt,
   activityDates = [],
+  cfg = {},
 }) {
+  const wRecency = (cfg.weightRecency ?? 40) / 100;
+  const wProgress = (cfg.weightProgress ?? 30) / 100;
+  const wVelocity = (cfg.weightVelocity ?? 20) / 100;
+  const wConsistency = (cfg.weightConsistency ?? 10) / 100;
+  const decay = cfg.decayFactor ?? 0.15;
+  const targetLPW = cfg.targetLessonsPerWeek ?? 2;
+  const threshLow = cfg.churnLow ?? 60;
+  const threshMedium = cfg.churnMedium ?? 40;
+  const threshHigh = cfg.churnHigh ?? 20;
+
   const now = new Date();
 
-  // ── Recency (40%) ──
+  // ── Recency ──
   let recencyScore = 0;
   if (lastActivity) {
     const daysSince = (now - new Date(lastActivity)) / (1000 * 60 * 60 * 24);
-    // Exponential decay: 100 at 0 days, ~50 at 5 days, ~10 at 14 days
-    recencyScore = Math.max(0, 100 * Math.exp(-0.15 * daysSince));
+    recencyScore = Math.max(0, 100 * Math.exp(-decay * daysSince));
   }
 
-  // ── Progress (30%) ──
+  // ── Progress ──
   const progressScore = Math.min(100, Math.max(0, progress || 0));
 
-  // ── Velocity (20%) ──
+  // ── Velocity ──
   let velocityScore = 0;
   if (enrolledAt) {
     const weeksEnrolled = Math.max(1, (now - new Date(enrolledAt)) / (1000 * 60 * 60 * 24 * 7));
     const lessonsPerWeek = (lessonsCompleted || 0) / weeksEnrolled;
-    // 2+ lessons/week = 100, 1 = 50, linear
-    velocityScore = Math.min(100, lessonsPerWeek * 50);
+    velocityScore = Math.min(100, (lessonsPerWeek / targetLPW) * 100);
   }
 
-  // ── Consistency (10%) ──
+  // ── Consistency ──
   let consistencyScore = 0;
   if (enrolledAt && activityDates.length > 0) {
     const weeksEnrolled = Math.max(1, (now - new Date(enrolledAt)) / (1000 * 60 * 60 * 24 * 7));
@@ -89,17 +102,17 @@ export function computeEngagement({
   }
 
   const score = Math.round(
-    recencyScore * 0.4 +
-    progressScore * 0.3 +
-    velocityScore * 0.2 +
-    consistencyScore * 0.1
+    recencyScore * wRecency +
+    progressScore * wProgress +
+    velocityScore * wVelocity +
+    consistencyScore * wConsistency
   );
 
   // ── Churn risk ──
   let churnRisk;
-  if (score >= 60) churnRisk = 'low';
-  else if (score >= 40) churnRisk = 'medium';
-  else if (score >= 20) churnRisk = 'high';
+  if (score >= threshLow) churnRisk = 'low';
+  else if (score >= threshMedium) churnRisk = 'medium';
+  else if (score >= threshHigh) churnRisk = 'high';
   else churnRisk = 'critical';
 
   return {
@@ -132,17 +145,19 @@ export function computeEngagement({
 /**
  * Compute retention stats from a list of students with activity data.
  * @param {Array<{uid: string, displayName: string, lastActivity: string|null, progress: number, lessonsCompleted?: number, enrolledAt?: string|null, activityDates?: string[]}>} students
+ * @param {Object} [cfg] - Algorithm config overrides
  * @returns {RetentionStats}
  */
-export function computeRetentionStats(students) {
+export function computeRetentionStats(students, cfg = {}) {
   const classified = students.map((s) => {
-    const classification = classifyStudent(s.lastActivity);
+    const classification = classifyStudent(s.lastActivity, cfg);
     const engagement = computeEngagement({
       lastActivity: s.lastActivity,
       progress: s.progress,
       lessonsCompleted: s.lessonsCompleted || 0,
       enrolledAt: s.enrolledAt || null,
       activityDates: s.activityDates || [],
+      cfg,
     });
     return { ...s, classification, engagement };
   });
