@@ -32,5 +32,8 @@ coverage/
 npm-debug.log*
 .scannerwork/
 
+# Karajan
+.kj/
+
 # Course materials (binary docs)
 docs/
