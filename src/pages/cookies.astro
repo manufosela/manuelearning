@@ -1,0 +1,148 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { SITE } from '../config/site.config.js';
+---
+
+<MainLayout title={`Política de Cookies | ${SITE.name}`}>
+  <section class="legal-page">
+    <div class="legal-page__content">
+      <h1>Política de Cookies</h1>
+      <p class="legal-page__updated">Última actualización: marzo 2026</p>
+
+      <h2>1. ¿Qué son las cookies?</h2>
+      <p>Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitas un sitio web. Se utilizan para recordar preferencias, mejorar la experiencia de navegación y recopilar información analítica.</p>
+
+      <h2>2. Cookies que utilizamos</h2>
+
+      <h3>Cookies técnicas (necesarias)</h3>
+      <p>Son esenciales para el funcionamiento de la plataforma. Sin ellas no podrías iniciar sesión ni acceder a los cursos.</p>
+      <ul>
+        <li><strong>Sesión de autenticación:</strong> mantiene tu sesión iniciada mientras navegas por la plataforma.</li>
+        <li><strong>Preferencias de usuario:</strong> almacena configuraciones básicas como el estado de tu sesión.</li>
+      </ul>
+
+      <h3>Cookies de rendimiento y analítica</h3>
+      <p>Nos ayudan a entender cómo los usuarios interactúan con la plataforma para poder mejorarla.</p>
+      <ul>
+        <li><strong>Firebase Analytics:</strong> recopila datos anónimos sobre el uso de la plataforma, como páginas visitadas y duración de las sesiones.</li>
+      </ul>
+
+      <h3>Cookies de funcionalidad</h3>
+      <p>Permiten recordar tus elecciones y proporcionar funciones mejoradas.</p>
+      <ul>
+        <li><strong>Progreso de cursos:</strong> registra las lecciones completadas y tu avance en cada curso.</li>
+        <li><strong>Service Worker:</strong> permite el funcionamiento offline de ciertas funcionalidades de la plataforma.</li>
+      </ul>
+
+      <h2>3. Cookies de terceros</h2>
+      <p>Nuestra plataforma utiliza servicios de terceros que pueden establecer sus propias cookies:</p>
+      <ul>
+        <li><strong>Google Firebase:</strong> para autenticación, base de datos y analítica. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Política de privacidad de Google</a>.</li>
+        <li><strong>Google Fonts:</strong> para la carga de tipografías. No recopila datos personales identificables.</li>
+      </ul>
+
+      <h2>4. Duración de las cookies</h2>
+      <ul>
+        <li><strong>Cookies de sesión:</strong> se eliminan al cerrar el navegador.</li>
+        <li><strong>Cookies persistentes:</strong> permanecen en tu dispositivo durante un periodo determinado o hasta que las elimines manualmente. Las cookies de autenticación de Firebase pueden durar hasta 1 año.</li>
+      </ul>
+
+      <h2>5. Gestión de cookies</h2>
+      <p>Puedes gestionar y eliminar las cookies a través de la configuración de tu navegador. Ten en cuenta que desactivar ciertas cookies puede afectar al funcionamiento de la plataforma.</p>
+      <p>Instrucciones para los navegadores más comunes:</p>
+      <ul>
+        <li><strong>Chrome:</strong> Configuración &gt; Privacidad y seguridad &gt; Cookies</li>
+        <li><strong>Firefox:</strong> Opciones &gt; Privacidad y seguridad &gt; Cookies</li>
+        <li><strong>Safari:</strong> Preferencias &gt; Privacidad &gt; Cookies</li>
+        <li><strong>Edge:</strong> Configuración &gt; Privacidad &gt; Cookies</li>
+      </ul>
+
+      <h2>6. Cambios en esta política</h2>
+      <p>Nos reservamos el derecho de actualizar esta política de cookies. Cualquier cambio será publicado en esta página con la fecha de última actualización.</p>
+
+      <h2>7. Contacto</h2>
+      <p>Si tienes preguntas sobre el uso de cookies en nuestra plataforma, contacta con nosotros en <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>.</p>
+
+      <div class="legal-page__back">
+        <a href="/" class="btn btn--secondary btn--sm">Volver al inicio</a>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .legal-page {
+    padding: 3rem var(--section-px);
+  }
+
+  .legal-page__content {
+    max-width: 800px;
+    margin-inline: auto;
+  }
+
+  .legal-page__content h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .legal-page__updated {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-bottom: 2.5rem;
+  }
+
+  .legal-page__content h2 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .legal-page__content h3 {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .legal-page__content p {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+  }
+
+  .legal-page__content ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .legal-page__content li {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .legal-page__content a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+
+  .legal-page__content a:hover {
+    color: var(--color-primary-dark, var(--color-primary));
+  }
+
+  .legal-page__back {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+  }
+</style>

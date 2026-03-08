@@ -1,0 +1,137 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { SITE } from '../config/site.config.js';
+---
+
+<MainLayout title={`Términos de Servicio | ${SITE.name}`}>
+  <section class="legal-page">
+    <div class="legal-page__content">
+      <h1>Términos de Servicio</h1>
+      <p class="legal-page__updated">Última actualización: marzo 2026</p>
+
+      <h2>1. Aceptación de los términos</h2>
+      <p>Al acceder y utilizar la plataforma <strong>{SITE.name}</strong>, aceptas estos términos de servicio en su totalidad. Si no estás de acuerdo con alguno de estos términos, no debes utilizar la plataforma.</p>
+
+      <h2>2. Descripción del servicio</h2>
+      <p>{SITE.name} es una plataforma de formación online que ofrece cursos, lecciones, cuestionarios y materiales educativos. El acceso a determinados contenidos puede requerir registro previo y aprobación.</p>
+
+      <h2>3. Registro y cuenta de usuario</h2>
+      <ul>
+        <li>Para acceder a los cursos debes crear una cuenta utilizando los métodos de autenticación disponibles.</li>
+        <li>Eres responsable de mantener la confidencialidad de tu cuenta y de toda la actividad que se realice bajo ella.</li>
+        <li>Debes proporcionar información veraz y mantenerla actualizada.</li>
+        <li>Nos reservamos el derecho de suspender o eliminar cuentas que incumplan estos términos.</li>
+      </ul>
+
+      <h2>4. Uso aceptable</h2>
+      <p>Al utilizar la plataforma, te comprometes a:</p>
+      <ul>
+        <li>Usar el servicio únicamente con fines formativos y personales.</li>
+        <li>No compartir, distribuir o reproducir el contenido de los cursos sin autorización expresa.</li>
+        <li>No intentar acceder a áreas restringidas o interferir con el funcionamiento de la plataforma.</li>
+        <li>Respetar a otros usuarios en foros, preguntas y espacios de interacción.</li>
+        <li>No utilizar la plataforma para actividades ilegales o no autorizadas.</li>
+      </ul>
+
+      <h2>5. Propiedad intelectual</h2>
+      <p>Todo el contenido de la plataforma (textos, vídeos, imágenes, código, cuestionarios y materiales didácticos) es propiedad de {SITE.name} o de sus respectivos autores y está protegido por las leyes de propiedad intelectual.</p>
+      <p>Se concede al usuario una licencia limitada, no exclusiva y no transferible para acceder al contenido con fines de aprendizaje personal.</p>
+
+      <h2>6. Certificados</h2>
+      <p>Los certificados emitidos por la plataforma acreditan la finalización de un curso dentro de {SITE.name}. No constituyen títulos oficiales ni académicos reconocidos por instituciones educativas.</p>
+
+      <h2>7. Disponibilidad del servicio</h2>
+      <p>Nos esforzamos por mantener la plataforma disponible de forma continua, pero no garantizamos un servicio ininterrumpido. Podemos realizar tareas de mantenimiento, actualización o modificación del servicio sin previo aviso.</p>
+
+      <h2>8. Limitación de responsabilidad</h2>
+      <p>{SITE.name} proporciona los contenidos formativos "tal cual" y no garantiza que sean adecuados para un propósito específico. No nos hacemos responsables de:</p>
+      <ul>
+        <li>Errores u omisiones en el contenido de los cursos.</li>
+        <li>Interrupciones del servicio por causas técnicas o de fuerza mayor.</li>
+        <li>Daños derivados del uso o la imposibilidad de uso de la plataforma.</li>
+      </ul>
+
+      <h2>9. Modificaciones</h2>
+      <p>Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios serán efectivos desde su publicación en la plataforma. El uso continuado del servicio tras la publicación de cambios implica la aceptación de los nuevos términos.</p>
+
+      <h2>10. Legislación aplicable</h2>
+      <p>Estos términos se rigen por la legislación española. Cualquier disputa se someterá a los tribunales competentes de Madrid, España.</p>
+
+      <h2>11. Contacto</h2>
+      <p>Para cualquier consulta sobre estos términos, contacta con nosotros en <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>.</p>
+
+      <div class="legal-page__back">
+        <a href="/" class="btn btn--secondary btn--sm">Volver al inicio</a>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<style>
+  .legal-page {
+    padding: 3rem var(--section-px);
+  }
+
+  .legal-page__content {
+    max-width: 800px;
+    margin-inline: auto;
+  }
+
+  .legal-page__content h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    color: var(--color-text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .legal-page__updated {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-bottom: 2.5rem;
+  }
+
+  .legal-page__content h2 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .legal-page__content p {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+  }
+
+  .legal-page__content ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .legal-page__content li {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .legal-page__content a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+
+  .legal-page__content a:hover {
+    color: var(--color-primary-dark, var(--color-primary));
+  }
+
+  .legal-page__back {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+  }
+</style>
