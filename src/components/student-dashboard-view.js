@@ -212,14 +212,50 @@ export class StudentDashboardView extends LitElement {
     }
 
     .course-section {
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .course-details {
+      background: #fff;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+      overflow: hidden;
+    }
+
+    .course-details summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 1rem 1.25rem;
+      transition: background 0.15s;
+    }
+
+    .course-details summary::-webkit-details-marker { display: none; }
+
+    .course-details summary:hover {
+      background: #f8fafc;
     }
 
     .course-section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .course-summary-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .course-toggle-icon {
+      font-size: 1.25rem;
+      color: #94a3b8;
+      transition: transform 0.2s;
+    }
+
+    .course-details[open] .course-toggle-icon {
+      transform: rotate(90deg);
     }
 
     .course-section-title-link {
@@ -261,11 +297,34 @@ export class StudentDashboardView extends LitElement {
       border-radius: 9999px;
       height: 0.625rem;
       overflow: hidden;
-      margin-bottom: 1rem;
     }
 
     .course-progress-bar .progress-bar {
       height: 100%;
+    }
+
+    .course-details-content {
+      padding: 0 1.25rem 1rem;
+    }
+
+    .module-progress--pending {
+      opacity: 0.45;
+    }
+
+    .module-progress--active {
+      border: 2px solid #84cc16;
+      cursor: pointer;
+      transition: box-shadow 0.15s;
+    }
+
+    .module-progress--active:hover {
+      box-shadow: 0 2px 8px rgb(132 204 22 / 0.25);
+    }
+
+    .module-progress-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
     }
 
     .expired-banner .material-symbols-outlined {
@@ -402,35 +461,55 @@ export class StudentDashboardView extends LitElement {
       </div>
 
       ${s.courseGroups.map(
-        (group) => html`
-          <div class="course-section">
-            <div class="course-section-header">
-              <a href="/curso?c=${encodeURIComponent(group.course)}" class="course-section-title-link">
-                <span class="course-section-title">${group.course}</span>
-                <span class="material-symbols-outlined course-section-arrow">arrow_forward</span>
-              </a>
-              <span class="course-section-percent">${group.percent}% — ${group.completedCount}/${group.totalLessons} clases</span>
-            </div>
-            <div class="course-progress-bar">
-              <div class="progress-bar" style="width: ${group.percent}%"></div>
-            </div>
-            <div class="modules-section">
-              ${group.modules.map(
-                (mod) => html`
-                  <div class="module-progress">
-                    <div class="module-progress-header">
-                      <span class="module-progress-title">${mod.moduleTitle}</span>
-                      <span class="module-progress-percent">${mod.percent}%</span>
+        (group) => {
+          const firstPendingModule = group.modules.find((m) => m.percent < 100 && m.firstIncompleteLesson);
+          return html`
+            <div class="course-section">
+              <details class="course-details" open>
+                <summary>
+                  <div class="course-section-header">
+                    <div class="course-summary-left">
+                      <span class="material-symbols-outlined course-toggle-icon">chevron_right</span>
+                      <a href="/curso?c=${encodeURIComponent(group.course)}" class="course-section-title-link" @click=${(e) => e.stopPropagation()}>
+                        <span class="course-section-title">${group.course}</span>
+                        <span class="material-symbols-outlined course-section-arrow">arrow_forward</span>
+                      </a>
                     </div>
-                    <div class="progress-bar-sm">
-                      <div class="progress-bar" style="width: ${mod.percent}%"></div>
-                    </div>
+                    <span class="course-section-percent">${group.percent}% — ${group.completedCount}/${group.totalLessons} clases</span>
                   </div>
-                `
-              )}
+                  <div class="course-progress-bar">
+                    <div class="progress-bar" style="width: ${group.percent}%"></div>
+                  </div>
+                </summary>
+                <div class="course-details-content">
+                  <div class="modules-section">
+                    ${group.modules.map(
+                      (mod) => {
+                        const isActive = firstPendingModule && mod.moduleId === firstPendingModule.moduleId;
+                        const isPending = mod.percent === 0 && !isActive;
+                        const modClass = `module-progress ${isActive ? 'module-progress--active' : ''} ${isPending ? 'module-progress--pending' : ''}`;
+
+                        const content = html`
+                          <div class="module-progress-header">
+                            <span class="module-progress-title">${mod.moduleTitle}</span>
+                            <span class="module-progress-percent">${mod.percent}%</span>
+                          </div>
+                          <div class="progress-bar-sm">
+                            <div class="progress-bar" style="width: ${mod.percent}%"></div>
+                          </div>
+                        `;
+
+                        return isActive && mod.firstIncompleteLesson
+                          ? html`<a href="/leccion?m=${mod.moduleId}&l=${mod.firstIncompleteLesson.lessonId}" class="module-progress-link"><div class=${modClass}>${content}</div></a>`
+                          : html`<div class=${modClass}>${content}</div>`;
+                      }
+                    )}
+                  </div>
+                </div>
+              </details>
             </div>
-          </div>
-        `
+          `;
+        }
       )}
 
       <div class="quick-actions">

@@ -49,6 +49,7 @@ export function computeDashboardStats(modules, lessonsByModule, completedLessons
   const moduleStats = modules.map((mod) => {
     const lessons = lessonsByModule[mod.id] || [];
     const modCompleted = lessons.filter((l) => completedSet.has(`${mod.id}_${l.id}`)).length;
+    const firstIncomplete = lessons.find((l) => !completedSet.has(`${mod.id}_${l.id}`));
     return {
       moduleId: mod.id,
       moduleTitle: mod.title,
@@ -56,6 +57,7 @@ export function computeDashboardStats(modules, lessonsByModule, completedLessons
       completed: modCompleted,
       total: lessons.length,
       percent: calculateProgress(modCompleted, lessons.length),
+      firstIncompleteLesson: firstIncomplete ? { lessonId: firstIncomplete.id, lessonTitle: firstIncomplete.title } : null,
     };
   });
 
