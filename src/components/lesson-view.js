@@ -7,6 +7,7 @@ import './video-player.js';
 import './markdown-content.js';
 import './lesson-nav.js';
 import './lesson-qa.js';
+import './lesson-quiz.js';
 
 /**
  * @element lesson-view
@@ -240,6 +241,8 @@ export class LessonView extends LitElement {
             >${this._completing ? 'Guardando...' : 'Marcar como completada'}</button>`
         }
       </div>
+
+      <lesson-quiz lessonId=${this._lessonId || ''}></lesson-quiz>
 
       <lesson-qa
         lessonId=${this._lessonId || ''}

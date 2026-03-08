@@ -29,6 +29,7 @@ vi.mock('firebase/firestore', () => ({
 
 import {
   validateQuiz,
+  fetchQuizzesByLessonId,
   fetchAllQuizzes,
   fetchQuiz,
   fetchQuizByLesson,
@@ -78,6 +79,39 @@ describe('validateQuiz', () => {
 
   it('should accept valid quiz', () => {
     expect(validateQuiz(valid).valid).toBe(true);
+  });
+});
+
+/* ── fetchQuizzesByLessonId ─────────────────────────────────── */
+describe('fetchQuizzesByLessonId', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('should reject empty lessonId', async () => {
+    expect((await fetchQuizzesByLessonId('')).success).toBe(false);
+  });
+
+  it('should return quizzes for a lesson', async () => {
+    mockGetDocs.mockResolvedValue({
+      docs: [
+        { id: 'q1', data: () => ({ title: 'Quiz 1', lessonId: 'l1' }) },
+      ],
+    });
+    const result = await fetchQuizzesByLessonId('l1');
+    expect(result.success).toBe(true);
+    expect(result.quizzes).toHaveLength(1);
+    expect(result.quizzes[0].id).toBe('q1');
+  });
+
+  it('should return empty array when no quizzes exist', async () => {
+    mockGetDocs.mockResolvedValue({ docs: [] });
+    const result = await fetchQuizzesByLessonId('l99');
+    expect(result.success).toBe(true);
+    expect(result.quizzes).toHaveLength(0);
+  });
+
+  it('should handle errors', async () => {
+    mockGetDocs.mockRejectedValue(new Error('err'));
+    expect((await fetchQuizzesByLessonId('l1')).success).toBe(false);
   });
 });
 
