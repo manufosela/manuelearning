@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
+import { trackActivity } from '../lib/firebase/users.js';
 import { getUserProgress } from '../lib/firebase/progress.js';
 import { fetchUser } from '../lib/firebase/users.js';
 import { fetchCohort } from '../lib/firebase/cohorts.js';
@@ -361,6 +362,7 @@ export class StudentDashboardView extends LitElement {
 
   async _loadDashboard(user) {
     this._loading = true;
+    trackActivity(user.uid);
 
     const userResult = await fetchUser(user.uid);
     if (userResult.success && userResult.user.cohortId && !userResult.user.lifetimeAccess) {

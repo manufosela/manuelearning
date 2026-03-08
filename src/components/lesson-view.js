@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { fetchLesson, fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
 import { getNextLesson, getPrevLesson } from '../lib/learning-path.js';
 import { markLessonCompleted, isLessonCompleted } from '../lib/firebase/progress.js';
+import { trackActivity } from '../lib/firebase/users.js';
 import { fetchQuizzesByLessonId, getStudentQuizResponse } from '../lib/firebase/quizzes.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import './video-player.js';
@@ -232,6 +233,7 @@ export class LessonView extends LitElement {
     if (this._moduleId && this._lessonId) {
       waitForAuth().then((user) => {
         this._userId = user.uid;
+        trackActivity(user.uid);
         this._loadLesson(this._moduleId, this._lessonId);
       });
     } else {
