@@ -300,6 +300,12 @@ export class AdminModulesList extends LitElement {
       gap: 1rem;
     }
 
+    .md-editor__write,
+    .md-editor__preview {
+      min-width: 0;
+      overflow: hidden;
+    }
+
     .md-editor__tabs {
       display: none;
       gap: 0;
@@ -332,8 +338,9 @@ export class AdminModulesList extends LitElement {
       padding: 0.75rem;
       min-height: 350px;
       max-height: 400px;
-      overflow-y: auto;
+      overflow: auto;
       background: #fff;
+      word-break: break-word;
     }
 
     .md-preview-label {
