@@ -13,8 +13,13 @@ import {
   reorderModule,
   reorderLesson,
 } from '../lib/firebase/modules.js';
-import { fetchAllQuizzes } from '../lib/firebase/quizzes.js';
 import { fetchAllUsers } from '../lib/firebase/users.js';
+import {
+  fetchQuizByLesson,
+  createQuiz,
+  updateQuiz,
+  validateQuiz,
+} from '../lib/firebase/quizzes.js';
 import { notifyUsers } from '../lib/firebase/user-notifications.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { filterBySearch } from '../lib/search-filter.js';
@@ -43,7 +48,15 @@ export class AdminModulesList extends LitElement {
     _saving: { type: Boolean, state: true },
     _searchQuery: { type: String, state: true },
     _notifyStudents: { type: Boolean, state: true },
-    _quizLessonIds: { type: Object, state: true },
+    _showQuizForm: { type: Boolean, state: true },
+    _quizFormModuleId: { type: String, state: true },
+    _quizFormLessonId: { type: String, state: true },
+    _quizFormLessonTitle: { type: String, state: true },
+    _editingQuizId: { type: String, state: true },
+    _quizFormData: { type: Object, state: true },
+    _quizFormError: { type: String, state: true },
+    _quizLoading: { type: Boolean, state: true },
+    _lessonQuizMap: { type: Object, state: true },
   };
 
   static styles = css`
@@ -212,11 +225,6 @@ export class AdminModulesList extends LitElement {
     .lesson-badge--empty {
       background: #fef2f2;
       color: #991b1b;
-    }
-
-    .lesson-badge--quiz {
-      background: #eff6ff;
-      color: #1e40af;
     }
 
     /* Form overlay */
@@ -409,6 +417,78 @@ export class AdminModulesList extends LitElement {
     .reorder-btn .material-symbols-outlined {
       font-size: 0.875rem;
     }
+
+    .quiz-badge {
+      font-size: 0.688rem;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      background: #eff6ff;
+      color: #1e40af;
+      font-weight: 600;
+    }
+
+    .quiz-badge--empty {
+      background: #f8fafc;
+      color: #94a3b8;
+    }
+
+    .btn--quiz {
+      background: #eff6ff;
+      color: #1e40af;
+    }
+
+    .btn--quiz:hover {
+      background: #dbeafe;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .option-row input[type="text"] {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    .option-row input[type="text"]:focus {
+      outline: none;
+      border-color: #84cc16;
+      box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.1);
+    }
+
+    .option-row input[type="radio"] {
+      width: auto;
+      margin: 0;
+      accent-color: #84cc16;
+    }
+
+    .option-row .remove-option {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 0.25rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .option-row .remove-option:hover {
+      color: #991b1b;
+    }
+
+    .correct-label {
+      font-size: 0.75rem;
+      color: #166534;
+      font-weight: 600;
+    }
   `;
 
   constructor() {
@@ -430,7 +510,15 @@ export class AdminModulesList extends LitElement {
     this._saving = false;
     this._searchQuery = '';
     this._notifyStudents = false;
-    this._quizLessonIds = new Set();
+    this._showQuizForm = false;
+    this._quizFormModuleId = null;
+    this._quizFormLessonId = null;
+    this._quizFormLessonTitle = '';
+    this._editingQuizId = null;
+    this._quizFormData = this._emptyQuizForm();
+    this._quizFormError = '';
+    this._quizLoading = false;
+    this._lessonQuizMap = {};
   }
 
   connectedCallback() {
@@ -449,17 +537,12 @@ export class AdminModulesList extends LitElement {
   async _loadModules() {
     this._loading = true;
     this._error = '';
-    const [result, quizResult] = await Promise.all([fetchAllModules(), fetchAllQuizzes()]);
+    const result = await fetchAllModules();
     this._loading = false;
     if (result.success) {
       this._modules = result.modules;
     } else {
       this._error = result.error;
-    }
-    if (quizResult.success) {
-      this._quizLessonIds = new Set(
-        quizResult.quizzes.filter((q) => q.lessonId).map((q) => q.lessonId)
-      );
     }
   }
 
@@ -660,6 +743,162 @@ export class AdminModulesList extends LitElement {
     }
   }
 
+  /* ── Quiz form ───── */
+
+  _emptyQuizForm() {
+    return {
+      questionText: '',
+      options: ['', '', ''],
+      correctAnswer: 0,
+      explanation: '',
+    };
+  }
+
+  async _openQuizForm(moduleId, lesson) {
+    this._quizFormModuleId = moduleId;
+    this._quizFormLessonId = lesson.id;
+    this._quizFormLessonTitle = lesson.title;
+    this._editingQuizId = null;
+    this._quizFormData = this._emptyQuizForm();
+    this._quizFormError = '';
+    this._quizLoading = true;
+    this._showQuizForm = true;
+
+    try {
+      const result = await fetchQuizByLesson(moduleId, lesson.id);
+      this._quizLoading = false;
+
+      if (result.success && result.quiz) {
+        this._editingQuizId = result.quiz.id;
+        const q = result.quiz.questions?.[0] || {};
+        this._quizFormData = {
+          questionText: q.text || '',
+          options: q.options?.length >= 3 ? [...q.options] : ['', '', ''],
+          correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
+          explanation: q.explanation || '',
+        };
+      } else if (!result.success) {
+        this._quizFormError = result.error || 'Error al cargar el quiz';
+      }
+    } catch {
+      this._quizLoading = false;
+      this._quizFormError = 'Error inesperado al cargar el quiz';
+    }
+  }
+
+  _closeQuizForm() {
+    this._showQuizForm = false;
+    this._quizFormModuleId = null;
+    this._quizFormLessonId = null;
+    this._editingQuizId = null;
+    this._quizFormError = '';
+  }
+
+  _handleQuizQuestionInput(e) {
+    this._quizFormData = { ...this._quizFormData, questionText: e.target.value };
+  }
+
+  _handleQuizOptionInput(index, value) {
+    const options = [...this._quizFormData.options];
+    options[index] = value;
+    this._quizFormData = { ...this._quizFormData, options };
+  }
+
+  _handleCorrectAnswerChange(index) {
+    this._quizFormData = { ...this._quizFormData, correctAnswer: index };
+  }
+
+  _addQuizOption() {
+    this._quizFormData = {
+      ...this._quizFormData,
+      options: [...this._quizFormData.options, ''],
+    };
+  }
+
+  _removeQuizOption(index) {
+    if (this._quizFormData.options.length <= 3) return;
+    const options = this._quizFormData.options.filter((_, i) => i !== index);
+    let { correctAnswer } = this._quizFormData;
+    if (correctAnswer >= options.length) correctAnswer = 0;
+    else if (index < correctAnswer) correctAnswer--;
+    this._quizFormData = { ...this._quizFormData, options, correctAnswer };
+  }
+
+  _handleQuizExplanationInput(e) {
+    this._quizFormData = { ...this._quizFormData, explanation: e.target.value };
+  }
+
+  async _handleQuizSubmit(e) {
+    e.preventDefault();
+    this._quizFormError = '';
+
+    const { questionText, options, correctAnswer, explanation } = this._quizFormData;
+
+    if (!questionText.trim()) {
+      this._quizFormError = 'El texto de la pregunta es obligatorio';
+      return;
+    }
+
+    const selectedText = options[correctAnswer];
+    if (!selectedText || !selectedText.trim()) {
+      this._quizFormError = 'La respuesta correcta no puede estar vacía';
+      return;
+    }
+
+    const filteredOptions = [];
+    let adjustedCorrectAnswer = -1;
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].trim()) {
+        if (i === correctAnswer) adjustedCorrectAnswer = filteredOptions.length;
+        filteredOptions.push(options[i]);
+      }
+    }
+
+    if (filteredOptions.length < 3) {
+      this._quizFormError = 'Debe haber al menos 3 opciones con texto';
+      return;
+    }
+
+    if (adjustedCorrectAnswer === -1) {
+      this._quizFormError = 'Selecciona una respuesta correcta válida';
+      return;
+    }
+
+    const question = {
+      text: questionText.trim(),
+      type: 'multiple',
+      options: filteredOptions,
+      correctAnswer: adjustedCorrectAnswer,
+      explanation: explanation.trim(),
+    };
+
+    const quizData = {
+      title: `Quiz: ${this._quizFormLessonTitle}`,
+      moduleId: this._quizFormModuleId,
+      lessonId: this._quizFormLessonId,
+      questions: [question],
+    };
+
+    this._saving = true;
+    let result;
+
+    if (this._editingQuizId) {
+      result = await updateQuiz(this._editingQuizId, quizData);
+    } else {
+      result = await createQuiz(quizData);
+    }
+
+    this._saving = false;
+
+    if (result.success) {
+      const key = `${this._quizFormModuleId}_${this._quizFormLessonId}`;
+      this._lessonQuizMap = { ...this._lessonQuizMap, [key]: true };
+      this._closeQuizForm();
+    } else {
+      this._quizFormError = result.error;
+    }
+  }
+
   /* ── Render ───── */
 
   render() {
@@ -699,6 +938,7 @@ export class AdminModulesList extends LitElement {
 
       ${this._showModuleForm ? this._renderModuleForm() : ''}
       ${this._showLessonForm ? this._renderLessonForm() : ''}
+      ${this._showQuizForm ? this._renderQuizForm() : ''}
     `;
   }
 
@@ -766,12 +1006,9 @@ export class AdminModulesList extends LitElement {
                       <span class="lesson-badge ${lesson.documentation ? '' : 'lesson-badge--empty'}">
                         ${lesson.documentation ? 'Docs' : 'Sin docs'}
                       </span>
-                      ${this._quizLessonIds.has(lesson.id) ? html`
-                        <span class="lesson-badge lesson-badge--quiz">
-                          <span class="material-symbols-outlined" style="font-size: 0.75rem; vertical-align: middle;">quiz</span>
-                          Quiz
-                        </span>
-                      ` : ''}
+                      <button class="btn btn--quiz btn--small" @click=${() => this._openQuizForm(mod.id, lesson)} title="Quiz de la clase">
+                        <span class="material-symbols-outlined" style="font-size: 0.875rem;">quiz</span> Quiz
+                      </button>
                       <button class="btn btn--secondary btn--small" @click=${() => this._openEditLesson(mod.id, lesson)}>Editar</button>
                       <button class="btn btn--danger btn--small" @click=${() => this._handleDeleteLesson(mod.id, lesson.id)}>Eliminar</button>
                     </div>
@@ -856,6 +1093,88 @@ export class AdminModulesList extends LitElement {
               </button>
             </div>
           </form>
+        </div>
+      </div>
+    `;
+  }
+  _renderQuizForm() {
+    const title = this._editingQuizId ? 'Editar quiz de clase' : 'Nuevo quiz de clase';
+    return html`
+      <div class="form-overlay" @click=${this._closeQuizForm}>
+        <div class="form-card" @click=${(e) => e.stopPropagation()}>
+          <h3>${title}</h3>
+          <p style="font-size: 0.813rem; color: #64748b; margin: -1rem 0 1.25rem;">
+            Clase: <strong>${this._quizFormLessonTitle}</strong>
+          </p>
+
+          ${this._quizLoading ? html`
+            <div class="loading"><div class="spinner"></div><p>Cargando quiz...</p></div>
+          ` : html`
+            <form @submit=${this._handleQuizSubmit}>
+              <div class="form-group">
+                <label for="quiz-question">Pregunta</label>
+                <textarea
+                  id="quiz-question"
+                  .value=${this._quizFormData.questionText}
+                  @input=${this._handleQuizQuestionInput}
+                  placeholder="Escribe la pregunta..."
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label>Opciones de respuesta <span style="font-weight: 400; color: #94a3b8;">(selecciona la correcta)</span></label>
+                ${this._quizFormData.options.map((opt, i) => html`
+                  <div class="option-row">
+                    <input
+                      type="radio"
+                      name="correctAnswer"
+                      .checked=${this._quizFormData.correctAnswer === i}
+                      @change=${() => this._handleCorrectAnswerChange(i)}
+                      title="Marcar como respuesta correcta"
+                    />
+                    <input
+                      type="text"
+                      .value=${opt}
+                      @input=${(e) => this._handleQuizOptionInput(i, e.target.value)}
+                      placeholder="Opción ${i + 1}"
+                    />
+                    ${this._quizFormData.options.length > 3 ? html`
+                      <button type="button" class="remove-option" @click=${() => this._removeQuizOption(i)} title="Eliminar opción">
+                        <span class="material-symbols-outlined" style="font-size: 1rem;">close</span>
+                      </button>
+                    ` : ''}
+                  </div>
+                `)}
+                ${this._quizFormData.correctAnswer < this._quizFormData.options.length && this._quizFormData.options[this._quizFormData.correctAnswer]?.trim()
+                  ? html`<span class="correct-label">Correcta: Opción ${this._quizFormData.correctAnswer + 1}</span>`
+                  : ''}
+                <button type="button" class="btn btn--secondary btn--small" @click=${this._addQuizOption} style="margin-top: 0.5rem;">
+                  + Añadir opción
+                </button>
+              </div>
+
+              <div class="form-group">
+                <label for="quiz-explanation">Explicación (opcional)</label>
+                <textarea
+                  id="quiz-explanation"
+                  .value=${this._quizFormData.explanation}
+                  @input=${this._handleQuizExplanationInput}
+                  placeholder="Explicación de la respuesta correcta..."
+                  rows="2"
+                ></textarea>
+              </div>
+
+              ${this._quizFormError ? html`<div class="form-error">${this._quizFormError}</div>` : ''}
+              <div class="form-actions">
+                <button type="button" class="btn btn--secondary" @click=${this._closeQuizForm}>Cancelar</button>
+                <button type="submit" class="btn btn--primary" ?disabled=${this._saving}>
+                  ${this._saving ? 'Guardando...' : this._editingQuizId ? 'Guardar' : 'Crear quiz'}
+                </button>
+              </div>
+            </form>
+          `}
         </div>
       </div>
     `;
