@@ -64,7 +64,11 @@ service cloud.firestore {
       // Signed-in users can create responses (userId must match)
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if false;
+      // Users can overwrite their own response (setDoc replaces)
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if false;
     }
 
     // ── progress ─────────────────────────────────────────────
