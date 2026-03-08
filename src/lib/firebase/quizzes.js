@@ -21,6 +21,7 @@ const RESPONSES = 'quizResponses';
  * @property {string} text
  * @property {'open'|'multiple'} type
  * @property {string[]} [options]
+ * @property {string} [correctAnswer]
  */
 
 /**
