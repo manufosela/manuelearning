@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { fetchLesson, fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
 import { getNextLesson, getPrevLesson } from '../lib/learning-path.js';
 import { markLessonCompleted, isLessonCompleted } from '../lib/firebase/progress.js';
-import { fetchQuizzesByLessonId, getUserQuizResponse } from '../lib/firebase/quizzes.js';
+import { fetchQuizzesByLessonId, getStudentQuizResponse } from '../lib/firebase/quizzes.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import './video-player.js';
 import './markdown-content.js';
@@ -219,13 +219,9 @@ export class LessonView extends LitElement {
 
     this._quizRequired = true;
     if (this._userId) {
-      const quiz = result.quizzes[0];
-      const totalQuestions = quiz.questions?.length || 0;
-      const resp = await getUserQuizResponse(this._userId, quiz.id);
+      const resp = await getStudentQuizResponse(this._userId, lessonId, lessonId);
       if (resp.success && resp.response !== null) {
-        const answers = resp.response.answers || [];
-        const answeredCount = answers.filter((a) => a && String(a).trim() !== '').length;
-        this._quizAnswered = answeredCount >= totalQuestions && totalQuestions > 0;
+        this._quizAnswered = true;
       } else {
         this._quizAnswered = false;
       }
