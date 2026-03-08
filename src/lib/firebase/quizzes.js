@@ -64,6 +64,25 @@ export function validateQuiz(data) {
 }
 
 /**
+ * Fetch quizzes for a specific lesson.
+ * @param {string} lessonId
+ * @returns {Promise<{success: boolean, quizzes?: Quiz[], error?: string}>}
+ */
+export async function fetchQuizzesByLessonId(lessonId) {
+  if (!lessonId) return { success: false, error: 'lessonId es obligatorio' };
+
+  try {
+    const ref = collection(db, QUIZZES);
+    const q = query(ref, where('lessonId', '==', lessonId));
+    const snapshot = await getDocs(q);
+    const quizzes = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    return { success: true, quizzes };
+  } catch (err) {
+    return { success: false, error: 'Error al cargar quizzes de la lección' };
+  }
+}
+
+/**
  * Fetch all quizzes.
  * @returns {Promise<{success: boolean, quizzes?: Quiz[], error?: string}>}
  */
