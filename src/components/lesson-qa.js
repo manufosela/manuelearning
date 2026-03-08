@@ -58,6 +58,12 @@ export class LessonQA extends LitElement {
     .privacy-badge { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.688rem; color: #64748b; background: #f1f5f9; padding: 0.125rem 0.5rem; border-radius: 9999px; margin-left: 0.5rem; }
     .privacy-badge .material-symbols-outlined { font-size: 0.75rem; }
 
+    .pending-badge { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.688rem; color: #b45309; background: #fffbeb; padding: 0.125rem 0.5rem; border-radius: 9999px; margin-left: 0.5rem; }
+    .pending-badge .material-symbols-outlined { font-size: 0.75rem; }
+    .answered-badge { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.688rem; color: #166534; background: #f0fdf4; padding: 0.125rem 0.5rem; border-radius: 9999px; margin-left: 0.5rem; }
+    .answered-badge .material-symbols-outlined { font-size: 0.75rem; }
+    .question-item--pending { border-left-color: #f59e0b; }
+
     .answer-list { margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid #e2e8f0; }
     .answer-item { padding: 0.5rem 0; }
     .answer-text { font-size: 0.875rem; color: #334155; }
@@ -82,7 +88,9 @@ export class LessonQA extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    waitForAuth().then(() => {
+    waitForAuth().then((user) => {
+      this.userId = user.uid;
+      this.userName = user.displayName || user.email || '';
       if (this.lessonId) this._loadQuestions();
     });
   }
@@ -154,29 +162,41 @@ export class LessonQA extends LitElement {
         ? html`<div class="empty-state">No hay preguntas aún. Sé el primero en preguntar.</div>`
         : ''}
 
-      ${this._questions.map((q) => html`
-        <div class="question-item">
-          <div class="question-text">${q.text}</div>
-          <div class="question-meta">
-            ${q.userName || 'Anónimo'} · ${this._formatDate(q.createdAt)}
-            ${q.userId === this.userId && q.public !== true ? html`
-              <span class="privacy-badge">
-                <span class="material-symbols-outlined">lock</span>Solo tú y el profesor
-              </span>
+      ${this._questions.map((q) => {
+        const hasPendingAnswer = !q.answers || q.answers.length === 0;
+        return html`
+          <div class="question-item ${hasPendingAnswer ? 'question-item--pending' : ''}">
+            <div class="question-text">${q.text}</div>
+            <div class="question-meta">
+              ${q.userName || 'Anónimo'} · ${this._formatDate(q.createdAt)}
+              ${q.userId === this.userId && q.public !== true ? html`
+                <span class="privacy-badge">
+                  <span class="material-symbols-outlined">lock</span>Solo tú y el profesor
+                </span>
+              ` : ''}
+              ${hasPendingAnswer ? html`
+                <span class="pending-badge">
+                  <span class="material-symbols-outlined">schedule</span>Pendiente de respuesta
+                </span>
+              ` : html`
+                <span class="answered-badge">
+                  <span class="material-symbols-outlined">check_circle</span>Respondida
+                </span>
+              `}
+            </div>
+            ${q.answers && q.answers.length > 0 ? html`
+              <div class="answer-list">
+                ${q.answers.map((a) => html`
+                  <div class="answer-item">
+                    <div class="answer-text">${a.text}</div>
+                    <div class="answer-meta">${a.userName || 'Admin'} · ${a.createdAt || ''}</div>
+                  </div>
+                `)}
+              </div>
             ` : ''}
           </div>
-          ${q.answers && q.answers.length > 0 ? html`
-            <div class="answer-list">
-              ${q.answers.map((a) => html`
-                <div class="answer-item">
-                  <div class="answer-text">${a.text}</div>
-                  <div class="answer-meta">${a.userName || 'Admin'} · ${a.createdAt || ''}</div>
-                </div>
-              `)}
-            </div>
-          ` : ''}
-        </div>
-      `)}
+        `;
+      })}
     `;
   }
 
