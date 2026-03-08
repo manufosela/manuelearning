@@ -13,6 +13,7 @@ import {
   reorderModule,
   reorderLesson,
 } from '../lib/firebase/modules.js';
+import { fetchAllQuizzes } from '../lib/firebase/quizzes.js';
 import { fetchAllUsers } from '../lib/firebase/users.js';
 import { notifyUsers } from '../lib/firebase/user-notifications.js';
 import { waitForAuth } from '../lib/auth-ready.js';
@@ -42,6 +43,7 @@ export class AdminModulesList extends LitElement {
     _saving: { type: Boolean, state: true },
     _searchQuery: { type: String, state: true },
     _notifyStudents: { type: Boolean, state: true },
+    _quizLessonIds: { type: Object, state: true },
   };
 
   static styles = css`
@@ -210,6 +212,11 @@ export class AdminModulesList extends LitElement {
     .lesson-badge--empty {
       background: #fef2f2;
       color: #991b1b;
+    }
+
+    .lesson-badge--quiz {
+      background: #eff6ff;
+      color: #1e40af;
     }
 
     /* Form overlay */
@@ -423,6 +430,7 @@ export class AdminModulesList extends LitElement {
     this._saving = false;
     this._searchQuery = '';
     this._notifyStudents = false;
+    this._quizLessonIds = new Set();
   }
 
   connectedCallback() {
@@ -441,12 +449,17 @@ export class AdminModulesList extends LitElement {
   async _loadModules() {
     this._loading = true;
     this._error = '';
-    const result = await fetchAllModules();
+    const [result, quizResult] = await Promise.all([fetchAllModules(), fetchAllQuizzes()]);
     this._loading = false;
     if (result.success) {
       this._modules = result.modules;
     } else {
       this._error = result.error;
+    }
+    if (quizResult.success) {
+      this._quizLessonIds = new Set(
+        quizResult.quizzes.filter((q) => q.lessonId).map((q) => q.lessonId)
+      );
     }
   }
 
@@ -753,6 +766,12 @@ export class AdminModulesList extends LitElement {
                       <span class="lesson-badge ${lesson.documentation ? '' : 'lesson-badge--empty'}">
                         ${lesson.documentation ? 'Docs' : 'Sin docs'}
                       </span>
+                      ${this._quizLessonIds.has(lesson.id) ? html`
+                        <span class="lesson-badge lesson-badge--quiz">
+                          <span class="material-symbols-outlined" style="font-size: 0.75rem; vertical-align: middle;">quiz</span>
+                          Quiz
+                        </span>
+                      ` : ''}
                       <button class="btn btn--secondary btn--small" @click=${() => this._openEditLesson(mod.id, lesson)}>Editar</button>
                       <button class="btn btn--danger btn--small" @click=${() => this._handleDeleteLesson(mod.id, lesson.id)}>Eliminar</button>
                     </div>
