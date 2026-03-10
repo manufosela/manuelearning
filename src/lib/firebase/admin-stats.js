@@ -117,6 +117,50 @@ export async function getProgressByCohort() {
 }
 
 /**
+ * Fetch all progress records (admin).
+ * @returns {Promise<{success: boolean, records?: Object[], error?: string}>}
+ */
+export async function fetchAllProgressRecords() {
+  try {
+    const snapshot = await getDocs(
+      query(collection(db, 'progress'), where('completed', '==', true)),
+    );
+    const records = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    return { success: true, records };
+  } catch (err) {
+    return { success: false, error: 'Error al cargar registros de progreso' };
+  }
+}
+
+/**
+ * Fetch all quiz response records (admin).
+ * @returns {Promise<{success: boolean, records?: Object[], error?: string}>}
+ */
+export async function fetchAllQuizResponseRecords() {
+  try {
+    const snapshot = await getDocs(collection(db, 'quizResponses'));
+    const records = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    return { success: true, records };
+  } catch (err) {
+    return { success: false, error: 'Error al cargar respuestas de quizzes' };
+  }
+}
+
+/**
+ * Fetch all quiz definitions (admin).
+ * @returns {Promise<{success: boolean, quizzes?: Object[], error?: string}>}
+ */
+export async function fetchAllQuizDefinitions() {
+  try {
+    const snapshot = await getDocs(collection(db, 'quizzes'));
+    const quizzes = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    return { success: true, records: quizzes };
+  } catch (err) {
+    return { success: false, error: 'Error al cargar definiciones de quizzes' };
+  }
+}
+
+/**
  * Fetch all admin dashboard stats in one call.
  * @returns {Promise<{success: boolean, stats?: AdminDashboardStats, error?: string}>}
  */
