@@ -35,6 +35,14 @@ const {
     rel="stylesheet"
   />
   <title>{title}</title>
+  <script is:inline>
+    (function() {
+      const stored = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = stored || (prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 <body>
   <div class="admin-layout">
@@ -82,6 +90,18 @@ const {
           Dashboard
         </a>
       </nav>
+      <div class="admin-sidebar__bottom">
+        <button
+          id="theme-toggle"
+          class="admin-theme-toggle"
+          aria-label="Cambiar tema"
+          type="button"
+        >
+          <span class="material-symbols-outlined admin-theme-toggle__icon admin-theme-toggle__icon--light">light_mode</span>
+          <span class="material-symbols-outlined admin-theme-toggle__icon admin-theme-toggle__icon--dark">dark_mode</span>
+          <span class="admin-theme-toggle__label">Tema</span>
+        </button>
+      </div>
     </aside>
     <main class="admin-main">
       <admin-guard>
@@ -102,6 +122,16 @@ const {
 <script>
   import '../components/admin-guard.js';
   import '../components/admin-notifications-badge.js';
+
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    });
+  }
 </script>
 
 <style is:global>
@@ -120,6 +150,8 @@ const {
     color: var(--color-text-on-dark);
     padding: 1.5rem;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .admin-sidebar__brand {
@@ -169,6 +201,47 @@ const {
     font-size: 1.25rem;
   }
 
+  .admin-sidebar__bottom {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border-dark);
+  }
+
+  .admin-theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-on-dark);
+    width: 100%;
+    transition: background-color var(--transition-fast);
+  }
+
+  .admin-theme-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-white);
+  }
+
+  .admin-theme-toggle__icon {
+    font-size: 1.25rem;
+  }
+
+  .admin-theme-toggle__icon--light {
+    display: none;
+  }
+  .admin-theme-toggle__icon--dark {
+    display: block;
+  }
+  [data-theme="dark"] .admin-theme-toggle__icon--light {
+    display: block;
+  }
+  [data-theme="dark"] .admin-theme-toggle__icon--dark {
+    display: none;
+  }
+
   .admin-main {
     flex: 1;
     padding: 2rem;
@@ -183,11 +256,13 @@ const {
     }
 
     .admin-sidebar__brand h2,
-    .admin-nav-link span:last-child {
+    .admin-nav-link span:last-child,
+    .admin-theme-toggle__label {
       display: none;
     }
 
-    .admin-nav-link {
+    .admin-nav-link,
+    .admin-theme-toggle {
       justify-content: center;
       padding: 0.75rem;
     }
