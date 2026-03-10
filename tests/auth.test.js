@@ -30,16 +30,17 @@ vi.mock('firebase/firestore', () => ({
   getDocs: vi.fn(),
   updateDoc: vi.fn(),
   increment: vi.fn((n) => n),
+  orderBy: vi.fn(),
 }));
 
-vi.mock('../src/lib/firebase/invitation-codes.js', () => ({
-  validateInvitationCode: vi.fn(),
-  markCodeAsUsed: vi.fn(() => Promise.resolve(true)),
+vi.mock('../src/lib/firebase/cohorts.js', () => ({
+  fetchAllCohorts: vi.fn(),
 }));
 
 import {
   loginWithGoogle,
   completeRegistration,
+  fetchActiveConvocatorias,
   logoutUser,
   onAuthChange,
   getCurrentUser,
@@ -54,7 +55,7 @@ import {
 } from 'firebase/auth';
 
 import { getDoc, setDoc } from 'firebase/firestore';
-import { validateInvitationCode, markCodeAsUsed } from '../src/lib/firebase/invitation-codes.js';
+import { fetchAllCohorts } from '../src/lib/firebase/cohorts.js';
 
 describe('loginWithGoogle', () => {
   beforeEach(() => {
@@ -105,45 +106,83 @@ describe('completeRegistration', () => {
   });
 
   it('should fail without user', async () => {
-    const result = await completeRegistration(null, 'CODE1');
+    const result = await completeRegistration(null, 'cohort1');
     expect(result.success).toBe(false);
     expect(result.error).toContain('no autenticado');
   });
 
-  it('should fail without invitation code', async () => {
-    const mockUser = { uid: 'test-uid', email: 'user@test.com' };
-    const result = await completeRegistration(mockUser, '');
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('invitacion es obligatorio');
-  });
-
-  it('should fail with invalid invitation code', async () => {
-    validateInvitationCode.mockResolvedValue({ valid: false, error: 'Codigo no valido' });
-    const mockUser = { uid: 'test-uid', email: 'user@test.com' };
-
-    const result = await completeRegistration(mockUser, 'BADCODE');
-    expect(result.success).toBe(false);
-    expect(result.error).toContain('Codigo no valido');
-    expect(setDoc).not.toHaveBeenCalled();
-  });
-
-  it('should create user profile with valid code', async () => {
-    validateInvitationCode.mockResolvedValue({ valid: true, cohortId: 'cohort1', docId: 'doc1' });
+  it('should create user profile with cohortId', async () => {
     const mockUser = { uid: 'test-uid', email: 'user@test.com', displayName: 'Test User' };
 
-    const result = await completeRegistration(mockUser, 'VALID123');
+    const result = await completeRegistration(mockUser, 'cohort1');
     expect(result.success).toBe(true);
     expect(setDoc).toHaveBeenCalled();
-    expect(markCodeAsUsed).toHaveBeenCalledWith('doc1');
+    const callArgs = setDoc.mock.calls[0][1];
+    expect(callArgs.status).toBe('pending');
+    expect(callArgs.cohortId).toBe('cohort1');
+  });
+
+  it('should create user profile without cohortId (empty string)', async () => {
+    const mockUser = { uid: 'test-uid', email: 'user@test.com', displayName: 'Test User' };
+
+    const result = await completeRegistration(mockUser, '');
+    expect(result.success).toBe(true);
+    expect(setDoc).toHaveBeenCalled();
+    const callArgs = setDoc.mock.calls[0][1];
+    expect(callArgs.status).toBe('pending');
+    expect(callArgs.cohortId).toBe('');
+  });
+
+  it('should create user profile without cohortId (null)', async () => {
+    const mockUser = { uid: 'test-uid', email: 'user@test.com', displayName: 'Test User' };
+
+    const result = await completeRegistration(mockUser, null);
+    expect(result.success).toBe(true);
+    const callArgs = setDoc.mock.calls[0][1];
+    expect(callArgs.cohortId).toBe('');
   });
 
   it('should use empty string when displayName is null', async () => {
-    validateInvitationCode.mockResolvedValue({ valid: true, cohortId: 'cohort1', docId: 'doc1' });
     const mockUser = { uid: 'test-uid', email: 'user@test.com', displayName: null };
 
-    const result = await completeRegistration(mockUser, 'VALID123');
+    const result = await completeRegistration(mockUser, 'cohort1');
     expect(result.success).toBe(true);
-    expect(setDoc).toHaveBeenCalled();
+    const callArgs = setDoc.mock.calls[0][1];
+    expect(callArgs.displayName).toBe('');
+  });
+});
+
+describe('fetchActiveConvocatorias', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return only active non-expired cohorts', async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const future = new Date(Date.now() + 86400000 * 30).toISOString().slice(0, 10);
+    const past = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+
+    fetchAllCohorts.mockResolvedValue({
+      success: true,
+      cohorts: [
+        { id: 'c1', name: 'Activa futura', active: true, expiryDate: future },
+        { id: 'c2', name: 'Inactiva', active: false, expiryDate: future },
+        { id: 'c3', name: 'Expirada', active: true, expiryDate: past },
+        { id: 'c4', name: 'Activa hoy', active: true, expiryDate: today },
+      ],
+    });
+
+    const result = await fetchActiveConvocatorias();
+    expect(result.success).toBe(true);
+    expect(result.cohorts).toHaveLength(2);
+    expect(result.cohorts.map((c) => c.id)).toEqual(['c1', 'c4']);
+  });
+
+  it('should propagate error from fetchAllCohorts', async () => {
+    fetchAllCohorts.mockResolvedValue({ success: false, error: 'Error al cargar' });
+
+    const result = await fetchActiveConvocatorias();
+    expect(result.success).toBe(false);
   });
 });
 

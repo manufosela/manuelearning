@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { loginWithGoogle, completeRegistration, logoutUser } from '../lib/firebase/auth.js';
+import { loginWithGoogle, completeRegistration, logoutUser, fetchActiveConvocatorias } from '../lib/firebase/auth.js';
 
 /**
  * @element auth-form
@@ -11,6 +11,10 @@ export class AuthForm extends LitElement {
     _loading: { type: Boolean, state: true },
     _error: { type: String, state: true },
     _pendingUser: { type: Object, state: true },
+    _convocatorias: { type: Array, state: true },
+    _loadingConvocatorias: { type: Boolean, state: true },
+    _selectedCohortId: { type: String, state: true },
+    _registered: { type: Boolean, state: true },
   };
 
   static styles = css`
@@ -144,6 +148,39 @@ export class AuthForm extends LitElement {
     .welcome-text strong {
       color: #0f172a;
     }
+
+    select {
+      height: 3rem;
+      padding: 0 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+      background-color: #fff;
+      transition: border-color 0.15s ease;
+      cursor: pointer;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #84cc16;
+      box-shadow: 0 0 0 3px rgba(132, 204, 22, 0.1);
+    }
+
+    .success-message {
+      background-color: #f0fdf4;
+      color: #166534;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      border: 1px solid #bbf7d0;
+    }
+
+    .info-text {
+      color: #64748b;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
   `;
 
   constructor() {
@@ -151,11 +188,24 @@ export class AuthForm extends LitElement {
     this._loading = false;
     this._error = '';
     this._pendingUser = null;
+    this._convocatorias = [];
+    this._loadingConvocatorias = false;
+    this._selectedCohortId = '';
+    this._registered = false;
   }
 
   render() {
+    if (this._registered) {
+      return html`
+        <div class="auth-form">
+          <div class="success-message">
+            Tu registro se ha completado. Recibirás un email cuando tu cuenta sea validada por el administrador.
+          </div>
+        </div>
+      `;
+    }
     if (this._pendingUser) {
-      return this._renderInvitationForm();
+      return this._renderRegistrationForm();
     }
     return this._renderGoogleLogin();
   }
@@ -184,31 +234,40 @@ export class AuthForm extends LitElement {
     `;
   }
 
-  _renderInvitationForm() {
+  _renderRegistrationForm() {
     return html`
-      <form class="auth-form" @submit=${this._handleInvitationSubmit}>
+      <form class="auth-form" @submit=${this._handleRegistrationSubmit}>
         <p class="welcome-text">
           Hola <strong>${this._pendingUser.displayName || this._pendingUser.email}</strong>,
-          es tu primera vez. Introduce tu codigo de invitacion para completar el registro.
+          es tu primera vez. Selecciona tu convocatoria para completar el registro.
         </p>
 
-        <div class="form-group">
-          <label for="invitationCode">Codigo de invitacion</label>
-          <input
-            type="text"
-            id="invitationCode"
-            name="invitationCode"
-            placeholder="Ej: ABC123"
-            required
-            autocomplete="off"
-          />
-        </div>
+        ${this._loadingConvocatorias
+          ? html`<p class="info-text">Cargando convocatorias...</p>`
+          : this._convocatorias.length > 0
+            ? html`
+              <div class="form-group">
+                <label for="cohortSelect">Convocatoria</label>
+                <select
+                  id="cohortSelect"
+                  name="cohortSelect"
+                  @change=${(e) => { this._selectedCohortId = e.target.value; }}
+                >
+                  <option value="">Sin convocatoria</option>
+                  ${this._convocatorias.map(
+                    (c) => html`<option value=${c.id}>${c.name}</option>`
+                  )}
+                </select>
+              </div>
+            `
+            : html`<p class="info-text">No hay convocatorias abiertas. Puedes registrarte y el administrador te asignará una.</p>`
+        }
 
         ${this._error
           ? html`<div class="error-message">${this._error}</div>`
           : ''}
 
-        <button type="submit" class="submit-btn" ?disabled=${this._loading}>
+        <button type="submit" class="submit-btn" ?disabled=${this._loading || this._loadingConvocatorias}>
           ${this._loading ? 'Registrando...' : 'Completar registro'}
         </button>
 
@@ -233,26 +292,26 @@ export class AuthForm extends LitElement {
 
     if (result.isNewUser) {
       this._pendingUser = result.user;
+      this._loadingConvocatorias = true;
+      const convResult = await fetchActiveConvocatorias();
+      this._loadingConvocatorias = false;
+      this._convocatorias = convResult.success ? convResult.cohorts : [];
     } else {
       window.location.href = '/dashboard';
     }
   }
 
   /** @param {Event} e */
-  async _handleInvitationSubmit(e) {
+  async _handleRegistrationSubmit(e) {
     e.preventDefault();
     this._error = '';
     this._loading = true;
 
-    const form = /** @type {HTMLFormElement} */ (e.target);
-    const formData = new FormData(form);
-    const invitationCode = /** @type {string} */ (formData.get('invitationCode') || '');
-
-    const result = await completeRegistration(this._pendingUser, invitationCode);
+    const result = await completeRegistration(this._pendingUser, this._selectedCohortId);
     this._loading = false;
 
     if (result.success) {
-      window.location.href = '/dashboard';
+      this._registered = true;
     } else {
       this._error = result.error;
     }

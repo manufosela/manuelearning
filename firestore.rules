@@ -154,16 +154,6 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // ── invitationCodes ──────────────────────────────────────
-    match /invitationCodes/{codeId} {
-      // Anyone can read (needed for validation during registration)
-      allow read: if true;
-      // Only admins can create/delete
-      allow create, delete: if isAdmin();
-      // Allow update for incrementing usedCount during registration
-      allow update: if true;
-    }
-
     // ── activityStreaks ──────────────────────────────────────
     match /activityStreaks/{uid} {
       allow read: if isOwner(uid) || isAdmin();
