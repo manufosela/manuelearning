@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { fetchUser, updateUserDisplayName } from '../lib/firebase/users.js';
 import { getCurrentUser, onAuthChange } from '../lib/firebase/auth.js';
+import './activity-heatmap.js';
 
 /**
  * @element user-profile
@@ -20,7 +21,7 @@ export class UserProfile extends LitElement {
   static styles = css`
     :host {
       display: block;
-      max-width: 600px;
+      max-width: 900px;
       margin: 0 auto;
     }
 
@@ -364,6 +365,11 @@ export class UserProfile extends LitElement {
             : ''}
         </div>
       </div>
+
+      <activity-heatmap
+        .userId=${this._user.uid}
+        style="margin-top: 1.5rem;"
+      ></activity-heatmap>
     `;
   }
 }
