@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- CHANGELOG_ENTRIES -->
+## [1.0.48] - 2026-03-10 — Sprint 8: Gamificación, Analytics y UX Avanzada
+- feat: badge system for module and course completion (MEL-TSK-0074)
+- feat: daily activity streak with fire counter (MEL-TSK-0075)
+- feat: GitHub-style activity heatmap in profile (MEL-TSK-0076)
+- feat: personal learning analytics dashboard (MEL-TSK-0077)
+- feat: video player speed controls, bookmarks and position (MEL-TSK-0078)
+- feat: certificate QR verification and LinkedIn sharing (MEL-TSK-0079)
+- feat: admin lesson difficulty heatmap and dropout analysis (MEL-TSK-0080)
+- feat: threaded Q&A with voting and teacher badge (MEL-TSK-0081)
+- feat: weekly email digest with progress summary (MEL-TSK-0082)
+- feat: dark mode with persistent toggle (MEL-TSK-0083)
+
 ## [1.0.46] - 2026-03-10
 - feat: add threaded replies and voting to lesson Q&A
 
