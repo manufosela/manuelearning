@@ -10,6 +10,8 @@ import {
 } from 'firebase/firestore';
 import { db } from './config.js';
 import { updateStreak } from './streaks.js';
+import { awardBadge } from './badges.js';
+import { fetchLessons, fetchAllModules } from './modules.js';
 
 const COLLECTION = 'progress';
 
@@ -44,10 +46,66 @@ export async function markLessonCompleted(userId, moduleId, lessonId) {
       completedAt: serverTimestamp(),
     });
     updateStreak(userId).catch(() => {});
+    checkAndAwardBadges(userId, moduleId).catch(() => {});
     return { success: true };
   } catch (err) {
     return { success: false, error: 'Error al guardar el progreso' };
   }
+}
+
+/**
+ * Check if a module is fully completed and award badges.
+ * Also checks if the entire course is completed.
+ * @param {string} userId
+ * @param {string} moduleId
+ */
+async function checkAndAwardBadges(userId, moduleId) {
+  const lessonsResult = await fetchLessons(moduleId);
+  if (!lessonsResult.success || !lessonsResult.lessons?.length) return;
+
+  const totalLessons = lessonsResult.lessons.length;
+  const progressRef = collection(db, COLLECTION);
+  const q = query(
+    progressRef,
+    where('userId', '==', userId),
+    where('moduleId', '==', moduleId),
+    where('completed', '==', true)
+  );
+  const snapshot = await getDocs(q);
+
+  if (snapshot.size < totalLessons) return;
+
+  // Module fully completed — fetch module title for the badge
+  const moduleDoc = await getDoc(doc(db, 'modules', moduleId));
+  const moduleTitle = moduleDoc.exists() ? moduleDoc.data().title : moduleId;
+  await awardBadge(userId, 'module_complete', moduleId, moduleTitle);
+
+  // Check if entire course is completed
+  const courseName = moduleDoc.exists() ? moduleDoc.data().course : null;
+  if (!courseName) return;
+
+  const modulesResult = await fetchAllModules();
+  if (!modulesResult.success) return;
+
+  const courseModules = modulesResult.modules.filter((m) => m.course === courseName);
+  if (courseModules.length === 0) return;
+
+  for (const mod of courseModules) {
+    const modLessons = await fetchLessons(mod.id);
+    if (!modLessons.success || !modLessons.lessons?.length) return;
+
+    const modQ = query(
+      progressRef,
+      where('userId', '==', userId),
+      where('moduleId', '==', mod.id),
+      where('completed', '==', true)
+    );
+    const modSnap = await getDocs(modQ);
+    if (modSnap.size < modLessons.lessons.length) return;
+  }
+
+  // All modules in course completed
+  await awardBadge(userId, 'course_complete', courseName, courseName);
 }
 
 /**
