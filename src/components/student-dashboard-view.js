@@ -8,6 +8,8 @@ import { fetchCohort } from '../lib/firebase/cohorts.js';
 import { isCohortExpired } from '../lib/cohort-utils.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { computeDashboardStats } from '../lib/dashboard-stats.js';
+import { getUserQuizResults } from '../lib/firebase/quizzes.js';
+import { computeWeeklyCompletions, computeQuizPerformance, estimateCompletionDate } from '../lib/analytics-utils.js';
 import { materialIconsLink } from './shared/material-icons.js';
 
 /**
@@ -21,6 +23,7 @@ export class StudentDashboardView extends LitElement {
     _error: { type: String, state: true },
     _cohortExpired: { type: Boolean, state: true },
     _streak: { type: Object, state: true },
+    _analytics: { type: Object, state: true },
   };
 
   static styles = css`
@@ -404,6 +407,162 @@ export class StudentDashboardView extends LitElement {
       color: #475569;
       line-height: 1.7;
     }
+
+    /* ── Analytics Section ──────────────────────────────── */
+
+    .analytics-section {
+      background: #fff;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+      margin-bottom: 2rem;
+    }
+
+    .analytics-section h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 1.25rem;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 640px) {
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .analytics-card {
+      background: #f8fafc;
+      border-radius: 0.5rem;
+      padding: 1rem;
+    }
+
+    .analytics-card h3 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Weekly chart */
+
+    .weekly-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.5rem;
+      height: 100px;
+    }
+
+    .chart-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .chart-bar {
+      width: 100%;
+      border-radius: 0.25rem 0.25rem 0 0;
+      background: linear-gradient(180deg, #84cc16, #65a30d);
+      min-height: 4px;
+      transition: height 0.4s ease;
+    }
+
+    .chart-bar-value {
+      font-size: 0.688rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .chart-bar-label {
+      font-size: 0.625rem;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    /* Quiz stats */
+
+    .quiz-rate {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #84cc16;
+      margin-bottom: 0.25rem;
+    }
+
+    .quiz-detail {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    /* Completion estimate */
+
+    .estimate-value {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 0.25rem;
+    }
+
+    .estimate-detail {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    /* Module performance bars */
+
+    .module-perf-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .module-perf-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .module-perf-name {
+      font-size: 0.75rem;
+      color: #334155;
+      min-width: 80px;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .module-perf-bar-bg {
+      flex: 1;
+      background: #e2e8f0;
+      border-radius: 9999px;
+      height: 0.5rem;
+      overflow: hidden;
+    }
+
+    .module-perf-bar {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+    }
+
+    .module-perf-percent {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #334155;
+      min-width: 32px;
+      text-align: right;
+    }
   `;
 
   constructor() {
@@ -413,6 +572,7 @@ export class StudentDashboardView extends LitElement {
     this._error = '';
     this._cohortExpired = false;
     this._streak = null;
+    this._analytics = null;
   }
 
   connectedCallback() {
@@ -468,7 +628,95 @@ export class StudentDashboardView extends LitElement {
       this._streak = streakResult.streak;
     }
 
+    // Compute analytics (non-blocking — dashboard renders even if quiz fetch fails)
+    try {
+      const quizResult = await getUserQuizResults(user.uid);
+      const weeklyCompletions = computeWeeklyCompletions(progressResult.completedLessons);
+      const quizPerformance = quizResult.success
+        ? computeQuizPerformance(quizResult.results, this._stats.moduleStats)
+        : { successRate: 0, totalAnswered: 0, totalCorrect: 0, byModule: [] };
+      const completion = estimateCompletionDate(progressResult.completedLessons, this._stats.totalLessons);
+      this._analytics = { weeklyCompletions, quizPerformance, completion };
+    } catch {
+      this._analytics = null;
+    }
+
     this._loading = false;
+  }
+
+  /** @private */
+  _renderAnalytics() {
+    if (!this._analytics) return '';
+
+    const { weeklyCompletions, quizPerformance, completion } = this._analytics;
+    const maxCount = Math.max(...weeklyCompletions.map((w) => w.count), 1);
+
+    const perfBarColor = (pct) => {
+      if (pct >= 80) return '#16a34a';
+      if (pct >= 60) return '#84cc16';
+      if (pct >= 40) return '#eab308';
+      return '#ef4444';
+    };
+
+    return html`
+      <div class="analytics-section">
+        <h2>Mi rendimiento</h2>
+        <div class="analytics-grid">
+
+          <div class="analytics-card">
+            <h3>Clases por semana</h3>
+            <div class="weekly-chart">
+              ${weeklyCompletions.map((w) => html`
+                <div class="chart-col">
+                  <span class="chart-bar-value">${w.count}</span>
+                  <div class="chart-bar" style="height: ${Math.max((w.count / maxCount) * 100, 5)}%"></div>
+                  <span class="chart-bar-label">${w.weekLabel}</span>
+                </div>
+              `)}
+            </div>
+          </div>
+
+          <div class="analytics-card">
+            <h3>Acierto en quizzes</h3>
+            ${quizPerformance.totalAnswered > 0 ? html`
+              <div class="quiz-rate">${quizPerformance.successRate}%</div>
+              <div class="quiz-detail">${quizPerformance.totalCorrect} de ${quizPerformance.totalAnswered} respuestas correctas</div>
+            ` : html`
+              <div class="quiz-detail">Aún no has completado quizzes</div>
+            `}
+          </div>
+
+          <div class="analytics-card">
+            <h3>Estimación de finalización</h3>
+            ${completion.weeksRemaining === 0 ? html`
+              <div class="estimate-value">Completado</div>
+              <div class="estimate-detail">Has terminado todas las clases</div>
+            ` : completion.estimatedDate ? html`
+              <div class="estimate-value">${completion.estimatedDate}</div>
+              <div class="estimate-detail">~${completion.weeksRemaining} ${completion.weeksRemaining === 1 ? 'semana' : 'semanas'} restantes (${completion.lessonsPerWeek} clases/sem)</div>
+            ` : html`
+              <div class="estimate-detail">Completa más clases para calcular una estimación</div>
+            `}
+          </div>
+
+          ${quizPerformance.byModule.length > 0 ? html`
+            <div class="analytics-card">
+              <h3>Rendimiento por módulo</h3>
+              ${quizPerformance.byModule.map((m) => html`
+                <div class="module-perf-row">
+                  <span class="module-perf-name" title="${m.moduleTitle}">${m.moduleTitle}</span>
+                  <div class="module-perf-bar-bg">
+                    <div class="module-perf-bar" style="width: ${m.percent}%; background: ${perfBarColor(m.percent)}"></div>
+                  </div>
+                  <span class="module-perf-percent">${m.percent}%</span>
+                </div>
+              `)}
+            </div>
+          ` : ''}
+
+        </div>
+      </div>
+    `;
   }
 
   render() {
@@ -538,6 +786,8 @@ export class StudentDashboardView extends LitElement {
           ` : ''}
         </div>
       ` : ''}
+
+      ${this._renderAnalytics()}
 
       <div class="global-progress">
         <h2>Progreso general</h2>

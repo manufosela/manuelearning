@@ -364,6 +364,7 @@ export async function getStudentQuizResponse(studentId, lessonId, quizId) {
  * @property {string} responseId
  * @property {string} quizId
  * @property {string} quizTitle
+ * @property {string} moduleId
  * @property {QuizQuestion[]} questions
  * @property {string[]} userAnswers
  * @property {*} completedAt
@@ -397,6 +398,7 @@ export async function getUserQuizResults(userId) {
           responseId: responseDoc.id,
           quizId: responseData.quizId,
           quizTitle: quizData.title,
+          moduleId: quizData.moduleId || '',
           questions: quizData.questions || [],
           userAnswers: responseData.answers || [],
           completedAt: responseData.completedAt,
