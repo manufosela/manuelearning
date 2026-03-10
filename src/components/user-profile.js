@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { fetchUser, updateUserDisplayName } from '../lib/firebase/users.js';
+import { fetchUser, updateUserDisplayName, updateWeeklyDigest } from '../lib/firebase/users.js';
 import { getCurrentUser, onAuthChange } from '../lib/firebase/auth.js';
 import { getUserBadges } from '../lib/firebase/badges.js';
 import './activity-heatmap.js';
@@ -18,6 +18,7 @@ export class UserProfile extends LitElement {
     _message: { type: String, state: true },
     _messageType: { type: String, state: true },
     _badges: { type: Array, state: true },
+    _savingDigest: { type: Boolean, state: true },
   };
 
   static styles = css`
@@ -292,6 +293,95 @@ export class UserProfile extends LitElement {
       text-align: center;
       padding: 1rem 0;
     }
+
+    .preferences-section {
+      background: #fff;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      padding: 1.5rem 2rem;
+      margin-top: 1.5rem;
+    }
+
+    .preferences-section__title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .preference-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+    }
+
+    .preference-row__label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .preference-row__title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .preference-row__desc {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .toggle {
+      position: relative;
+      width: 2.75rem;
+      height: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle__slider {
+      position: absolute;
+      inset: 0;
+      background: #cbd5e1;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .toggle__slider::before {
+      content: '';
+      position: absolute;
+      width: 1.125rem;
+      height: 1.125rem;
+      left: 0.1875rem;
+      bottom: 0.1875rem;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    .toggle input:checked + .toggle__slider {
+      background: #84cc16;
+    }
+
+    .toggle input:checked + .toggle__slider::before {
+      transform: translateX(1.25rem);
+    }
+
+    .toggle input:disabled + .toggle__slider {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   `;
 
   constructor() {
@@ -304,6 +394,7 @@ export class UserProfile extends LitElement {
     this._message = '';
     this._messageType = '';
     this._badges = [];
+    this._savingDigest = false;
   }
 
   connectedCallback() {
@@ -363,6 +454,25 @@ export class UserProfile extends LitElement {
       this._user = { ...this._user, displayName: this._editName.trim() };
       this._editing = false;
       this._message = 'Nombre actualizado correctamente';
+      this._messageType = 'success';
+    } else {
+      this._message = result.error;
+      this._messageType = 'error';
+    }
+  }
+
+  async _toggleDigest(e) {
+    const enabled = e.target.checked;
+    this._savingDigest = true;
+
+    const result = await updateWeeklyDigest(this._user.uid, enabled);
+    this._savingDigest = false;
+
+    if (result.success) {
+      this._user = { ...this._user, weeklyDigest: enabled };
+      this._message = enabled
+        ? 'Resumen semanal activado'
+        : 'Resumen semanal desactivado';
       this._messageType = 'success';
     } else {
       this._message = result.error;
@@ -479,6 +589,28 @@ export class UserProfile extends LitElement {
             </div>`
           : html`<p class="badges-empty">Aún no has conseguido ningún logro. ¡Completa módulos para desbloquearlos!</p>`
         }
+      </div>
+
+      <div class="preferences-section">
+        <h3 class="preferences-section__title">
+          <span class="material-icons" style="font-size:1.25rem;color:#64748b;">settings</span>
+          Preferencias
+        </h3>
+        <div class="preference-row">
+          <div class="preference-row__label">
+            <span class="preference-row__title">Resumen semanal por email</span>
+            <span class="preference-row__desc">Recibe cada lunes un resumen con tu progreso, racha y próxima lección recomendada</span>
+          </div>
+          <label class="toggle">
+            <input
+              type="checkbox"
+              .checked=${!!this._user.weeklyDigest}
+              ?disabled=${this._savingDigest}
+              @change=${this._toggleDigest}
+            />
+            <span class="toggle__slider"></span>
+          </label>
+        </div>
       </div>
 
       <activity-heatmap

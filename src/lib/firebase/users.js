@@ -17,6 +17,7 @@ import { db } from './config.js';
  * @property {string} displayName
  * @property {string} role - 'student' | 'admin'
  * @property {string} [cohortId]
+ * @property {boolean} [weeklyDigest] - opt-in for weekly email digest
  * @property {*} createdAt
  */
 
@@ -149,6 +150,24 @@ export async function trackActivity(uid) {
     sessionStorage.setItem(key, String(now));
   } catch {
     // Non-critical, fail silently
+  }
+}
+
+/**
+ * Update a user's weekly digest preference.
+ * @param {string} uid
+ * @param {boolean} enabled
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function updateWeeklyDigest(uid, enabled) {
+  if (!uid) return { success: false, error: 'UID es obligatorio' };
+
+  try {
+    const userRef = doc(db, 'users', uid);
+    await updateDoc(userRef, { weeklyDigest: !!enabled });
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: 'Error al actualizar preferencia de digest' };
   }
 }
 
