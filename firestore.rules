@@ -109,8 +109,10 @@ service cloud.firestore {
       // Users can read their own notifications
       allow read: if isSignedIn()
         && resource.data.userId == request.auth.uid;
-      // Admins can create notifications for any user
-      allow create: if isAdmin();
+      // Admins can create notifications for any user;
+      // users can create their own (e.g. badge-earned)
+      allow create: if isAdmin()
+        || (isSignedIn() && request.resource.data.userId == request.auth.uid);
       // Users can mark their own notifications as read
       allow update: if isSignedIn()
         && resource.data.userId == request.auth.uid;
@@ -164,6 +166,17 @@ service cloud.firestore {
       // Only admins can modify settings
       allow create, update: if isAdmin();
       allow delete: if false;
+    }
+
+    // ── badges ─────────────────────────────────────────────────
+    match /badges/{badgeId} {
+      // Users can read their own badges; admins can read all
+      allow read: if isSignedIn()
+        && (resource.data.userId == request.auth.uid || isAdmin());
+      // Users can create their own badges (awarded by client after completion)
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
     }
 
     // ── suggestedAnswers ─────────────────────────────────────

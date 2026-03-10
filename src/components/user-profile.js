@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { fetchUser, updateUserDisplayName } from '../lib/firebase/users.js';
 import { getCurrentUser, onAuthChange } from '../lib/firebase/auth.js';
+import { getUserBadges } from '../lib/firebase/badges.js';
 import './activity-heatmap.js';
 
 /**
@@ -16,6 +17,7 @@ export class UserProfile extends LitElement {
     _editName: { type: String, state: true },
     _message: { type: String, state: true },
     _messageType: { type: String, state: true },
+    _badges: { type: Array, state: true },
   };
 
   static styles = css`
@@ -210,6 +212,86 @@ export class UserProfile extends LitElement {
       background: #f0fdf4;
       color: #166534;
     }
+
+    .badges-section {
+      background: #fff;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      padding: 1.5rem 2rem;
+      margin-top: 1.5rem;
+    }
+
+    .badges-section__title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .badge-card {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #e2e8f0;
+      background: #fafafa;
+    }
+
+    .badge-card__icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .badge-card__icon--module {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .badge-card__icon--course {
+      background: #fef9c3;
+      color: #a16207;
+    }
+
+    .badge-card__info {
+      min-width: 0;
+    }
+
+    .badge-card__title {
+      font-size: 0.813rem;
+      font-weight: 600;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .badge-card__date {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .badges-empty {
+      color: #64748b;
+      font-size: 0.875rem;
+      text-align: center;
+      padding: 1rem 0;
+    }
   `;
 
   constructor() {
@@ -221,6 +303,7 @@ export class UserProfile extends LitElement {
     this._editName = '';
     this._message = '';
     this._messageType = '';
+    this._badges = [];
   }
 
   connectedCallback() {
@@ -247,6 +330,14 @@ export class UserProfile extends LitElement {
 
     if (result.success) {
       this._user = result.user;
+      this._loadBadges(uid);
+    }
+  }
+
+  async _loadBadges(uid) {
+    const result = await getUserBadges(uid);
+    if (result.success) {
+      this._badges = result.badges;
     }
   }
 
@@ -364,6 +455,30 @@ export class UserProfile extends LitElement {
             ? html`<div class="message message--${this._messageType}">${this._message}</div>`
             : ''}
         </div>
+      </div>
+
+      <div class="badges-section">
+        <h3 class="badges-section__title">
+          <span class="material-icons" style="font-size:1.25rem;color:#a16207;">emoji_events</span>
+          Logros
+        </h3>
+        ${this._badges.length > 0
+          ? html`
+            <div class="badges-grid">
+              ${this._badges.map((b) => html`
+                <div class="badge-card">
+                  <div class="badge-card__icon badge-card__icon--${b.type === 'course_complete' ? 'course' : 'module'}">
+                    <span class="material-icons">${b.type === 'course_complete' ? 'school' : 'check_circle'}</span>
+                  </div>
+                  <div class="badge-card__info">
+                    <div class="badge-card__title" title="${b.refTitle}">${b.refTitle}</div>
+                    <div class="badge-card__date">${this._formatDate(b.awardedAt)}</div>
+                  </div>
+                </div>
+              `)}
+            </div>`
+          : html`<p class="badges-empty">Aún no has conseguido ningún logro. ¡Completa módulos para desbloquearlos!</p>`
+        }
       </div>
 
       <activity-heatmap
