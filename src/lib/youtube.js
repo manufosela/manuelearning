@@ -27,5 +27,5 @@ export function extractYouTubeId(url) {
  */
 export function buildEmbedUrl(videoId) {
   if (!videoId) return '';
-  return `https://www.youtube.com/embed/${videoId}`;
+  return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}`;
 }

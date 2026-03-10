@@ -4,9 +4,12 @@ import {
   getDoc,
   getDocs,
   setDoc,
+  updateDoc,
   query,
   where,
   serverTimestamp,
+  arrayUnion,
+  arrayRemove,
 } from 'firebase/firestore';
 import { db } from './config.js';
 import { updateStreak } from './streaks.js';
@@ -156,4 +159,130 @@ export async function getUserProgress(userId) {
 export function calculateProgress(completed, total) {
   if (total === 0) return 0;
   return Math.round((completed / total) * 100);
+}
+
+/**
+ * Save the last watched video position for a lesson.
+ * @param {string} userId
+ * @param {string} moduleId
+ * @param {string} lessonId
+ * @param {number} seconds - current video time in seconds
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function saveVideoPosition(userId, moduleId, lessonId, seconds) {
+  if (!userId || !moduleId || !lessonId) return { success: false, error: 'Parámetros requeridos' };
+
+  try {
+    const docId = `${userId}_${moduleId}_${lessonId}`;
+    const ref = doc(db, COLLECTION, docId);
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+      await updateDoc(ref, { videoPosition: seconds });
+    } else {
+      await setDoc(ref, {
+        userId,
+        moduleId,
+        lessonId,
+        completed: false,
+        videoPosition: seconds,
+      });
+    }
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Error al guardar posición' };
+  }
+}
+
+/**
+ * Get the last watched video position for a lesson.
+ * @param {string} userId
+ * @param {string} moduleId
+ * @param {string} lessonId
+ * @returns {Promise<number>} seconds, 0 if not found
+ */
+export async function getVideoPosition(userId, moduleId, lessonId) {
+  if (!userId || !moduleId || !lessonId) return 0;
+
+  try {
+    const docId = `${userId}_${moduleId}_${lessonId}`;
+    const snap = await getDoc(doc(db, COLLECTION, docId));
+    return snap.exists() ? (snap.data().videoPosition || 0) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Add a video bookmark for a lesson.
+ * @param {string} userId
+ * @param {string} moduleId
+ * @param {string} lessonId
+ * @param {number} seconds
+ * @param {string} note
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function addVideoBookmark(userId, moduleId, lessonId, seconds, note) {
+  if (!userId || !moduleId || !lessonId) return { success: false, error: 'Parámetros requeridos' };
+
+  try {
+    const docId = `${userId}_${moduleId}_${lessonId}`;
+    const ref = doc(db, COLLECTION, docId);
+    const snap = await getDoc(ref);
+    const bookmark = { seconds, note: note || '', createdAt: new Date().toISOString() };
+
+    if (snap.exists()) {
+      await updateDoc(ref, { bookmarks: arrayUnion(bookmark) });
+    } else {
+      await setDoc(ref, {
+        userId,
+        moduleId,
+        lessonId,
+        completed: false,
+        bookmarks: [bookmark],
+      });
+    }
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Error al guardar marcador' };
+  }
+}
+
+/**
+ * Remove a video bookmark.
+ * @param {string} userId
+ * @param {string} moduleId
+ * @param {string} lessonId
+ * @param {Object} bookmark - exact bookmark object to remove
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function removeVideoBookmark(userId, moduleId, lessonId, bookmark) {
+  if (!userId || !moduleId || !lessonId) return { success: false, error: 'Parámetros requeridos' };
+
+  try {
+    const docId = `${userId}_${moduleId}_${lessonId}`;
+    await updateDoc(doc(db, COLLECTION, docId), { bookmarks: arrayRemove(bookmark) });
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Error al eliminar marcador' };
+  }
+}
+
+/**
+ * Get all bookmarks for a lesson.
+ * @param {string} userId
+ * @param {string} moduleId
+ * @param {string} lessonId
+ * @returns {Promise<Array<{seconds: number, note: string, createdAt: string}>>}
+ */
+export async function getVideoBookmarks(userId, moduleId, lessonId) {
+  if (!userId || !moduleId || !lessonId) return [];
+
+  try {
+    const docId = `${userId}_${moduleId}_${lessonId}`;
+    const snap = await getDoc(doc(db, COLLECTION, docId));
+    return snap.exists() ? (snap.data().bookmarks || []) : [];
+  } catch {
+    return [];
+  }
 }

@@ -1,7 +1,15 @@
 import { LitElement, html, css } from 'lit';
 import { fetchLesson, fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
 import { getNextLesson, getPrevLesson } from '../lib/learning-path.js';
-import { markLessonCompleted, isLessonCompleted } from '../lib/firebase/progress.js';
+import {
+  markLessonCompleted,
+  isLessonCompleted,
+  saveVideoPosition,
+  getVideoPosition,
+  addVideoBookmark,
+  removeVideoBookmark,
+  getVideoBookmarks,
+} from '../lib/firebase/progress.js';
 import { trackActivity } from '../lib/firebase/users.js';
 import { fetchQuizzesByLessonId, getStudentQuizResponse } from '../lib/firebase/quizzes.js';
 import { waitForAuth } from '../lib/auth-ready.js';
@@ -28,6 +36,9 @@ export class LessonView extends LitElement {
     _completing: { type: Boolean, state: true },
     _quizRequired: { type: Boolean, state: true },
     _quizAnswered: { type: Boolean, state: true },
+    _videoStartAt: { type: Number, state: true },
+    _bookmarks: { type: Array, state: true },
+    _lastSavedTime: { type: Number, state: true },
   };
 
   static styles = css`
@@ -220,6 +231,9 @@ export class LessonView extends LitElement {
     this._completing = false;
     this._quizRequired = false;
     this._quizAnswered = false;
+    this._videoStartAt = 0;
+    this._bookmarks = [];
+    this._lastSavedTime = 0;
     this._userId = null;
   }
 
@@ -227,6 +241,24 @@ export class LessonView extends LitElement {
     super.connectedCallback();
     this._onQuizCompleted = () => { this._quizAnswered = true; };
     this.addEventListener('quiz-completed', this._onQuizCompleted);
+
+    this._onVideoTimeUpdate = (e) => { this._lastSavedTime = e.detail.currentTime; };
+    this.addEventListener('video-time-update', this._onVideoTimeUpdate);
+
+    this._onBookmarkAdd = (e) => this._handleBookmarkAdd(e.detail);
+    this.addEventListener('bookmark-add', this._onBookmarkAdd);
+
+    this._onBookmarkRemove = (e) => this._handleBookmarkRemove(e.detail.bookmark);
+    this.addEventListener('bookmark-remove', this._onBookmarkRemove);
+
+    this._onBeforeUnload = () => this._savePositionSync();
+    window.addEventListener('beforeunload', this._onBeforeUnload);
+
+    this._onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') this._savePosition();
+    };
+    document.addEventListener('visibilitychange', this._onVisibilityChange);
+
     const params = new URLSearchParams(window.location.search);
     this._moduleId = this.dataset.moduleId || params.get('m');
     this._lessonId = this.dataset.lessonId || params.get('l');
@@ -234,6 +266,7 @@ export class LessonView extends LitElement {
       waitForAuth().then((user) => {
         this._userId = user.uid;
         trackActivity(user.uid);
+        this._recoverPendingPosition();
         this._loadLesson(this._moduleId, this._lessonId);
       });
     } else {
@@ -244,7 +277,13 @@ export class LessonView extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this._savePosition();
     this.removeEventListener('quiz-completed', this._onQuizCompleted);
+    this.removeEventListener('video-time-update', this._onVideoTimeUpdate);
+    this.removeEventListener('bookmark-add', this._onBookmarkAdd);
+    this.removeEventListener('bookmark-remove', this._onBookmarkRemove);
+    window.removeEventListener('beforeunload', this._onBeforeUnload);
+    document.removeEventListener('visibilitychange', this._onVisibilityChange);
   }
 
   async _loadLesson(moduleId, lessonId) {
@@ -256,6 +295,8 @@ export class LessonView extends LitElement {
       await this._loadNavigation(moduleId, lessonId);
       if (this._userId) {
         this._completed = await isLessonCompleted(this._userId, moduleId, lessonId);
+        this._videoStartAt = await getVideoPosition(this._userId, moduleId, lessonId);
+        this._bookmarks = await getVideoBookmarks(this._userId, moduleId, lessonId);
       }
       await this._checkQuizStatus(lessonId);
     } else {
@@ -309,6 +350,64 @@ export class LessonView extends LitElement {
     }
   }
 
+  _savePosition() {
+    if (!this._userId || !this._moduleId || !this._lessonId || !this._lastSavedTime) return;
+    saveVideoPosition(this._userId, this._moduleId, this._lessonId, this._lastSavedTime);
+    this._clearPendingPosition();
+  }
+
+  /** Synchronous fallback for beforeunload — stores in sessionStorage. */
+  _savePositionSync() {
+    if (!this._userId || !this._moduleId || !this._lessonId || !this._lastSavedTime) return;
+    try {
+      const key = `video_pos_${this._userId}_${this._moduleId}_${this._lessonId}`;
+      sessionStorage.setItem(key, JSON.stringify({
+        userId: this._userId,
+        moduleId: this._moduleId,
+        lessonId: this._lessonId,
+        seconds: this._lastSavedTime,
+      }));
+    } catch { /* sessionStorage may be unavailable */ }
+  }
+
+  _clearPendingPosition() {
+    if (!this._userId || !this._moduleId || !this._lessonId) return;
+    try {
+      const key = `video_pos_${this._userId}_${this._moduleId}_${this._lessonId}`;
+      sessionStorage.removeItem(key);
+    } catch { /* ignore */ }
+  }
+
+  /** Recover any position saved by a previous beforeunload. */
+  async _recoverPendingPosition() {
+    if (!this._userId || !this._moduleId || !this._lessonId) return;
+    try {
+      const key = `video_pos_${this._userId}_${this._moduleId}_${this._lessonId}`;
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return;
+      const { seconds } = JSON.parse(raw);
+      if (seconds) {
+        await saveVideoPosition(this._userId, this._moduleId, this._lessonId, seconds);
+        sessionStorage.removeItem(key);
+      }
+    } catch { /* ignore */ }
+  }
+
+  async _handleBookmarkAdd(detail) {
+    const { seconds, note } = detail;
+    const result = await addVideoBookmark(this._userId, this._moduleId, this._lessonId, seconds, note || '');
+    if (result.success) {
+      this._bookmarks = await getVideoBookmarks(this._userId, this._moduleId, this._lessonId);
+    }
+  }
+
+  async _handleBookmarkRemove(bookmark) {
+    const result = await removeVideoBookmark(this._userId, this._moduleId, this._lessonId, bookmark);
+    if (result.success) {
+      this._bookmarks = await getVideoBookmarks(this._userId, this._moduleId, this._lessonId);
+    }
+  }
+
   render() {
     if (this._loading) {
       return html`<div class="loading"><div class="spinner"></div><p>Cargando clase...</p></div>`;
@@ -325,7 +424,11 @@ export class LessonView extends LitElement {
       </div>
 
       <div class="video-section">
-        <video-player url=${this._lesson.videoUrl || ''}></video-player>
+        <video-player
+          url=${this._lesson.videoUrl || ''}
+          start-at=${this._videoStartAt}
+          .bookmarks=${this._bookmarks}
+        ></video-player>
       </div>
 
       ${this._lesson.documentation ? html`
