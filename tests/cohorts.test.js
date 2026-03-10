@@ -5,16 +5,16 @@ vi.mock('firebase/auth', () => ({ getAuth: vi.fn(() => ({ currentUser: null })) 
 
 const mockGetDocs = vi.fn();
 const mockGetDoc = vi.fn();
-const mockAddDoc = vi.fn();
+const mockSetDoc = vi.fn();
 const mockUpdateDoc = vi.fn();
 
 vi.mock('firebase/firestore', () => ({
   getFirestore: vi.fn(() => ({})),
-  collection: vi.fn(),
-  doc: vi.fn(),
+  collection: vi.fn(() => ({})),
+  doc: vi.fn(() => ({})),
   getDocs: (...a) => mockGetDocs(...a),
   getDoc: (...a) => mockGetDoc(...a),
-  addDoc: (...a) => mockAddDoc(...a),
+  setDoc: (...a) => mockSetDoc(...a),
   updateDoc: (...a) => mockUpdateDoc(...a),
   query: vi.fn(),
   orderBy: vi.fn(),
@@ -30,14 +30,10 @@ import {
 } from '../src/lib/firebase/cohorts.js';
 
 describe('validateCohort', () => {
-  const valid = { name: 'Cohorte Marzo', code: '2026-03', startDate: '2026-03-01', expiryDate: '2026-06-01' };
+  const valid = { name: 'Cohorte Marzo', startDate: '2026-03-01', expiryDate: '2026-06-01' };
 
   it('should reject empty name', () => {
     expect(validateCohort({ ...valid, name: '' }).valid).toBe(false);
-  });
-
-  it('should reject invalid code format', () => {
-    expect(validateCohort({ ...valid, code: 'March2026' }).valid).toBe(false);
   });
 
   it('should reject missing startDate', () => {
@@ -52,7 +48,7 @@ describe('validateCohort', () => {
     expect(validateCohort({ ...valid, expiryDate: '2026-01-01' }).valid).toBe(false);
   });
 
-  it('should accept valid cohort data', () => {
+  it('should accept valid cohort data without code', () => {
     expect(validateCohort(valid).valid).toBe(true);
   });
 });
@@ -101,22 +97,22 @@ describe('fetchCohort', () => {
 
 describe('createCohort', () => {
   beforeEach(() => vi.clearAllMocks());
-  const valid = { name: 'C1', code: '2026-03', startDate: '2026-03-01', expiryDate: '2026-06-01' };
+  const valid = { name: 'Cohorte Marzo', startDate: '2026-03-01', expiryDate: '2026-06-01' };
 
   it('should reject invalid data', async () => {
     expect((await createCohort({ ...valid, name: '' })).success).toBe(false);
-    expect(mockAddDoc).not.toHaveBeenCalled();
+    expect(mockSetDoc).not.toHaveBeenCalled();
   });
 
-  it('should create cohort on success', async () => {
-    mockAddDoc.mockResolvedValue({ id: 'new-id' });
+  it('should create cohort using slug as ID', async () => {
+    mockSetDoc.mockResolvedValue();
     const result = await createCohort(valid);
     expect(result.success).toBe(true);
-    expect(result.id).toBe('new-id');
+    expect(result.id).toBe('cohorte-marzo');
   });
 
   it('should handle Firestore errors', async () => {
-    mockAddDoc.mockRejectedValue(new Error('err'));
+    mockSetDoc.mockRejectedValue(new Error('err'));
     expect((await createCohort(valid)).success).toBe(false);
   });
 });
@@ -131,6 +127,14 @@ describe('updateCohort', () => {
   it('should update on success', async () => {
     mockUpdateDoc.mockResolvedValue();
     expect((await updateCohort('c1', { active: false })).success).toBe(true);
+  });
+
+  it('should strip slug from updates', async () => {
+    mockUpdateDoc.mockResolvedValue();
+    await updateCohort('c1', { name: 'Nuevo nombre', slug: 'should-be-stripped' });
+    const calledWith = mockUpdateDoc.mock.calls[0][1];
+    expect(calledWith.slug).toBeUndefined();
+    expect(calledWith.name).toBe('Nuevo nombre');
   });
 
   it('should handle errors', async () => {

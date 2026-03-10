@@ -4,6 +4,23 @@
  */
 
 /**
+ * Generate an immutable slug from a cohort name.
+ * @param {string} name
+ * @returns {string}
+ */
+export function generateCohortSlug(name) {
+  return name
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/**
  * Check if a cohort has expired based on its expiryDate.
  * @param {{ expiryDate?: string }} cohort
  * @returns {boolean}
@@ -29,16 +46,12 @@ export function getCohortStatus(cohort) {
 
 /**
  * Validate cohort data before creating/updating.
- * @param {{ name?: string, code?: string, startDate?: string, expiryDate?: string }} data
+ * @param {{ name?: string, startDate?: string, expiryDate?: string }} data
  * @returns {{ valid: boolean, error?: string }}
  */
 export function validateCohort(data) {
   if (!data.name || data.name.trim().length === 0) {
     return { valid: false, error: 'El nombre es obligatorio' };
-  }
-
-  if (!data.code || !/^\d{4}-\d{2}$/.test(data.code)) {
-    return { valid: false, error: 'El código debe tener formato YYYY-MM' };
   }
 
   if (!data.startDate) {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isCohortExpired, getCohortStatus, validateCohort } from '../src/lib/cohort-utils.js';
+import { isCohortExpired, getCohortStatus, validateCohort, generateCohortSlug } from '../src/lib/cohort-utils.js';
 
 describe('isCohortExpired', () => {
   it('should return false when cohort is null', () => {
@@ -45,33 +45,39 @@ describe('getCohortStatus', () => {
 });
 
 describe('validateCohort', () => {
-  it('should reject empty name', () => {
-    const result = validateCohort({ name: '', code: '2026-03', startDate: '2026-03-01', expiryDate: '2026-06-01' });
-    expect(result.valid).toBe(false);
-  });
+  const valid = { name: 'Test', startDate: '2026-03-01', expiryDate: '2026-06-01' };
 
-  it('should reject invalid code format', () => {
-    const result = validateCohort({ name: 'Test', code: 'invalid', startDate: '2026-03-01', expiryDate: '2026-06-01' });
-    expect(result.valid).toBe(false);
+  it('should reject empty name', () => {
+    expect(validateCohort({ ...valid, name: '' }).valid).toBe(false);
   });
 
   it('should reject missing startDate', () => {
-    const result = validateCohort({ name: 'Test', code: '2026-03', startDate: '', expiryDate: '2026-06-01' });
-    expect(result.valid).toBe(false);
+    expect(validateCohort({ ...valid, startDate: '' }).valid).toBe(false);
   });
 
   it('should reject missing expiryDate', () => {
-    const result = validateCohort({ name: 'Test', code: '2026-03', startDate: '2026-03-01', expiryDate: '' });
-    expect(result.valid).toBe(false);
+    expect(validateCohort({ ...valid, expiryDate: '' }).valid).toBe(false);
   });
 
   it('should reject expiryDate before startDate', () => {
-    const result = validateCohort({ name: 'Test', code: '2026-03', startDate: '2026-06-01', expiryDate: '2026-03-01' });
-    expect(result.valid).toBe(false);
+    expect(validateCohort({ ...valid, startDate: '2026-06-01', expiryDate: '2026-03-01' }).valid).toBe(false);
   });
 
-  it('should accept valid cohort data', () => {
-    const result = validateCohort({ name: 'Test', code: '2026-03', startDate: '2026-03-01', expiryDate: '2026-06-01' });
-    expect(result.valid).toBe(true);
+  it('should accept valid cohort data without code', () => {
+    expect(validateCohort(valid).valid).toBe(true);
+  });
+});
+
+describe('generateCohortSlug', () => {
+  it('should slugify a simple name', () => {
+    expect(generateCohortSlug('Convocatoria Marzo 2026')).toBe('convocatoria-marzo-2026');
+  });
+
+  it('should remove accents and special characters', () => {
+    expect(generateCohortSlug('Mi Convocatoria Ñoña')).toBe('mi-convocatoria-nona');
+  });
+
+  it('should collapse multiple spaces', () => {
+    expect(generateCohortSlug('  Espacios   múltiples  ')).toBe('espacios-multiples');
   });
 });
