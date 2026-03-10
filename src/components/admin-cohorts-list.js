@@ -5,11 +5,6 @@ import {
   updateCohort,
 } from '../lib/firebase/cohorts.js';
 import { validateCohort, getCohortStatus } from '../lib/cohort-utils.js';
-import {
-  fetchCodesByCohort,
-  createInvitationCode,
-  toggleCodeActive,
-} from '../lib/firebase/invitation-codes.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { materialIconsLink } from './shared/material-icons.js';
 
@@ -27,11 +22,6 @@ export class AdminCohortsList extends LitElement {
     _formData: { type: Object, state: true },
     _formError: { type: String, state: true },
     _saving: { type: Boolean, state: true },
-    _expandedCohort: { type: String, state: true },
-    _codes: { type: Array, state: true },
-    _codesLoading: { type: Boolean, state: true },
-    _codeMaxUses: { type: Number, state: true },
-    _creatingCode: { type: Boolean, state: true },
   };
 
   static styles = css`
@@ -263,99 +253,14 @@ export class AdminCohortsList extends LitElement {
       margin-bottom: 0.75rem;
     }
 
-    .codes-panel {
-      background: #f8fafc;
-      padding: 1rem 1.25rem;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    .codes-panel__header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.75rem;
-    }
-
-    .codes-panel__header h4 {
-      margin: 0;
-      font-size: 0.813rem;
-      font-weight: 700;
-      color: #334155;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .codes-panel__create {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .codes-panel__create input {
-      width: 5rem;
-      padding: 0.25rem 0.5rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.375rem;
-      font-size: 0.813rem;
-      font-family: inherit;
-    }
-
-    .codes-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .code-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      background: #fff;
-      padding: 0.5rem 0.75rem;
-      border-radius: 0.375rem;
-      border: 1px solid #e2e8f0;
-      font-size: 0.813rem;
-    }
-
-    .code-item__code {
+    .slug-display {
       font-family: monospace;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: #0f172a;
-    }
-
-    .code-item__uses {
-      color: #64748b;
-    }
-
-    .code-item--inactive {
-      opacity: 0.5;
-    }
-
-    .code-item--inactive .code-item__code {
-      text-decoration: line-through;
-    }
-
-    .codes-empty {
       font-size: 0.813rem;
-      color: #94a3b8;
-      text-align: center;
-      padding: 0.5rem;
-    }
-
-    .expand-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
       color: #64748b;
-      padding: 0.25rem;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .expand-btn:hover {
-      color: #84cc16;
+      background: #f1f5f9;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      display: block;
     }
 
     @media (max-width: 768px) {
@@ -375,11 +280,6 @@ export class AdminCohortsList extends LitElement {
     this._formData = this._emptyForm();
     this._formError = '';
     this._saving = false;
-    this._expandedCohort = null;
-    this._codes = [];
-    this._codesLoading = false;
-    this._codeMaxUses = 10;
-    this._creatingCode = false;
   }
 
   connectedCallback() {
@@ -388,7 +288,7 @@ export class AdminCohortsList extends LitElement {
   }
 
   _emptyForm() {
-    return { name: '', code: '', startDate: '', expiryDate: '' };
+    return { name: '', startDate: '', expiryDate: '' };
   }
 
   async _loadCohorts() {
@@ -412,12 +312,12 @@ export class AdminCohortsList extends LitElement {
     this._showForm = true;
   }
 
-  /** @param {{ id: string, name: string, code: string, startDate: string, expiryDate: string }} cohort */
+  /** @param {{ id: string, name: string, slug?: string, code?: string, startDate: string, expiryDate: string }} cohort */
   _openEdit(cohort) {
     this._editingId = cohort.id;
     this._formData = {
       name: cohort.name,
-      code: cohort.code,
+      slug: cohort.slug || cohort.code || cohort.id,
       startDate: cohort.startDate,
       expiryDate: cohort.expiryDate,
     };
@@ -515,9 +415,8 @@ export class AdminCohortsList extends LitElement {
             <table class="cohorts-table">
               <thead>
                 <tr>
-                  <th></th>
                   <th>Nombre</th>
-                  <th>Codigo</th>
+                  <th>ID</th>
                   <th class="hide-mobile">Inicio</th>
                   <th class="hide-mobile">Fin</th>
                   <th>Estado</th>
@@ -531,15 +430,8 @@ export class AdminCohortsList extends LitElement {
                     const statusLabels = { active: 'Activa', expired: 'Expirada', inactive: 'Inactiva' };
                     return html`
                     <tr class="${status === 'expired' ? 'row--expired' : ''}">
-                      <td>
-                        <button class="expand-btn" @click=${() => this._toggleCodes(c.id)}>
-                          <span class="material-symbols-outlined">
-                            ${this._expandedCohort === c.id ? 'expand_less' : 'expand_more'}
-                          </span>
-                        </button>
-                      </td>
                       <td>${c.name}</td>
-                      <td>${c.code}</td>
+                      <td>${c.slug || c.code || c.id}</td>
                       <td class="hide-mobile">${c.startDate}</td>
                       <td class="hide-mobile">${c.expiryDate}</td>
                       <td>
@@ -560,14 +452,6 @@ export class AdminCohortsList extends LitElement {
                         </div>
                       </td>
                     </tr>
-                    ${this._expandedCohort === c.id
-                      ? html`
-                        <tr>
-                          <td colspan="7" style="padding:0;">
-                            ${this._renderCodesPanel(c.id)}
-                          </td>
-                        </tr>`
-                      : ''}
                   `}
                 )}
               </tbody>
@@ -575,98 +459,6 @@ export class AdminCohortsList extends LitElement {
           `}
 
       ${this._showForm ? this._renderForm() : ''}
-    `;
-  }
-
-  async _toggleCodes(cohortId) {
-    if (this._expandedCohort === cohortId) {
-      this._expandedCohort = null;
-      return;
-    }
-
-    this._expandedCohort = cohortId;
-    this._codesLoading = true;
-    this._codes = [];
-
-    const result = await fetchCodesByCohort(cohortId);
-    this._codesLoading = false;
-    if (result.success) {
-      this._codes = result.codes;
-    }
-  }
-
-  async _createCode(cohortId) {
-    this._creatingCode = true;
-    const result = await createInvitationCode(cohortId, this._codeMaxUses);
-    this._creatingCode = false;
-
-    if (result.success) {
-      const refreshResult = await fetchCodesByCohort(cohortId);
-      if (refreshResult.success) {
-        this._codes = refreshResult.codes;
-      }
-    }
-  }
-
-  async _toggleCodeActive(codeId, currentActive) {
-    const result = await toggleCodeActive(codeId, !currentActive);
-    if (result.success) {
-      this._codes = this._codes.map((c) =>
-        c.id === codeId ? { ...c, active: !currentActive } : c
-      );
-    }
-  }
-
-  _renderCodesPanel(cohortId) {
-    if (this._codesLoading) {
-      return html`<div class="codes-panel"><div class="spinner"></div></div>`;
-    }
-
-    return html`
-      <div class="codes-panel">
-        <div class="codes-panel__header">
-          <h4>Codigos de invitacion</h4>
-          <div class="codes-panel__create">
-            <label for="maxUses" style="font-size:0.75rem;color:#64748b;">Max usos:</label>
-            <input
-              id="maxUses"
-              type="number"
-              min="1"
-              .value=${String(this._codeMaxUses)}
-              @input=${(e) => { this._codeMaxUses = parseInt(e.target.value) || 10; }}
-            />
-            <button
-              class="btn btn--primary btn--small"
-              @click=${() => this._createCode(cohortId)}
-              ?disabled=${this._creatingCode}
-            >
-              ${this._creatingCode ? 'Creando...' : 'Crear codigo'}
-            </button>
-          </div>
-        </div>
-
-        ${this._codes.length === 0
-          ? html`<p class="codes-empty">No hay códigos para esta convocatoria</p>`
-          : html`
-            <div class="codes-list">
-              ${this._codes.map((code) => html`
-                <div class="code-item ${!code.active ? 'code-item--inactive' : ''}">
-                  <span class="code-item__code">${code.code}</span>
-                  <span class="code-item__uses">${code.usedCount}/${code.maxUses} usos</span>
-                  <span class="status-badge status-badge--${code.active ? 'active' : 'inactive'}">
-                    ${code.active ? 'Activo' : 'Inactivo'}
-                  </span>
-                  <button
-                    class="btn btn--secondary btn--small"
-                    @click=${() => this._toggleCodeActive(code.id, code.active)}
-                  >
-                    ${code.active ? 'Desactivar' : 'Activar'}
-                  </button>
-                </div>
-              `)}
-            </div>
-          `}
-      </div>
     `;
   }
 
@@ -690,19 +482,12 @@ export class AdminCohortsList extends LitElement {
                 required
               />
             </div>
+            ${this._editingId ? html`
             <div class="form-group">
-              <label for="cohort-code">Código (YYYY-MM)</label>
-              <input
-                id="cohort-code"
-                name="code"
-                type="text"
-                .value=${this._formData.code}
-                @input=${this._handleInput}
-                placeholder="2026-03"
-                pattern="\\d{4}-\\d{2}"
-                required
-              />
+              <label>ID (no editable)</label>
+              <span class="slug-display">${this._formData.slug}</span>
             </div>
+            ` : ''}
             <div class="form-group">
               <label for="cohort-start">Fecha de inicio</label>
               <input

@@ -3,7 +3,7 @@ import {
   doc,
   getDoc,
   getDocs,
-  addDoc,
+  setDoc,
   updateDoc,
   query,
   orderBy,
@@ -11,15 +11,15 @@ import {
 } from 'firebase/firestore';
 import { db } from './config.js';
 export { isCohortExpired, getCohortStatus, validateCohort } from '../cohort-utils.js';
-import { validateCohort as _validateCohort } from '../cohort-utils.js';
+import { validateCohort as _validateCohort, generateCohortSlug } from '../cohort-utils.js';
 
 const COLLECTION = 'cohorts';
 
 /**
  * @typedef {Object} Cohort
- * @property {string} [id] - Firestore document ID
+ * @property {string} [id] - Firestore document ID (equals slug)
  * @property {string} name - Display name (e.g. "Cohorte Marzo 2026")
- * @property {string} code - Format YYYY-MM (e.g. "2026-03")
+ * @property {string} slug - Immutable slug generated from name (e.g. "cohorte-marzo-2026")
  * @property {string} startDate - ISO date string
  * @property {string} expiryDate - ISO date string
  * @property {boolean} active
@@ -70,15 +70,17 @@ export async function createCohort(data) {
   if (!validation.valid) return { success: false, error: validation.error };
 
   try {
-    const ref = await addDoc(collection(db, COLLECTION), {
+    const slug = generateCohortSlug(data.name);
+    const ref = doc(collection(db, COLLECTION), slug);
+    await setDoc(ref, {
       name: data.name.trim(),
-      code: data.code,
+      slug,
       startDate: data.startDate,
       expiryDate: data.expiryDate,
       active: data.active !== false,
       createdAt: serverTimestamp(),
     });
-    return { success: true, id: ref.id };
+    return { success: true, id: slug };
   } catch (err) {
     return { success: false, error: 'Error al crear la convocatoria' };
   }
@@ -93,8 +95,11 @@ export async function createCohort(data) {
 export async function updateCohort(id, updates) {
   if (!id) return { success: false, error: 'ID es obligatorio' };
 
+  const safeUpdates = { ...updates };
+  delete safeUpdates.slug;
+
   try {
-    await updateDoc(doc(db, COLLECTION, id), updates);
+    await updateDoc(doc(db, COLLECTION, id), safeUpdates);
     return { success: true };
   } catch (err) {
     return { success: false, error: 'Error al actualizar la convocatoria' };
