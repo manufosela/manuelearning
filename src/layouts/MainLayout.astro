@@ -40,6 +40,14 @@ const {
     rel="stylesheet"
   />
   <title>{title}</title>
+  <script is:inline>
+    (function() {
+      const stored = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = stored || (prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 <body>
   <div class="page-wrapper">
@@ -48,6 +56,16 @@ const {
       <a href="/" class="site-header__brand">
         <img src="/logo.svg" alt={SITE.name} class="site-header__logo" />
       </a>
+      <div class="site-header__actions">
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          aria-label="Cambiar tema"
+          type="button"
+        >
+          <span class="material-symbols-outlined theme-toggle__icon theme-toggle__icon--light">light_mode</span>
+          <span class="material-symbols-outlined theme-toggle__icon theme-toggle__icon--dark">dark_mode</span>
+        </button>
       {!hideAuthButton && (
         <div class="site-header__auth" id="header-auth">
           <a href="/login" class="btn btn--primary btn--sm" id="header-login-btn">Acceder</a>
@@ -62,6 +80,7 @@ const {
           </div>
         </div>
       )}
+      </div>
     </header>
 
     <!-- Main content -->
@@ -121,6 +140,17 @@ const {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js');
+      });
+    }
+  </script>
+  <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
       });
     }
   </script>
@@ -196,6 +226,46 @@ const {
   .site-header__logo {
     height: 2rem;
     width: auto;
+  }
+
+  .site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    transition: color var(--transition-fast), background-color var(--transition-fast);
+  }
+
+  .theme-toggle:hover {
+    color: var(--color-text-primary);
+    background-color: var(--color-primary-light);
+  }
+
+  .theme-toggle__icon {
+    font-size: 1.25rem;
+  }
+
+  /* Show sun icon in dark mode, moon icon in light mode */
+  .theme-toggle__icon--light {
+    display: none;
+  }
+  .theme-toggle__icon--dark {
+    display: block;
+  }
+  [data-theme="dark"] .theme-toggle__icon--light {
+    display: block;
+  }
+  [data-theme="dark"] .theme-toggle__icon--dark {
+    display: none;
   }
 
   .site-header__auth {
