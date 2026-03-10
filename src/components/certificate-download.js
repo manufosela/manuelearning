@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
-import { getUserCertificate, saveCertificate, buildCertificateData } from '../lib/firebase/certificates.js';
+import { getUserCertificate, saveCertificate, buildCertificateData, buildVerificationUrl, buildLinkedInShareUrl } from '../lib/firebase/certificates.js';
 import { SITE } from '../config/site.config.js';
+import QRCode from 'qrcode';
 import { stateStyles } from '../lib/shared-styles.js';
 
 /**
@@ -51,6 +52,16 @@ export class CertificateDownload extends LitElement {
 
     .issued-date { font-size: 0.75rem; color: #64748b; margin-top: 0.75rem; }
 
+    .btn--linkedin { background: #0a66c2; color: #fff; }
+    .btn--linkedin:hover { background: #004182; }
+
+    .cert-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
     .cert-error {
       margin-top: 0.75rem;
       padding: 0.5rem 0.75rem;
@@ -98,7 +109,7 @@ export class CertificateDownload extends LitElement {
     }
   }
 
-  _downloadCertificate() {
+  async _downloadCertificate() {
     const cert = this._certificate;
     if (!cert) return;
 
@@ -164,9 +175,33 @@ export class CertificateDownload extends LitElement {
     ctx.lineTo(800, 640);
     ctx.stroke();
 
+    // QR code (bottom-right corner)
+    const verifyUrl = buildVerificationUrl(cert.id);
+    if (verifyUrl) {
+      try {
+        const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
+          width: 100,
+          margin: 1,
+          color: { dark: '#f59e0b', light: '#0f172a' },
+        });
+        const qrImg = new Image();
+        await new Promise((resolve, reject) => {
+          qrImg.onload = resolve;
+          qrImg.onerror = reject;
+          qrImg.src = qrDataUrl;
+        });
+        ctx.drawImage(qrImg, 1030, 680, 100, 100);
+        ctx.fillStyle = '#475569';
+        ctx.font = '400 9px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Verificar', 1080, 795);
+      } catch { /* QR generation failed, certificate still downloads without it */ }
+    }
+
     // Footer
     ctx.fillStyle = '#475569';
     ctx.font = '400 12px Inter, sans-serif';
+    ctx.textAlign = 'center';
     ctx.fillText(`${SITE.name} — ${SITE.tagline}`, 600, 740);
 
     // Download
@@ -174,6 +209,18 @@ export class CertificateDownload extends LitElement {
     link.download = `certificado-${(cert.userName || 'estudiante').replace(/\s+/g, '-').toLowerCase()}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
+  }
+
+  _shareOnLinkedIn() {
+    const cert = this._certificate;
+    if (!cert) return;
+    const certUrl = buildVerificationUrl(cert.id);
+    const linkedInUrl = buildLinkedInShareUrl({
+      certUrl,
+      courseName: cert.courseName || SITE.courseName,
+      userName: cert.userName,
+    });
+    if (linkedInUrl) window.open(linkedInUrl, '_blank', 'noopener');
   }
 
   render() {
@@ -185,9 +232,14 @@ export class CertificateDownload extends LitElement {
         <p>Has completado el 100% del programa de ${SITE.courseName}</p>
         ${this._certificate
           ? html`
-            <button class="btn btn--gold" @click=${this._downloadCertificate}>
-              Descargar certificado
-            </button>
+            <div class="cert-actions">
+              <button class="btn btn--gold" @click=${this._downloadCertificate}>
+                Descargar certificado
+              </button>
+              <button class="btn btn--linkedin" @click=${this._shareOnLinkedIn}>
+                Compartir en LinkedIn
+              </button>
+            </div>
             <div class="issued-date">
               Emitido: ${new Date(this._certificate.completedAt).toLocaleDateString('es-ES')}
             </div>

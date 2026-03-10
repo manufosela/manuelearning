@@ -1,7 +1,7 @@
 {
   "name": "manuelearning",
   "type": "module",
-  "version": "1.0.37",
+  "version": "1.0.38",
   "scripts": {
     "prepare": "git config --local core.hooksPath scripts/git-hooks",
     "dev": "astro dev",
@@ -17,7 +17,8 @@
     "astro": "^5.17.1",
     "firebase": "^12.9.0",
     "lit": "^3.3.2",
-    "marked": "^17.0.3"
+    "marked": "^17.0.3",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",

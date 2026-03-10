@@ -1,0 +1,22 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { SITE } from '../config/site.config.js';
+---
+
+<MainLayout title={`Verificar certificado | ${SITE.name}`} hideAuthButton={true}>
+  <section class="verify-page">
+    <certificate-verify></certificate-verify>
+  </section>
+</MainLayout>
+
+<script>
+  import '../components/certificate-verify.js';
+</script>
+
+<style>
+  .verify-page {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding: 2rem var(--section-px);
+  }
+</style>
