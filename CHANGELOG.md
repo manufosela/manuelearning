@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- CHANGELOG_ENTRIES -->
+## [1.0.44] - 2026-03-10
+- feat: add video speed controls, position persistence and bookmarks
+
+## [1.0.43] - 2026-03-10
+- feat: MEL-TSK-0077: Analytics de progreso personalizado para el estudiante. Ad
+
 ## [1.0.38] - 2026-03-10
 - feat: add QR verification and LinkedIn sharing to certificates
 

@@ -4,6 +4,7 @@ import { fetchAllUsers } from '../lib/firebase/users.js';
 import { getUserProgress } from '../lib/firebase/progress.js';
 import { fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
 import { getRetentionConfig, saveRetentionConfig, DEFAULT_RETENTION_CONFIG } from '../lib/firebase/settings.js';
+import { fetchAllProgressRecords, fetchAllQuizResponseRecords, fetchAllQuizDefinitions } from '../lib/firebase/admin-stats.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 
 /**
@@ -20,6 +21,9 @@ export class AdminRetentionDashboard extends LitElement {
     _config: { type: Object, state: true },
     _saving: { type: Boolean, state: true },
     _students: { type: Array, state: true },
+    _heatmapData: { type: Array, state: true },
+    _selectedLesson: { type: Object, state: true },
+    _allModules: { type: Array, state: true },
   };
 
   static styles = css`
@@ -117,6 +121,50 @@ export class AdminRetentionDashboard extends LitElement {
     .spinner { width: 1.5rem; height: 1.5rem; border: 3px solid #e2e8f0; border-top-color: #84cc16; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 0.75rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .empty-state { text-align: center; padding: 3rem; color: #64748b; }
+
+    /* Heatmap Section */
+    .heatmap-section { margin-bottom: 2rem; }
+    .heatmap-section h3 { font-size: 0.875rem; font-weight: 700; color: #0f172a; margin-bottom: 0.75rem; }
+    .heatmap-module { margin-bottom: 1.25rem; }
+    .heatmap-module__title { font-size: 0.75rem; font-weight: 600; color: #475569; margin-bottom: 0.375rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .heatmap-grid { display: flex; gap: 0.375rem; flex-wrap: wrap; }
+    .heatmap-cell { width: 3.5rem; height: 3.5rem; border-radius: 0.375rem; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; position: relative; border: 2px solid transparent; }
+    .heatmap-cell:hover { transform: scale(1.1); box-shadow: 0 2px 8px rgb(0 0 0 / 0.15); z-index: 1; }
+    .heatmap-cell--selected { border-color: #0f172a; }
+    .heatmap-cell__label { font-size: 0.563rem; font-weight: 700; color: rgba(255,255,255,0.9); line-height: 1; }
+    .heatmap-cell__value { font-size: 0.688rem; font-weight: 800; color: #fff; line-height: 1.2; }
+
+    .heatmap-legend { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; font-size: 0.75rem; color: #475569; }
+    .heatmap-legend__bar { display: flex; height: 0.5rem; border-radius: 0.25rem; overflow: hidden; width: 8rem; }
+    .heatmap-legend__bar span { flex: 1; }
+
+    .heatmap-toggle { display: flex; gap: 0.375rem; margin-bottom: 0.75rem; }
+
+    /* Detail Panel */
+    .detail-panel { background: #fff; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); margin-bottom: 2rem; }
+    .detail-panel__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .detail-panel__title { font-size: 1rem; font-weight: 700; color: #0f172a; }
+    .detail-panel__close { background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b; padding: 0.25rem; }
+    .detail-panel__close:hover { color: #0f172a; }
+    .detail-panel__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem; }
+    .detail-stat { background: #f8fafc; border-radius: 0.5rem; padding: 0.75rem; text-align: center; }
+    .detail-stat__value { font-size: 1.25rem; font-weight: 800; }
+    .detail-stat__label { font-size: 0.688rem; color: #64748b; margin-top: 0.125rem; }
+    .detail-stat--red .detail-stat__value { color: #dc2626; }
+    .detail-stat--amber .detail-stat__value { color: #ca8a04; }
+    .detail-stat--green .detail-stat__value { color: #16a34a; }
+
+    .detail-section { margin-bottom: 1rem; }
+    .detail-section h4 { font-size: 0.813rem; font-weight: 600; color: #475569; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .detail-list { list-style: none; padding: 0; margin: 0; }
+    .detail-list li { padding: 0.375rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.813rem; color: #334155; display: flex; align-items: center; gap: 0.5rem; }
+    .detail-list li:last-child { border-bottom: none; }
+    .detail-list__name { font-weight: 600; }
+    .detail-list__meta { font-size: 0.75rem; color: #94a3b8; }
+    .detail-question { padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9; }
+    .detail-question:last-child { border-bottom: none; }
+    .detail-question__text { font-size: 0.813rem; color: #334155; }
+    .detail-question__rate { font-size: 0.75rem; font-weight: 700; color: #dc2626; margin-top: 0.125rem; }
   `;
 
   constructor() {
@@ -129,6 +177,10 @@ export class AdminRetentionDashboard extends LitElement {
     this._config = { ...DEFAULT_RETENTION_CONFIG };
     this._saving = false;
     this._students = [];
+    this._heatmapData = [];
+    this._selectedLesson = null;
+    this._allModules = [];
+    this._heatmapMode = 'dropout';
   }
 
   connectedCallback() {
@@ -154,14 +206,19 @@ export class AdminRetentionDashboard extends LitElement {
       return;
     }
 
-    // Build total lesson count
+    // Build total lesson count and gather all lessons per module
     let totalLessons = 0;
+    const modulesWithLessons = [];
     if (modulesResult.success) {
       for (const mod of modulesResult.modules) {
         const res = await fetchLessons(mod.id);
-        if (res.success) totalLessons += res.lessons.length;
+        if (res.success) {
+          totalLessons += res.lessons.length;
+          modulesWithLessons.push({ ...mod, lessons: res.lessons });
+        }
       }
     }
+    this._allModules = modulesWithLessons;
 
     // Enrich each user with progress data
     this._students = await Promise.all(
@@ -187,7 +244,181 @@ export class AdminRetentionDashboard extends LitElement {
     );
 
     this._stats = computeRetentionStats(this._students, this._config);
+
+    // Build heatmap data
+    await this._buildHeatmapData(usersResult.users);
+
     this._loading = false;
+  }
+
+  async _buildHeatmapData(users) {
+    const [progressResult, responsesResult, quizzesResult] = await Promise.all([
+      fetchAllProgressRecords(),
+      fetchAllQuizResponseRecords(),
+      fetchAllQuizDefinitions(),
+    ]);
+
+    if (!progressResult.success) return;
+
+    const totalStudents = users.length;
+    const progressRecords = progressResult.records || [];
+    const quizResponses = responsesResult.success ? (responsesResult.records || []) : [];
+    const quizDefs = quizzesResult.success ? (quizzesResult.records || []) : [];
+
+    // Map: userId → Set of completed lessonIds (as moduleId_lessonId keys)
+    const userCompletedMap = new Map();
+    for (const rec of progressRecords) {
+      const key = `${rec.moduleId}_${rec.lessonId}`;
+      if (!userCompletedMap.has(rec.userId)) userCompletedMap.set(rec.userId, new Set());
+      userCompletedMap.get(rec.userId).add(key);
+    }
+
+    // Build ordered lesson list to determine "last completed lesson" for dropout
+    const orderedLessons = [];
+    for (const mod of this._allModules) {
+      for (const lesson of mod.lessons) {
+        orderedLessons.push({ moduleId: mod.id, lessonId: lesson.id, key: `${mod.id}_${lesson.id}` });
+      }
+    }
+
+    // For each user, find the index of their last completed lesson
+    const userLastLessonIdx = new Map();
+    for (const [userId, completedSet] of userCompletedMap) {
+      let lastIdx = -1;
+      for (let i = 0; i < orderedLessons.length; i++) {
+        if (completedSet.has(orderedLessons[i].key)) lastIdx = i;
+      }
+      if (lastIdx >= 0 && lastIdx < orderedLessons.length - 1) {
+        // Student stopped here (didn't finish all lessons)
+        userLastLessonIdx.set(userId, lastIdx);
+      }
+    }
+
+    // Map quizId → lessonId and quizId → questions
+    const quizToLesson = new Map();
+    const quizQuestions = new Map();
+    for (const q of quizDefs) {
+      if (q.lessonId) quizToLesson.set(q.id, q.lessonId);
+      if (q.questions) quizQuestions.set(q.id, q.questions);
+    }
+
+    // Build per-lesson quiz failure data
+    // lessonKey → { totalAttempts, failedAttempts, questionFailures: Map<qIdx, {text, fails, total}> }
+    const lessonQuizData = new Map();
+    for (const resp of quizResponses) {
+      const lessonId = resp.lessonId || quizToLesson.get(resp.quizId);
+      if (!lessonId) continue;
+
+      // Find the moduleId for this lessonId
+      let moduleId = null;
+      for (const mod of this._allModules) {
+        if (mod.lessons.some((l) => l.id === lessonId)) { moduleId = mod.id; break; }
+      }
+      if (!moduleId) continue;
+
+      const key = `${moduleId}_${lessonId}`;
+      if (!lessonQuizData.has(key)) {
+        lessonQuizData.set(key, { totalAttempts: 0, failedAttempts: 0, questionFailures: new Map() });
+      }
+      const data = lessonQuizData.get(key);
+      data.totalAttempts++;
+
+      const answers = resp.answers || [];
+      let hasFailure = false;
+
+      const questions = quizQuestions.get(resp.quizId) || [];
+      for (let i = 0; i < answers.length; i++) {
+        const ans = answers[i];
+        let correct;
+        if (typeof ans === 'object' && ans !== null && 'isCorrect' in ans) {
+          // New format: { selectedIndex, isCorrect }
+          correct = ans.isCorrect;
+        } else {
+          // Old format: plain string/index — compare against quiz definition
+          const qDef = questions[i];
+          if (qDef && qDef.correctAnswer !== undefined) {
+            const selected = typeof ans === 'string' ? parseInt(ans, 10) : ans;
+            correct = !isNaN(selected) && selected === qDef.correctAnswer;
+          } else {
+            correct = undefined; // Can't determine — skip
+          }
+        }
+        if (correct === false) hasFailure = true;
+
+        if (!data.questionFailures.has(i)) {
+          const qText = questions[i]?.text || `Pregunta ${i + 1}`;
+          data.questionFailures.set(i, { text: qText, fails: 0, total: 0 });
+        }
+        const qf = data.questionFailures.get(i);
+        if (correct !== undefined) {
+          qf.total++;
+          if (correct === false) qf.fails++;
+        }
+      }
+      if (hasFailure) data.failedAttempts++;
+    }
+
+    // Users lookup for detail panel
+    const usersById = new Map();
+    for (const u of users) {
+      usersById.set(u.uid, u);
+    }
+
+    // Build heatmap data per module
+    const heatmap = [];
+    for (const mod of this._allModules) {
+      const lessons = [];
+      for (const lesson of mod.lessons) {
+        const key = `${mod.id}_${lesson.id}`;
+        const lessonIdx = orderedLessons.findIndex((l) => l.key === key);
+
+        // Dropout: students whose last completed lesson is this one
+        const droppedUsers = [];
+        for (const [userId, lastIdx] of userLastLessonIdx) {
+          if (lastIdx === lessonIdx) {
+            const user = usersById.get(userId);
+            droppedUsers.push({
+              uid: userId,
+              displayName: user?.displayName || user?.email || userId,
+              email: user?.email || '',
+            });
+          }
+        }
+        const dropoutRate = totalStudents > 0 ? Math.round((droppedUsers.length / totalStudents) * 100) : 0;
+
+        // Quiz failure rate
+        const qd = lessonQuizData.get(key);
+        const quizFailRate = qd && qd.totalAttempts > 0
+          ? Math.round((qd.failedAttempts / qd.totalAttempts) * 100)
+          : 0;
+
+        // Most failed questions
+        const failedQuestions = [];
+        if (qd) {
+          for (const [, qf] of qd.questionFailures) {
+            if (qf.total > 0) {
+              failedQuestions.push({ text: qf.text, failRate: Math.round((qf.fails / qf.total) * 100) });
+            }
+          }
+          failedQuestions.sort((a, b) => b.failRate - a.failRate);
+        }
+
+        lessons.push({
+          id: lesson.id,
+          title: lesson.title,
+          moduleId: mod.id,
+          moduleTitle: mod.title,
+          key,
+          dropoutRate,
+          dropoutCount: droppedUsers.length,
+          droppedUsers,
+          quizFailRate,
+          failedQuestions,
+        });
+      }
+      heatmap.push({ moduleId: mod.id, title: mod.title, lessons });
+    }
+    this._heatmapData = heatmap;
   }
 
   _recompute() {
@@ -216,6 +447,131 @@ export class AdminRetentionDashboard extends LitElement {
     if (!this._stats) return [];
     if (this._filter === 'all') return this._stats.students;
     return this._stats.students.filter((s) => s.classification.status === this._filter);
+  }
+
+  _getHeatmapColor(value) {
+    if (value === 0) return '#e2e8f0';
+    if (value <= 10) return '#fef9c3';
+    if (value <= 25) return '#fed7aa';
+    if (value <= 50) return '#fca5a5';
+    return '#ef4444';
+  }
+
+  _selectLesson(lesson) {
+    this._selectedLesson = this._selectedLesson?.key === lesson.key ? null : lesson;
+  }
+
+  _renderHeatmap() {
+    if (!this._heatmapData.length) return '';
+
+    const mode = this._heatmapMode || 'dropout';
+
+    return html`
+      <div class="heatmap-section">
+        <h3>Mapa de dificultad por lección</h3>
+
+        <div class="heatmap-toggle">
+          <button class="btn btn--small ${mode === 'dropout' ? 'btn--active' : 'btn--secondary'}"
+            @click=${() => { this._heatmapMode = 'dropout'; this.requestUpdate(); }}>Tasa de abandono</button>
+          <button class="btn btn--small ${mode === 'quizFail' ? 'btn--active' : 'btn--secondary'}"
+            @click=${() => { this._heatmapMode = 'quizFail'; this.requestUpdate(); }}>Fallos en quiz</button>
+        </div>
+
+        ${this._heatmapData.map((mod) => html`
+          <div class="heatmap-module">
+            <div class="heatmap-module__title">${mod.title}</div>
+            <div class="heatmap-grid">
+              ${mod.lessons.map((lesson) => {
+                const val = mode === 'dropout' ? lesson.dropoutRate : lesson.quizFailRate;
+                const bg = this._getHeatmapColor(val);
+                const isSelected = this._selectedLesson?.key === lesson.key;
+                return html`
+                  <div class="heatmap-cell ${isSelected ? 'heatmap-cell--selected' : ''}"
+                    style="background: ${bg}"
+                    title="${lesson.title}: ${val}%"
+                    @click=${() => this._selectLesson(lesson)}>
+                    <span class="heatmap-cell__value">${val}%</span>
+                    <span class="heatmap-cell__label">${lesson.title.length > 8 ? lesson.title.slice(0, 7) + '…' : lesson.title}</span>
+                  </div>
+                `;
+              })}
+            </div>
+          </div>
+        `)}
+
+        <div class="heatmap-legend">
+          <span>0%</span>
+          <div class="heatmap-legend__bar">
+            <span style="background: #e2e8f0"></span>
+            <span style="background: #fef9c3"></span>
+            <span style="background: #fed7aa"></span>
+            <span style="background: #fca5a5"></span>
+            <span style="background: #ef4444"></span>
+          </div>
+          <span>50%+</span>
+        </div>
+      </div>
+
+      ${this._selectedLesson ? this._renderDetailPanel() : ''}
+    `;
+  }
+
+  _renderDetailPanel() {
+    const l = this._selectedLesson;
+    if (!l) return '';
+
+    return html`
+      <div class="detail-panel">
+        <div class="detail-panel__header">
+          <div class="detail-panel__title">${l.moduleTitle} — ${l.title}</div>
+          <button class="detail-panel__close" @click=${() => { this._selectedLesson = null; }}>&times;</button>
+        </div>
+
+        <div class="detail-panel__stats">
+          <div class="detail-stat ${l.dropoutRate > 25 ? 'detail-stat--red' : l.dropoutRate > 10 ? 'detail-stat--amber' : 'detail-stat--green'}">
+            <div class="detail-stat__value">${l.dropoutRate}%</div>
+            <div class="detail-stat__label">Tasa de abandono</div>
+          </div>
+          <div class="detail-stat">
+            <div class="detail-stat__value">${l.dropoutCount}</div>
+            <div class="detail-stat__label">Abandonos</div>
+          </div>
+          <div class="detail-stat ${l.quizFailRate > 50 ? 'detail-stat--red' : l.quizFailRate > 25 ? 'detail-stat--amber' : 'detail-stat--green'}">
+            <div class="detail-stat__value">${l.quizFailRate}%</div>
+            <div class="detail-stat__label">Fallos en quiz</div>
+          </div>
+        </div>
+
+        ${l.droppedUsers.length > 0 ? html`
+          <div class="detail-section">
+            <h4>Estudiantes que abandonaron aquí</h4>
+            <ul class="detail-list">
+              ${l.droppedUsers.map((u) => html`
+                <li>
+                  <span class="status-dot status-dot--red"></span>
+                  <span class="detail-list__name">${u.displayName}</span>
+                  <span class="detail-list__meta">${u.email}</span>
+                </li>
+              `)}
+            </ul>
+          </div>
+        ` : html`<div class="detail-section"><h4>Estudiantes que abandonaron aquí</h4><p style="font-size: 0.813rem; color: #94a3b8;">Ningún abandono en esta lección</p></div>`}
+
+        ${l.failedQuestions.length > 0 ? html`
+          <div class="detail-section">
+            <h4>Preguntas con más fallos</h4>
+            <div class="detail-list">
+              ${l.failedQuestions.slice(0, 5).map((q) => html`
+                <div class="detail-question">
+                  <div class="detail-question__text">${q.text}</div>
+                  <div class="detail-question__rate">${q.failRate}% de fallos</div>
+                </div>
+              `)}
+            </div>
+          </div>
+        ` : html`<div class="detail-section"><h4>Preguntas con más fallos</h4><p style="font-size: 0.813rem; color: #94a3b8;">Sin datos de quiz para esta lección</p></div>`}
+      </div>
+    `;
   }
 
   render() {
@@ -368,6 +724,8 @@ export class AdminRetentionDashboard extends LitElement {
           <span><span class="legend-dot" style="background:#dc2626"></span> Crítico (${eng.critical})</span>
         </div>
       </div>
+
+      ${this._renderHeatmap()}
 
       <div class="filter-group">
         ${['all', 'red', 'yellow', 'green'].map((f) => html`
