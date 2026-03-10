@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { fetchAllQuestions, addAnswer, deleteQuestion, updateQuestionVisibility } from '../lib/firebase/questions.js';
+import { fetchAllQuestions, addAnswer, addReply, deleteQuestion, updateQuestionVisibility } from '../lib/firebase/questions.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 
 /**
@@ -60,6 +60,15 @@ export class AdminQuestionsList extends LitElement {
     .answer-form { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
     .answer-form textarea { flex: 1; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; font-size: 0.875rem; font-family: inherit; resize: vertical; min-height: 2.5rem; }
     .answer-form textarea:focus { outline: none; border-color: #84cc16; box-shadow: 0 0 0 3px rgba(132,204,22,0.1); }
+
+    .profesor-badge { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.625rem; font-weight: 700; color: #1e40af; background: #dbeafe; padding: 0.125rem 0.5rem; border-radius: 9999px; margin-left: 0.375rem; }
+
+    .replies-section { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed #e2e8f0; }
+    .replies-section h4 { font-size: 0.75rem; color: #64748b; font-weight: 600; margin: 0 0 0.375rem; }
+    .reply-item { background: #fefce8; padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 0.5rem; }
+    .reply-text { font-size: 0.875rem; color: #334155; }
+    .reply-meta { font-size: 0.688rem; color: #94a3b8; margin-top: 0.25rem; }
+    .vote-count { font-size: 0.688rem; color: #166534; background: #f0fdf4; padding: 0.0625rem 0.375rem; border-radius: 9999px; margin-left: 0.375rem; }
 
     .loading, .error-msg { text-align: center; padding: 3rem; color: #475569; }
     .error-msg { color: #991b1b; }
@@ -122,6 +131,7 @@ export class AdminQuestionsList extends LitElement {
       text: this._answerText,
       userId: 'admin',
       userName: 'Administrador',
+      isAdmin: true,
     });
     this._submitting = false;
     if (result.success) {
@@ -197,12 +207,40 @@ export class AdminQuestionsList extends LitElement {
 
         ${q.answers && q.answers.length > 0 ? html`
           <div class="answers-section">
-            ${q.answers.map((a) => html`
-              <div class="answer-item">
-                <div class="answer-text">${a.text}</div>
-                <div class="answer-meta">${a.userName || 'Admin'} · ${a.createdAt || ''}</div>
-              </div>
-            `)}
+            ${q.answers.map((a) => {
+              const voteCount = (q.votes && q.votes[a.id] || []).length;
+              return html`
+                <div class="answer-item">
+                  <div class="answer-text">${a.text}</div>
+                  <div class="answer-meta">
+                    ${a.userName || 'Admin'}
+                    ${a.isAdmin ? html`<span class="profesor-badge">Profesor</span>` : ''}
+                    ${voteCount > 0 ? html`<span class="vote-count">👍 ${voteCount}</span>` : ''}
+                    · ${a.createdAt || ''}
+                  </div>
+                </div>
+              `;
+            })}
+          </div>
+        ` : ''}
+
+        ${q.replies && q.replies.length > 0 ? html`
+          <div class="replies-section">
+            <h4>Respuestas de alumnos (${q.replies.length})</h4>
+            ${q.replies.map((r) => {
+              const voteCount = (q.votes && q.votes[r.id] || []).length;
+              return html`
+                <div class="reply-item">
+                  <div class="reply-text">${r.text}</div>
+                  <div class="reply-meta">
+                    ${r.userName || 'Anónimo'}
+                    ${r.isAdmin ? html`<span class="profesor-badge">Profesor</span>` : ''}
+                    ${voteCount > 0 ? html`<span class="vote-count">👍 ${voteCount}</span>` : ''}
+                    · ${r.createdAt || ''}
+                  </div>
+                </div>
+              `;
+            })}
           </div>
         ` : ''}
 

@@ -10,6 +10,7 @@ import {
   orderBy,
   serverTimestamp,
   arrayUnion,
+  runTransaction,
 } from 'firebase/firestore';
 import { db } from './config.js';
 import { createNotification } from './notifications.js';
@@ -18,9 +19,21 @@ const QUESTIONS = 'questions';
 
 /**
  * @typedef {Object} Answer
+ * @property {string} id
  * @property {string} text
  * @property {string} userId
  * @property {string} userName
+ * @property {boolean} [isAdmin]
+ * @property {*} [createdAt]
+ */
+
+/**
+ * @typedef {Object} Reply
+ * @property {string} id
+ * @property {string} text
+ * @property {string} userId
+ * @property {string} userName
+ * @property {boolean} [isAdmin]
  * @property {*} [createdAt]
  */
 
@@ -151,9 +164,11 @@ export async function addAnswer(questionId, answer) {
   try {
     await updateDoc(doc(db, QUESTIONS, questionId), {
       answers: arrayUnion({
+        id: `ans_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
         text: answer.text.trim(),
         userId: answer.userId,
         userName: answer.userName || '',
+        isAdmin: answer.isAdmin || false,
         createdAt: new Date().toISOString(),
       }),
     });
@@ -177,6 +192,75 @@ export async function updateQuestionVisibility(questionId, isPublic) {
     return { success: true };
   } catch (err) {
     return { success: false, error: 'Error al actualizar la visibilidad' };
+  }
+}
+
+/**
+ * Add a reply to a question thread.
+ * @param {string} questionId
+ * @param {Omit<Reply, 'id'|'createdAt'>} reply
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function addReply(questionId, reply) {
+  if (!questionId) return { success: false, error: 'questionId es obligatorio' };
+  if (!reply.text || reply.text.trim().length === 0) {
+    return { success: false, error: 'El texto de la respuesta es obligatorio' };
+  }
+
+  try {
+    await updateDoc(doc(db, QUESTIONS, questionId), {
+      replies: arrayUnion({
+        id: `rep_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        text: reply.text.trim(),
+        userId: reply.userId,
+        userName: reply.userName || '',
+        isAdmin: reply.isAdmin || false,
+        createdAt: new Date().toISOString(),
+      }),
+    });
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: 'Error al añadir la respuesta' };
+  }
+}
+
+/**
+ * Toggle a vote on an answer or reply.
+ * Votes are stored as a map on the question: votes.{itemId} = [userId1, userId2, ...]
+ * @param {string} questionId
+ * @param {string} itemId - The id of the answer or reply
+ * @param {string} userId
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function toggleVote(questionId, itemId, userId) {
+  if (!questionId || !itemId || !userId) {
+    return { success: false, error: 'Parámetros incompletos' };
+  }
+
+  try {
+    const ref = doc(db, QUESTIONS, questionId);
+    let voted;
+    await runTransaction(db, async (transaction) => {
+      const snap = await transaction.get(ref);
+      if (!snap.exists()) throw new Error('Pregunta no encontrada');
+
+      const data = snap.data();
+      const votes = data.votes || {};
+      const itemVotes = votes[itemId] || [];
+      const hasVoted = itemVotes.includes(userId);
+
+      const updatedVoters = hasVoted
+        ? itemVotes.filter((id) => id !== userId)
+        : [...itemVotes, userId];
+
+      transaction.update(ref, {
+        [`votes.${itemId}`]: updatedVoters,
+      });
+      voted = !hasVoted;
+    });
+    return { success: true, voted };
+  } catch (err) {
+    return { success: false, error: err.message === 'Pregunta no encontrada' ? err.message : 'Error al votar' };
   }
 }
 

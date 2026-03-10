@@ -91,10 +91,18 @@ service cloud.firestore {
       // Signed-in users can create questions (userId must match)
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid;
-      // Admins can update (add answers) and delete
-      // Question owner can also update (for adding context)
+      // Admins can update any field (answers, visibility, etc.)
+      allow update: if isAdmin();
+      // Non-admin signed-in users can only update votes and replies
       allow update: if isSignedIn()
-        && (resource.data.userId == request.auth.uid || isAdmin());
+        && !isAdmin()
+        && request.resource.data.text == resource.data.text
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.userName == resource.data.userName
+        && request.resource.data.lessonId == resource.data.lessonId
+        && request.resource.data.moduleId == resource.data.moduleId
+        && request.resource.data.answers == resource.data.answers
+        && request.resource.data.public == resource.data.public;
       allow delete: if isAdmin();
     }
 

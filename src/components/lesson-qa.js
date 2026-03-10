@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { fetchQuestionsByLesson, createQuestion } from '../lib/firebase/questions.js';
+import { fetchQuestionsByLesson, createQuestion, addReply, toggleVote } from '../lib/firebase/questions.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { stateStyles } from '../lib/shared-styles.js';
 import { materialIconsLink } from './shared/material-icons.js';
@@ -19,6 +19,8 @@ export class LessonQA extends LitElement {
     _newQuestion: { type: String, state: true },
     _submitting: { type: Boolean, state: true },
     _error: { type: String, state: true },
+    _replyingId: { type: String, state: true },
+    _replyText: { type: String, state: true },
   };
 
   static styles = [stateStyles, css`
@@ -65,9 +67,30 @@ export class LessonQA extends LitElement {
     .question-item--pending { border-left-color: #f59e0b; }
 
     .answer-list { margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid #e2e8f0; }
-    .answer-item { padding: 0.5rem 0; }
+    .answer-item { padding: 0.5rem 0; display: flex; gap: 0.5rem; align-items: flex-start; }
+    .answer-content { flex: 1; }
     .answer-text { font-size: 0.875rem; color: #334155; }
     .answer-meta { font-size: 0.688rem; color: #94a3b8; margin-top: 0.125rem; }
+
+    .profesor-badge { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.625rem; font-weight: 700; color: #1e40af; background: #dbeafe; padding: 0.125rem 0.5rem; border-radius: 9999px; margin-left: 0.375rem; }
+    .profesor-badge .material-symbols-outlined { font-size: 0.75rem; }
+
+    .vote-btn { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; background: #fff; color: #64748b; font-size: 0.688rem; font-family: inherit; cursor: pointer; transition: all 0.15s; flex-shrink: 0; margin-top: 0.25rem; }
+    .vote-btn:hover { background: #f0fdf4; border-color: #84cc16; color: #166534; }
+    .vote-btn.voted { background: #f0fdf4; border-color: #84cc16; color: #166534; }
+    .vote-btn .material-symbols-outlined { font-size: 0.875rem; }
+
+    .reply-btn { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.625rem; border: none; border-radius: 0.375rem; background: #f1f5f9; color: #64748b; font-size: 0.688rem; font-family: inherit; cursor: pointer; margin-top: 0.5rem; }
+    .reply-btn:hover { background: #e2e8f0; color: #334155; }
+    .reply-btn .material-symbols-outlined { font-size: 0.875rem; }
+
+    .reply-form { display: flex; gap: 0.5rem; margin-top: 0.5rem; padding-left: 1rem; }
+    .reply-form textarea { flex: 1; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; font-size: 0.813rem; font-family: inherit; resize: vertical; min-height: 2rem; }
+    .reply-form textarea:focus { outline: none; border-color: #84cc16; box-shadow: 0 0 0 3px rgba(132,204,22,0.1); }
+    .reply-form .btn { font-size: 0.75rem; padding: 0.375rem 0.75rem; align-self: flex-end; }
+
+    .replies-section { margin-top: 0.25rem; padding-left: 1rem; border-left: 2px solid #f1f5f9; }
+    .replies-section .answer-item { padding: 0.375rem 0; }
 
     .empty-state { text-align: center; padding: 2rem; color: #94a3b8; font-size: 0.875rem; }
     .loading { text-align: center; padding: 1rem; color: #94a3b8; font-size: 0.875rem; }
@@ -84,6 +107,8 @@ export class LessonQA extends LitElement {
     this._newQuestion = '';
     this._submitting = false;
     this._error = '';
+    this._replyingId = null;
+    this._replyText = '';
   }
 
   connectedCallback() {
@@ -164,6 +189,18 @@ export class LessonQA extends LitElement {
 
       ${this._questions.map((q) => {
         const hasPendingAnswer = !q.answers || q.answers.length === 0;
+        const votes = q.votes || {};
+        const sortedAnswers = [...(q.answers || [])].sort((a, b) => {
+          const aVotes = (votes[a.id] || []).length;
+          const bVotes = (votes[b.id] || []).length;
+          return bVotes - aVotes;
+        });
+        const replies = [...(q.replies || [])].sort((a, b) => {
+          const aVotes = (votes[a.id] || []).length;
+          const bVotes = (votes[b.id] || []).length;
+          return bVotes - aVotes;
+        });
+        const isReplying = this._replyingId === q.id;
         return html`
           <div class="question-item ${hasPendingAnswer ? 'question-item--pending' : ''}">
             <div class="question-text">${q.text}</div>
@@ -184,20 +221,113 @@ export class LessonQA extends LitElement {
                 </span>
               `}
             </div>
-            ${q.answers && q.answers.length > 0 ? html`
+            ${sortedAnswers.length > 0 ? html`
               <div class="answer-list">
-                ${q.answers.map((a) => html`
-                  <div class="answer-item">
-                    <div class="answer-text">${a.text}</div>
-                    <div class="answer-meta">${a.userName || 'Admin'} · ${a.createdAt || ''}</div>
-                  </div>
-                `)}
+                ${sortedAnswers.map((a) => {
+                  const itemVotes = a.id ? (votes[a.id] || []) : [];
+                  const hasVoted = itemVotes.includes(this.userId);
+                  return html`
+                    <div class="answer-item">
+                      ${a.id ? html`
+                        <button class="vote-btn ${hasVoted ? 'voted' : ''}" @click=${() => this._handleVote(q.id, a.id)} title="Marcar como útil">
+                          <span class="material-symbols-outlined">${hasVoted ? 'thumb_up' : 'thumb_up_off_alt'}</span>
+                          ${itemVotes.length || ''}
+                        </button>
+                      ` : ''}
+                      <div class="answer-content">
+                        <div class="answer-text">${a.text}</div>
+                        <div class="answer-meta">
+                          ${a.userName || 'Admin'}
+                          ${a.isAdmin ? html`<span class="profesor-badge"><span class="material-symbols-outlined">school</span>Profesor</span>` : ''}
+                          · ${a.createdAt || ''}
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                })}
+              </div>
+            ` : ''}
+            ${replies.length > 0 ? html`
+              <div class="replies-section">
+                ${replies.map((r) => {
+                  const itemVotes = r.id ? (votes[r.id] || []) : [];
+                  const hasVoted = itemVotes.includes(this.userId);
+                  return html`
+                    <div class="answer-item">
+                      ${r.id ? html`
+                        <button class="vote-btn ${hasVoted ? 'voted' : ''}" @click=${() => this._handleVote(q.id, r.id)} title="Marcar como útil">
+                          <span class="material-symbols-outlined">${hasVoted ? 'thumb_up' : 'thumb_up_off_alt'}</span>
+                          ${itemVotes.length || ''}
+                        </button>
+                      ` : ''}
+                      <div class="answer-content">
+                        <div class="answer-text">${r.text}</div>
+                        <div class="answer-meta">
+                          ${r.userName || 'Anónimo'}
+                          ${r.isAdmin ? html`<span class="profesor-badge"><span class="material-symbols-outlined">school</span>Profesor</span>` : ''}
+                          · ${r.createdAt || ''}
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                })}
+              </div>
+            ` : ''}
+            ${this.userId ? html`
+              <button class="reply-btn" @click=${() => this._toggleReply(q.id)}>
+                <span class="material-symbols-outlined">${isReplying ? 'close' : 'reply'}</span>
+                ${isReplying ? 'Cancelar' : 'Responder'}
+              </button>
+            ` : ''}
+            ${isReplying ? html`
+              <div class="reply-form">
+                <textarea
+                  placeholder="Escribe tu respuesta..."
+                  .value=${this._replyText}
+                  @input=${(e) => { this._replyText = e.target.value; }}
+                  rows="2"
+                ></textarea>
+                <button class="btn btn--primary" ?disabled=${this._submitting || !this._replyText.trim()} @click=${() => this._submitReply(q.id)}>
+                  ${this._submitting ? 'Enviando...' : 'Enviar'}
+                </button>
               </div>
             ` : ''}
           </div>
         `;
       })}
     `;
+  }
+
+  _toggleReply(questionId) {
+    if (this._replyingId === questionId) {
+      this._replyingId = null;
+      this._replyText = '';
+    } else {
+      this._replyingId = questionId;
+      this._replyText = '';
+    }
+  }
+
+  async _submitReply(questionId) {
+    if (!this._replyText.trim() || !this.userId) return;
+    this._submitting = true;
+    const result = await addReply(questionId, {
+      text: this._replyText,
+      userId: this.userId,
+      userName: this.userName,
+    });
+    this._submitting = false;
+    if (result.success) {
+      this._replyingId = null;
+      this._replyText = '';
+      await this._loadQuestions();
+    }
+  }
+
+  async _handleVote(questionId, itemId) {
+    if (!this.userId) return;
+    await toggleVote(questionId, itemId, this.userId);
+    await this._loadQuestions();
   }
 
   _formatDate(ts) {
