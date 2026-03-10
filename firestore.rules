@@ -23,7 +23,11 @@ service cloud.firestore {
       allow read: if isOwner(uid) || isAdmin();
       // User can create their own profile during registration
       allow create: if isOwner(uid);
-      // Only admins can update user profiles (role changes, lifetime access)
+      // Users can only update safe profile fields (displayName, weeklyDigest, lastActivity);
+      // all other fields (role, email, lifetimeAccess, cohortId, etc.) are immutable for non-admins
+      allow update: if isOwner(uid)
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['displayName', 'weeklyDigest', 'lastActivity']);
       allow update: if isAdmin();
       allow delete: if false;
     }
