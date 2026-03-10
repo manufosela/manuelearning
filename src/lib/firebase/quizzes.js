@@ -13,6 +13,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './config.js';
+import { updateStreak } from './streaks.js';
 
 const QUIZZES = 'quizzes';
 const RESPONSES = 'quizResponses';
@@ -216,6 +217,7 @@ export async function submitQuizResponse(userId, quizId, answers) {
       answers,
       completedAt: serverTimestamp(),
     });
+    updateStreak(userId).catch(() => {});
     return { success: true, id: ref.id };
   } catch (err) {
     return { success: false, error: 'Error al enviar las respuestas' };
@@ -310,6 +312,7 @@ export async function submitLessonQuizResponse(data) {
       answers: data.answers,
       answeredAt: serverTimestamp(),
     });
+    updateStreak(data.studentId).catch(() => {});
     return { success: true, id: docId };
   } catch (err) {
     return { success: false, error: 'Error al guardar la respuesta del quiz' };
