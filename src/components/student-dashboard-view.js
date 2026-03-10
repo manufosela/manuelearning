@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
 import { trackActivity } from '../lib/firebase/users.js';
 import { getUserProgress } from '../lib/firebase/progress.js';
+import { getStreak, getStreakBadges } from '../lib/firebase/streaks.js';
 import { fetchUser } from '../lib/firebase/users.js';
 import { fetchCohort } from '../lib/firebase/cohorts.js';
 import { isCohortExpired } from '../lib/cohort-utils.js';
@@ -19,6 +20,7 @@ export class StudentDashboardView extends LitElement {
     _loading: { type: Boolean, state: true },
     _error: { type: String, state: true },
     _cohortExpired: { type: Boolean, state: true },
+    _streak: { type: Object, state: true },
   };
 
   static styles = css`
@@ -73,6 +75,63 @@ export class StudentDashboardView extends LitElement {
 
     .stat-value--accent {
       color: #84cc16;
+    }
+
+    .streak-card {
+      background: #fff;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .streak-icon {
+      font-size: 2.5rem;
+      color: #f59e0b;
+    }
+
+    .streak-info {
+      flex: 1;
+    }
+
+    .streak-current {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #0f172a;
+    }
+
+    .streak-current span {
+      color: #f59e0b;
+    }
+
+    .streak-best {
+      font-size: 0.813rem;
+      color: #64748b;
+      margin-top: 0.125rem;
+    }
+
+    .streak-badges {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.625rem;
+      border-radius: 9999px;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .streak-badge .material-symbols-outlined {
+      font-size: 0.875rem;
     }
 
     .global-progress {
@@ -353,6 +412,7 @@ export class StudentDashboardView extends LitElement {
     this._loading = true;
     this._error = '';
     this._cohortExpired = false;
+    this._streak = null;
   }
 
   connectedCallback() {
@@ -374,9 +434,10 @@ export class StudentDashboardView extends LitElement {
       }
     }
 
-    const [modulesResult, progressResult] = await Promise.all([
+    const [modulesResult, progressResult, streakResult] = await Promise.all([
       fetchAllModules(),
       getUserProgress(user.uid),
+      getStreak(user.uid),
     ]);
 
     if (!modulesResult.success) {
@@ -402,6 +463,10 @@ export class StudentDashboardView extends LitElement {
       lessonsByModule,
       progressResult.completedLessons
     );
+
+    if (streakResult.success && streakResult.streak) {
+      this._streak = streakResult.streak;
+    }
 
     this._loading = false;
   }
@@ -453,6 +518,26 @@ export class StudentDashboardView extends LitElement {
           <div class="stat-value">${s.courseGroups.length}</div>
         </div>
       </div>
+
+      ${this._streak ? html`
+        <div class="streak-card">
+          <span class="material-symbols-outlined streak-icon">local_fire_department</span>
+          <div class="streak-info">
+            <div class="streak-current"><span>${this._streak.current}</span> ${this._streak.current === 1 ? 'día' : 'días'} de racha</div>
+            <div class="streak-best">Mejor racha: ${this._streak.longest} ${this._streak.longest === 1 ? 'día' : 'días'}</div>
+          </div>
+          ${getStreakBadges(this._streak.longest).length > 0 ? html`
+            <div class="streak-badges">
+              ${getStreakBadges(this._streak.longest).map((b) => html`
+                <span class="streak-badge">
+                  <span class="material-symbols-outlined">${b.icon}</span>
+                  ${b.label}
+                </span>
+              `)}
+            </div>
+          ` : ''}
+        </div>
+      ` : ''}
 
       <div class="global-progress">
         <h2>Progreso general</h2>

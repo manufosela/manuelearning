@@ -9,6 +9,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './config.js';
+import { updateStreak } from './streaks.js';
 
 const COLLECTION = 'progress';
 
@@ -42,6 +43,7 @@ export async function markLessonCompleted(userId, moduleId, lessonId) {
       completed: true,
       completedAt: serverTimestamp(),
     });
+    updateStreak(userId).catch(() => {});
     return { success: true };
   } catch (err) {
     return { success: false, error: 'Error al guardar el progreso' };

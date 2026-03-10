@@ -150,6 +150,13 @@ service cloud.firestore {
       allow update: if true;
     }
 
+    // ── activityStreaks ──────────────────────────────────────
+    match /activityStreaks/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create, update: if isOwner(uid);
+      allow delete: if false;
+    }
+
     // ── settings ─────────────────────────────────────────────
     match /settings/{settingId} {
       // Anyone can read (registration open/closed check)
