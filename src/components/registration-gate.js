@@ -129,11 +129,10 @@ export class RegistrationGate extends LitElement {
         ${materialIconsLink}
         <div class="closed-message">
           <span class="material-symbols-outlined closed-icon">lock</span>
-          <h2>Registro cerrado</h2>
+          <h2>Registro no disponible</h2>
           <p>
             El registro no está disponible en este momento.
-            Por favor, vuelve más tarde o contacta al administrador
-            para obtener un código de invitación.
+            Estate atento a las próximas convocatorias para poder inscribirte.
           </p>
           <a href="/">Volver a la página principal</a>
         </div>

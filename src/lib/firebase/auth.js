@@ -6,7 +6,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './config.js';
-import { validateInvitationCode, markCodeAsUsed } from './invitation-codes.js';
+import { fetchAllCohorts } from './cohorts.js';
 
 /**
  * @typedef {Object} AuthResult
@@ -19,8 +19,23 @@ import { validateInvitationCode, markCodeAsUsed } from './invitation-codes.js';
 const googleProvider = new GoogleAuthProvider();
 
 /**
+ * Fetch active (non-expired) cohorts for use in the registration selector.
+ * @returns {Promise<{success: boolean, cohorts?: import('./cohorts.js').Cohort[], error?: string}>}
+ */
+export async function fetchActiveConvocatorias() {
+  const result = await fetchAllCohorts();
+  if (!result.success) return result;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const active = result.cohorts.filter(
+    (c) => c.active && c.expiryDate >= today
+  );
+  return { success: true, cohorts: active };
+}
+
+/**
  * Sign in with Google. If the user has no Firestore profile, returns isNewUser=true
- * so the caller can request an invitation code before creating the profile.
+ * so the caller can show the convocatoria selector before creating the profile.
  * @returns {Promise<AuthResult>}
  */
 export async function loginWithGoogle() {
@@ -40,24 +55,15 @@ export async function loginWithGoogle() {
 }
 
 /**
- * Complete registration for a new Google user by validating the invitation code
- * and creating their Firestore profile.
+ * Complete registration for a new Google user by creating their Firestore profile.
+ * The user is created with status 'pending' until validated by an admin.
  * @param {import('firebase/auth').User} user
- * @param {string} invitationCode
+ * @param {string} cohortId - Optional cohort ID; if empty, admin will assign later
  * @returns {Promise<AuthResult>}
  */
-export async function completeRegistration(user, invitationCode) {
+export async function completeRegistration(user, cohortId) {
   if (!user) {
     return { success: false, error: 'Usuario no autenticado' };
-  }
-
-  if (!invitationCode || invitationCode.trim().length === 0) {
-    return { success: false, error: 'El codigo de invitacion es obligatorio' };
-  }
-
-  const codeValidation = await validateInvitationCode(invitationCode);
-  if (!codeValidation.valid) {
-    return { success: false, error: codeValidation.error };
   }
 
   try {
@@ -65,11 +71,10 @@ export async function completeRegistration(user, invitationCode) {
       email: user.email,
       displayName: user.displayName || '',
       role: 'student',
-      cohortId: codeValidation.cohortId,
+      status: 'pending',
+      cohortId: cohortId || '',
       createdAt: serverTimestamp(),
     });
-
-    await markCodeAsUsed(codeValidation.docId);
 
     return { success: true, user };
   } catch (err) {
