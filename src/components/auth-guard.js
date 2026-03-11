@@ -26,14 +26,14 @@ export class AuthGuard extends LitElement {
       align-items: center;
       justify-content: center;
       min-height: 60vh;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
       font-size: 1.125rem;
     }
 
     .spinner {
       width: 2rem;
       height: 2rem;
-      border: 3px solid #e2e8f0;
+      border: 3px solid var(--color-border, #e2e8f0);
       border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;

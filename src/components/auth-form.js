@@ -39,13 +39,13 @@ export class AuthForm extends LitElement {
     label {
       font-size: 0.875rem;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     input {
       height: 3rem;
       padding: 0 1rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.5rem;
       font-size: 1rem;
       font-family: 'Inter', sans-serif;
@@ -73,9 +73,9 @@ export class AuthForm extends LitElement {
       justify-content: center;
       gap: 0.75rem;
       height: 3.25rem;
-      background-color: #fff;
-      color: #1f2937;
-      border: 1px solid #e2e8f0;
+      background-color: var(--color-bg-white, #fff);
+      color: var(--color-text-primary, #1f2937);
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.5rem;
       font-size: 1rem;
       font-weight: 600;
@@ -85,8 +85,8 @@ export class AuthForm extends LitElement {
     }
 
     .google-btn:hover:not(:disabled) {
-      background-color: #f8fafc;
-      border-color: #cbd5e1;
+      background-color: var(--color-bg-slate-50, #f8fafc);
+      border-color: var(--color-border, #cbd5e1);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
@@ -103,7 +103,7 @@ export class AuthForm extends LitElement {
     .submit-btn {
       height: 3.25rem;
       background: linear-gradient(to right, #84cc16, #fb923c);
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       border: none;
       border-radius: 0.5rem;
       font-size: 1rem;
@@ -125,7 +125,7 @@ export class AuthForm extends LitElement {
     .cancel-link {
       text-align: center;
       font-size: 0.875rem;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
     }
 
     .cancel-link a {
@@ -142,21 +142,21 @@ export class AuthForm extends LitElement {
     .welcome-text {
       text-align: center;
       font-size: 0.938rem;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
     }
 
     .welcome-text strong {
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     select {
       height: 3rem;
       padding: 0 1rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.5rem;
       font-size: 1rem;
       font-family: 'Inter', sans-serif;
-      background-color: #fff;
+      background-color: var(--color-bg-white, #fff);
       transition: border-color 0.15s ease;
       cursor: pointer;
     }
