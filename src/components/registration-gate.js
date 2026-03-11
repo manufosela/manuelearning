@@ -28,19 +28,19 @@ export class RegistrationGate extends LitElement {
 
     .closed-icon {
       font-size: 3rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       margin-bottom: 1rem;
     }
 
     .closed-message h2 {
       font-size: 1.5rem;
       font-weight: 800;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 0.75rem;
     }
 
     .closed-message p {
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
       line-height: 1.7;
       margin-bottom: 1.5rem;
     }
@@ -58,13 +58,13 @@ export class RegistrationGate extends LitElement {
     .loading {
       text-align: center;
       padding: 2rem;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
     }
 
     .spinner {
       width: 1.5rem;
       height: 1.5rem;
-      border: 3px solid #e2e8f0;
+      border: 3px solid var(--color-border, #e2e8f0);
       border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;

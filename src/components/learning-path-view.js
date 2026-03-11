@@ -29,12 +29,12 @@ export class LearningPathView extends LitElement {
     .path-header h1 {
       font-size: 1.5rem;
       font-weight: 900;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 0.25rem;
     }
 
     .path-header p {
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       font-size: 0.938rem;
     }
 
@@ -66,14 +66,14 @@ export class LearningPathView extends LitElement {
     .module-name {
       font-size: 1.125rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     .lesson-list {
       list-style: none;
       padding: 0;
       margin: 0 0 0 1rem;
-      border-left: 2px solid #e2e8f0;
+      border-left: 2px solid var(--color-border, #e2e8f0);
     }
 
     .lesson-link {
@@ -84,21 +84,21 @@ export class LearningPathView extends LitElement {
       margin-left: 1rem;
       border-radius: 0.5rem;
       text-decoration: none;
-      color: #334155;
+      color: var(--color-text-secondary, #334155);
       font-size: 0.875rem;
       transition: background 0.15s;
     }
 
     .lesson-link:hover {
-      background: #f1f5f9;
+      background: var(--color-bg-slate-50, #f1f5f9);
     }
 
     .lesson-order {
       width: 1.5rem;
       height: 1.5rem;
       border-radius: 50%;
-      background: #f1f5f9;
-      color: #475569;
+      background: var(--color-bg-slate-50, #f1f5f9);
+      color: var(--color-text-secondary, #475569);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -114,13 +114,13 @@ export class LearningPathView extends LitElement {
     .loading {
       text-align: center;
       padding: 3rem;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
     }
 
     .spinner {
       width: 1.5rem;
       height: 1.5rem;
-      border: 3px solid #e2e8f0;
+      border: 3px solid var(--color-border, #e2e8f0);
       border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
@@ -138,7 +138,7 @@ export class LearningPathView extends LitElement {
     .empty-state {
       text-align: center;
       padding: 3rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
   `;
 
