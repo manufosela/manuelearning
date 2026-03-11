@@ -172,6 +172,29 @@ export async function updateWeeklyDigest(uid, enabled) {
 }
 
 /**
+ * Update a user's status.
+ * @param {string} uid
+ * @param {string} status - 'pending' | 'active' | 'suspended'
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function updateUserStatus(uid, status) {
+  if (!uid) return { success: false, error: 'UID es obligatorio' };
+
+  const validStatuses = ['pending', 'active', 'suspended'];
+  if (!validStatuses.includes(status)) {
+    return { success: false, error: 'Estado no válido. Usa pending, active o suspended' };
+  }
+
+  try {
+    const userRef = doc(db, 'users', uid);
+    await updateDoc(userRef, { status });
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: 'Error al actualizar el estado del usuario' };
+  }
+}
+
+/**
  * Check if a user has admin role.
  * @param {string} uid
  * @returns {Promise<boolean>}
