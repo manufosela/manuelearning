@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { fetchAllUsers, updateUserRole } from '../lib/firebase/users.js';
+import { fetchAllUsers, updateUserRole, updateUserStatus } from '../lib/firebase/users.js';
 import { fetchAllCohorts } from '../lib/firebase/cohorts.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { exportCsv } from '../lib/csv-export.js';
@@ -16,6 +16,7 @@ export class AdminUsersList extends LitElement {
     _loading: { type: Boolean, state: true },
     _error: { type: String, state: true },
     _searchQuery: { type: String, state: true },
+    _activeTab: { type: String, state: true },
   };
 
   static styles = css`
@@ -26,7 +27,7 @@ export class AdminUsersList extends LitElement {
     .users-table {
       width: 100%;
       border-collapse: collapse;
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       overflow: hidden;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
@@ -38,19 +39,19 @@ export class AdminUsersList extends LitElement {
     }
 
     th {
-      background: #f8fafc;
+      background: var(--color-bg-slate-50, #f8fafc);
       font-size: 0.75rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #475569;
-      border-bottom: 1px solid #e2e8f0;
+      color: var(--color-text-secondary, #475569);
+      border-bottom: 1px solid var(--color-border, #e2e8f0);
     }
 
     td {
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--color-bg-slate-50, #f1f5f9);
       font-size: 0.875rem;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     tr:last-child td {
@@ -58,7 +59,7 @@ export class AdminUsersList extends LitElement {
     }
 
     tr:hover td {
-      background: #f8fafc;
+      background: var(--color-bg-slate-50, #f8fafc);
     }
 
     .role-badge {
@@ -80,9 +81,33 @@ export class AdminUsersList extends LitElement {
       color: #166534;
     }
 
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.625rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-badge--pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-badge--active {
+      background: #f0fdf4;
+      color: #166534;
+    }
+
+    .status-badge--inactive {
+      background: #fef2f2;
+      color: #991b1b;
+    }
+
     .role-select {
       padding: 0.375rem 0.5rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.375rem;
       font-size: 0.813rem;
       font-family: inherit;
@@ -95,7 +120,7 @@ export class AdminUsersList extends LitElement {
       align-items: center;
       margin-bottom: 1rem;
       font-size: 0.875rem;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
     }
 
     .export-btn {
@@ -103,8 +128,8 @@ export class AdminUsersList extends LitElement {
       align-items: center;
       gap: 0.375rem;
       padding: 0.5rem 1rem;
-      background: #f1f5f9;
-      color: #334155;
+      background: var(--color-bg-slate-50, #f1f5f9);
+      color: var(--color-text-secondary, #334155);
       border: none;
       border-radius: 0.5rem;
       font-size: 0.813rem;
@@ -115,7 +140,7 @@ export class AdminUsersList extends LitElement {
     }
 
     .export-btn:hover {
-      background: #e2e8f0;
+      background: var(--color-border, #e2e8f0);
     }
 
     .export-btn .material-symbols-outlined {
@@ -133,7 +158,7 @@ export class AdminUsersList extends LitElement {
       flex: 1;
       height: 2.5rem;
       padding: 0 0.75rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.5rem;
       font-size: 0.875rem;
       font-family: inherit;
@@ -148,9 +173,9 @@ export class AdminUsersList extends LitElement {
     .no-results {
       text-align: center;
       padding: 2rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       font-size: 0.875rem;
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
@@ -158,7 +183,7 @@ export class AdminUsersList extends LitElement {
     .loading, .error {
       text-align: center;
       padding: 3rem;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
     }
 
     .error {
@@ -168,7 +193,7 @@ export class AdminUsersList extends LitElement {
     .spinner {
       width: 1.5rem;
       height: 1.5rem;
-      border: 3px solid #e2e8f0;
+      border: 3px solid var(--color-border, #e2e8f0);
       border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
@@ -177,6 +202,97 @@ export class AdminUsersList extends LitElement {
 
     @keyframes spin {
       to { transform: rotate(360deg); }
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--color-border, #e2e8f0);
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+      padding: 0.75rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      color: var(--color-text-secondary, #475569);
+      font-family: inherit;
+      transition: color 0.15s;
+    }
+
+    .tab:hover {
+      color: var(--color-text-primary, #0f172a);
+    }
+
+    .tab--active {
+      border-bottom-color: #84cc16;
+      color: #84cc16;
+    }
+
+    .tab-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 0.375rem;
+      min-width: 1.25rem;
+      height: 1.25rem;
+      padding: 0 0.25rem;
+      border-radius: 9999px;
+      font-size: 0.688rem;
+      font-weight: 700;
+      background: var(--color-bg-slate-50, #f1f5f9);
+      color: var(--color-text-secondary, #475569);
+    }
+
+    .tab--active .tab-count {
+      background: rgba(132, 204, 22, 0.15);
+      color: #84cc16;
+    }
+
+    .actions-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+
+    .btn-action--validate {
+      background: #84cc16;
+      color: var(--color-bg-white, #fff);
+    }
+
+    .btn-action--reject {
+      background: var(--color-bg-slate-50, #f1f5f9);
+      color: #991b1b;
+      border: 1px solid var(--color-border, #e2e8f0);
+    }
+
+    .btn-action--deactivate {
+      background: var(--color-bg-slate-50, #f1f5f9);
+      color: var(--color-text-secondary, #475569);
+      border: 1px solid var(--color-border, #e2e8f0);
+    }
+
+    .btn-action--reactivate {
+      background: #84cc16;
+      color: var(--color-bg-white, #fff);
     }
 
     @media (max-width: 768px) {
@@ -193,6 +309,7 @@ export class AdminUsersList extends LitElement {
     this._loading = true;
     this._error = '';
     this._searchQuery = '';
+    this._activeTab = 'active';
   }
 
   connectedCallback() {
@@ -250,6 +367,28 @@ export class AdminUsersList extends LitElement {
     }
   }
 
+  /** @param {string} uid @param {string} newStatus */
+  async _handleStatusChange(uid, newStatus) {
+    const result = await updateUserStatus(uid, newStatus);
+    if (result.success) {
+      this._users = this._users.map((u) =>
+        u.uid === uid ? { ...u, status: newStatus } : u
+      );
+    }
+  }
+
+  /** @param {string} status @returns {string} */
+  _getStatusLabel(status) {
+    if (status === 'pending') return 'Pendiente';
+    if (status === 'inactive') return 'Inactivo';
+    return 'Activo';
+  }
+
+  /** @param {string|undefined} status @returns {boolean} */
+  _isActiveUser(status) {
+    return !status || status === 'active';
+  }
+
   render() {
     if (this._loading) {
       return html`
@@ -264,15 +403,54 @@ export class AdminUsersList extends LitElement {
       return html`<div class="error">${this._error}</div>`;
     }
 
-    const filtered = filterBySearch(this._users, ['email', 'displayName', 'role'], this._searchQuery);
+    const activeUsers = this._users.filter((u) => this._isActiveUser(u.status));
+    const pendingUsers = this._users.filter((u) => u.status === 'pending');
+    const inactiveUsers = this._users.filter((u) => u.status === 'inactive');
+
+    const tabUsers = this._activeTab === 'pending'
+      ? pendingUsers
+      : this._activeTab === 'inactive'
+        ? inactiveUsers
+        : activeUsers;
+
+    const tabLabel = this._activeTab === 'pending'
+      ? 'pendientes'
+      : this._activeTab === 'inactive'
+        ? 'inactivos'
+        : 'activos';
+
+    const filtered = filterBySearch(tabUsers, ['email', 'displayName', 'role'], this._searchQuery);
 
     return html`
       ${materialIconsLink}
       <div class="toolbar">
-        <span>${this._users.length} usuarios</span>
+        <span>${tabUsers.length} usuarios ${tabLabel}</span>
         <button class="export-btn" @click=${this._exportCsv}>
           <span class="material-symbols-outlined">download</span>
           Exportar CSV
+        </button>
+      </div>
+      <div class="tabs">
+        <button
+          class="tab ${this._activeTab === 'active' ? 'tab--active' : ''}"
+          @click=${() => { this._activeTab = 'active'; }}
+        >
+          Activos
+          <span class="tab-count">${activeUsers.length}</span>
+        </button>
+        <button
+          class="tab ${this._activeTab === 'pending' ? 'tab--active' : ''}"
+          @click=${() => { this._activeTab = 'pending'; }}
+        >
+          Pendientes
+          <span class="tab-count">${pendingUsers.length}</span>
+        </button>
+        <button
+          class="tab ${this._activeTab === 'inactive' ? 'tab--active' : ''}"
+          @click=${() => { this._activeTab = 'inactive'; }}
+        >
+          Inactivos
+          <span class="tab-count">${inactiveUsers.length}</span>
         </button>
       </div>
       <div class="search-bar">
@@ -294,6 +472,7 @@ export class AdminUsersList extends LitElement {
                 <th class="hide-mobile">Nombre</th>
                 <th>Rol</th>
                 <th class="hide-mobile">Convocatoria</th>
+                <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -310,15 +489,44 @@ export class AdminUsersList extends LitElement {
                     </td>
                     <td class="hide-mobile">${this._cohortMap[user.cohortId] || user.cohortId || '-'}</td>
                     <td>
-                      <select
-                        class="role-select"
-                        data-uid=${user.uid}
-                        .value=${user.role}
-                        @change=${this._handleRoleChange}
-                      >
-                        <option value="student">student</option>
-                        <option value="admin">admin</option>
-                      </select>
+                      <span class="status-badge status-badge--${user.status || 'active'}">
+                        ${this._getStatusLabel(user.status)}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="actions-cell">
+                        <select
+                          class="role-select"
+                          data-uid=${user.uid}
+                          .value=${user.role}
+                          @change=${this._handleRoleChange}
+                        >
+                          <option value="student">student</option>
+                          <option value="admin">admin</option>
+                        </select>
+                        ${this._activeTab === 'pending' ? html`
+                          <button
+                            class="btn-action btn-action--validate"
+                            @click=${() => this._handleStatusChange(user.uid, 'active')}
+                          >Validar</button>
+                          <button
+                            class="btn-action btn-action--reject"
+                            @click=${() => this._handleStatusChange(user.uid, 'inactive')}
+                          >Rechazar</button>
+                        ` : ''}
+                        ${this._activeTab === 'active' ? html`
+                          <button
+                            class="btn-action btn-action--deactivate"
+                            @click=${() => this._handleStatusChange(user.uid, 'inactive')}
+                          >Desactivar</button>
+                        ` : ''}
+                        ${this._activeTab === 'inactive' ? html`
+                          <button
+                            class="btn-action btn-action--reactivate"
+                            @click=${() => this._handleStatusChange(user.uid, 'active')}
+                          >Reactivar</button>
+                        ` : ''}
+                      </div>
                     </td>
                   </tr>
                 `
