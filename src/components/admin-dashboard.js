@@ -26,7 +26,7 @@ export class AdminDashboard extends LitElement {
     }
 
     .metric-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       padding: 1.25rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -39,7 +39,7 @@ export class AdminDashboard extends LitElement {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       font-size: 0.813rem;
       font-weight: 600;
       text-transform: uppercase;
@@ -53,13 +53,13 @@ export class AdminDashboard extends LitElement {
     .metric-card__value {
       font-size: 2rem;
       font-weight: 900;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       line-height: 1;
     }
 
     .metric-card__subtitle {
       font-size: 0.813rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
     }
 
     .cohort-section {
@@ -69,7 +69,7 @@ export class AdminDashboard extends LitElement {
     .cohort-section h3 {
       font-size: 1rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 1rem;
     }
 
@@ -80,7 +80,7 @@ export class AdminDashboard extends LitElement {
     }
 
     .cohort-row {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       padding: 1rem 1.25rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -91,7 +91,7 @@ export class AdminDashboard extends LitElement {
 
     .cohort-row__name {
       font-weight: 600;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       flex: 1;
       font-size: 0.875rem;
     }
@@ -99,7 +99,7 @@ export class AdminDashboard extends LitElement {
     .cohort-row__bar {
       flex: 2;
       height: 8px;
-      background: #f1f5f9;
+      background: var(--color-bg-slate-100, #f1f5f9);
       border-radius: 4px;
       overflow: hidden;
     }
@@ -114,7 +114,7 @@ export class AdminDashboard extends LitElement {
     .cohort-row__percent {
       font-size: 0.875rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       min-width: 48px;
       text-align: right;
     }
@@ -139,19 +139,29 @@ export class AdminDashboard extends LitElement {
     }
 
     .error-banner {
-      background: #fef2f2;
-      color: #991b1b;
+      background: var(--color-error-bg, #fef2f2);
+      color: var(--color-error-text, #991b1b);
       padding: 0.75rem 1rem;
       border-radius: 0.5rem;
       font-size: 0.875rem;
-      border: 1px solid #fecaca;
+      border: 1px solid var(--color-error-border, #fecaca);
     }
 
     .empty-state {
       text-align: center;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       padding: 2rem;
       font-size: 0.875rem;
+    }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
     }
   `;
 
@@ -197,7 +207,7 @@ export class AdminDashboard extends LitElement {
 
     return html`
       ${materialIconsLink}
-      <div class="metrics-grid">
+      <div class="metrics-grid" role="group" aria-label="Estadísticas del panel">
         ${this._renderMetricCard('group', 'Usuarios totales', this._stats.totalUsers, 'registrados')}
         ${this._renderMetricCard('trending_up', 'Activos (7 días)', this._stats.activeUsersLast7Days, 'con actividad reciente')}
         ${this._renderMetricCard('task_alt', 'Quizzes completados', this._stats.quizzesCompleted, `de ${this._stats.totalQuizzes} disponibles`)}
@@ -245,7 +255,7 @@ export class AdminDashboard extends LitElement {
 
   _renderLoading() {
     return html`
-      <div class="loading-placeholder">
+      <div class="loading-placeholder" role="status" aria-label="Cargando">
         <div class="metrics-grid">
           <div class="skeleton"></div>
           <div class="skeleton"></div>

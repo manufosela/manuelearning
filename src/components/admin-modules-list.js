@@ -92,15 +92,15 @@ export class AdminModulesList extends LitElement {
 
     .btn--primary { background: linear-gradient(to right, #84cc16, #fb923c); color: #0f172a; }
     .btn--primary:hover { background: #d11111; }
-    .btn--secondary { background: #f1f5f9; color: #334155; }
-    .btn--secondary:hover { background: #e2e8f0; }
-    .btn--danger { background: #fef2f2; color: #991b1b; }
+    .btn--secondary { background: var(--color-bg-slate-100, #f1f5f9); color: var(--color-text-body, #334155); }
+    .btn--secondary:hover { background: var(--color-border, #e2e8f0); }
+    .btn--danger { background: var(--color-error-bg, #fef2f2); color: var(--color-error-text, #991b1b); }
     .btn--danger:hover { background: #fee2e2; }
     .btn--small { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .module-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
       margin-bottom: 1rem;
@@ -116,7 +116,7 @@ export class AdminModulesList extends LitElement {
       transition: background 0.15s;
     }
 
-    .module-header:hover { background: #f8fafc; }
+    .module-header:hover { background: var(--color-bg-slate-50, #f8fafc); }
 
     .module-info {
       display: flex;
@@ -129,7 +129,7 @@ export class AdminModulesList extends LitElement {
       height: 2rem;
       border-radius: 0.375rem;
       background: #84cc16;
-      color: #fff;
+      color: var(--color-bg-white, #fff);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -140,13 +140,13 @@ export class AdminModulesList extends LitElement {
 
     .module-title {
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       font-size: 0.938rem;
     }
 
     .module-desc {
       font-size: 0.813rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       margin-top: 0.125rem;
     }
 
@@ -157,7 +157,7 @@ export class AdminModulesList extends LitElement {
     }
 
     .lessons-panel {
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--color-bg-slate-100, #f1f5f9);
       padding: 1rem 1.25rem;
       background: #fafbfc;
     }
@@ -172,7 +172,7 @@ export class AdminModulesList extends LitElement {
     .lessons-header h4 {
       font-size: 0.813rem;
       font-weight: 700;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -182,10 +182,10 @@ export class AdminModulesList extends LitElement {
       align-items: center;
       justify-content: space-between;
       padding: 0.625rem 0.75rem;
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.5rem;
       margin-bottom: 0.5rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
     }
 
     .lesson-info {
@@ -198,8 +198,8 @@ export class AdminModulesList extends LitElement {
       width: 1.5rem;
       height: 1.5rem;
       border-radius: 50%;
-      background: #f1f5f9;
-      color: #475569;
+      background: var(--color-bg-slate-100, #f1f5f9);
+      color: var(--color-text-secondary, #475569);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -210,7 +210,7 @@ export class AdminModulesList extends LitElement {
 
     .lesson-title {
       font-size: 0.875rem;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       font-weight: 500;
     }
 
@@ -224,14 +224,14 @@ export class AdminModulesList extends LitElement {
       font-size: 0.688rem;
       padding: 0.125rem 0.5rem;
       border-radius: 9999px;
-      background: #f0fdf4;
-      color: #166534;
+      background: var(--color-success-bg, #f0fdf4);
+      color: var(--color-success-text, #166534);
       font-weight: 600;
     }
 
     .lesson-badge--empty {
-      background: #fef2f2;
-      color: #991b1b;
+      background: var(--color-error-bg, #fef2f2);
+      color: var(--color-error-text, #991b1b);
     }
 
     /* Form overlay */
@@ -246,7 +246,7 @@ export class AdminModulesList extends LitElement {
     }
 
     .form-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       padding: 2rem;
       width: 100%;
@@ -260,7 +260,7 @@ export class AdminModulesList extends LitElement {
       margin: 0 0 1.5rem;
       font-size: 1.125rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     .form-group {
@@ -271,7 +271,7 @@ export class AdminModulesList extends LitElement {
       display: block;
       font-size: 0.813rem;
       font-weight: 600;
-      color: #334155;
+      color: var(--color-text-body, #334155);
       margin-bottom: 0.375rem;
     }
 
@@ -279,7 +279,7 @@ export class AdminModulesList extends LitElement {
     .form-group textarea {
       width: 100%;
       padding: 0.5rem 0.75rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.375rem;
       font-size: 0.875rem;
       font-family: inherit;
@@ -318,9 +318,9 @@ export class AdminModulesList extends LitElement {
 
     .md-editor__tab {
       padding: 0.375rem 1rem;
-      border: 1px solid #e2e8f0;
-      background: #f8fafc;
-      color: #64748b;
+      border: 1px solid var(--color-border, #e2e8f0);
+      background: var(--color-bg-slate-50, #f8fafc);
+      color: var(--color-text-muted, #64748b);
       font-size: 0.75rem;
       font-weight: 600;
       font-family: inherit;
@@ -332,25 +332,25 @@ export class AdminModulesList extends LitElement {
 
     .md-editor__tab--active {
       background: #84cc16;
-      color: #fff;
+      color: var(--color-bg-white, #fff);
       border-color: #84cc16;
     }
 
     .md-preview {
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.375rem;
       padding: 0.75rem;
       min-height: 350px;
       max-height: 400px;
       overflow: auto;
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       word-break: break-word;
     }
 
     .md-preview-label {
       font-size: 0.75rem;
       font-weight: 600;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       margin-bottom: 0.375rem;
     }
 
@@ -371,7 +371,7 @@ export class AdminModulesList extends LitElement {
     }
 
     .form-error {
-      color: #991b1b;
+      color: var(--color-error-text, #991b1b);
       font-size: 0.813rem;
       margin-bottom: 1rem;
     }
@@ -386,15 +386,15 @@ export class AdminModulesList extends LitElement {
     .loading, .error-msg {
       text-align: center;
       padding: 3rem;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
     }
 
-    .error-msg { color: #991b1b; }
+    .error-msg { color: var(--color-error-text, #991b1b); }
 
     .spinner {
       width: 1.5rem;
       height: 1.5rem;
-      border: 3px solid #e2e8f0;
+      border: 3px solid var(--color-border, #e2e8f0);
       border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
@@ -407,7 +407,7 @@ export class AdminModulesList extends LitElement {
       flex: 1;
       height: 2.5rem;
       padding: 0 0.75rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.5rem;
       font-size: 0.875rem;
       font-family: inherit;
@@ -425,9 +425,9 @@ export class AdminModulesList extends LitElement {
     .no-results {
       text-align: center;
       padding: 2rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       font-size: 0.875rem;
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
@@ -435,23 +435,23 @@ export class AdminModulesList extends LitElement {
     .empty-state {
       text-align: center;
       padding: 3rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
 
     .form-check { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
     .form-check input[type="checkbox"] { width: auto; margin: 0; accent-color: #84cc16; }
-    .form-check label { font-size: 0.813rem; font-weight: 500; color: #334155; cursor: pointer; }
+    .form-check label { font-size: 0.813rem; font-weight: 500; color: var(--color-text-body, #334155); cursor: pointer; }
 
     .empty-state .material-symbols-outlined {
       font-size: 3rem;
-      color: #cbd5e1;
+      color: var(--color-border-light, #cbd5e1);
       margin-bottom: 0.75rem;
     }
 
     .no-lessons {
       text-align: center;
       padding: 1.5rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       font-size: 0.813rem;
     }
 
@@ -463,7 +463,7 @@ export class AdminModulesList extends LitElement {
 
     .reorder-btn {
       background: none;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.25rem;
       cursor: pointer;
       padding: 0;
@@ -472,12 +472,12 @@ export class AdminModulesList extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       transition: all 0.15s;
     }
 
     .reorder-btn:hover {
-      background: #f1f5f9;
+      background: var(--color-bg-slate-100, #f1f5f9);
       color: #84cc16;
       border-color: #84cc16;
     }
@@ -489,8 +489,8 @@ export class AdminModulesList extends LitElement {
 
     .reorder-btn:disabled:hover {
       background: none;
-      color: #64748b;
-      border-color: #e2e8f0;
+      color: var(--color-text-muted, #64748b);
+      border-color: var(--color-border, #e2e8f0);
     }
 
     .reorder-btn .material-symbols-outlined {
@@ -507,8 +507,8 @@ export class AdminModulesList extends LitElement {
     }
 
     .quiz-badge--empty {
-      background: #f8fafc;
-      color: #94a3b8;
+      background: var(--color-bg-slate-50, #f8fafc);
+      color: var(--color-text-muted, #94a3b8);
     }
 
     .btn--quiz {
@@ -530,7 +530,7 @@ export class AdminModulesList extends LitElement {
     .option-row input[type="text"] {
       flex: 1;
       padding: 0.5rem 0.75rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.375rem;
       font-size: 0.875rem;
       font-family: inherit;
@@ -552,7 +552,7 @@ export class AdminModulesList extends LitElement {
     .option-row .remove-option {
       background: none;
       border: none;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       cursor: pointer;
       padding: 0.25rem;
       display: flex;
@@ -560,12 +560,12 @@ export class AdminModulesList extends LitElement {
     }
 
     .option-row .remove-option:hover {
-      color: #991b1b;
+      color: var(--color-error-text, #991b1b);
     }
 
     .correct-label {
       font-size: 0.75rem;
-      color: #166534;
+      color: var(--color-success-text, #166534);
       font-weight: 600;
     }
 
@@ -579,7 +579,7 @@ export class AdminModulesList extends LitElement {
     .course-filter label {
       font-size: 0.813rem;
       font-weight: 600;
-      color: #334155;
+      color: var(--color-text-body, #334155);
       white-space: nowrap;
     }
 
@@ -587,12 +587,12 @@ export class AdminModulesList extends LitElement {
       flex: 1;
       max-width: 300px;
       padding: 0.5rem 0.75rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.375rem;
       font-size: 0.875rem;
       font-family: inherit;
-      background: #fff;
-      color: #0f172a;
+      background: var(--color-bg-white, #fff);
+      color: var(--color-text-primary, #0f172a);
     }
 
     .course-filter select:focus {
@@ -1305,7 +1305,7 @@ export class AdminModulesList extends LitElement {
       <div class="form-overlay" @click=${this._closeQuizForm}>
         <div class="form-card" style="max-width: 600px;" @click=${(e) => e.stopPropagation()}>
           <h3>${title}</h3>
-          <p style="font-size: 0.813rem; color: #64748b; margin: -1rem 0 1.25rem;">
+          <p style="font-size: 0.813rem; color: var(--color-text-muted, #64748b); margin: -1rem 0 1.25rem;">
             Clase: <strong>${this._quizFormLessonTitle}</strong>
           </p>
 
@@ -1314,8 +1314,8 @@ export class AdminModulesList extends LitElement {
           ` : html`
             <form @submit=${this._handleQuizSubmit}>
               ${questions.map((q, qi) => html`
-                <fieldset style="border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
-                  <legend style="font-size: 0.813rem; font-weight: 700; color: #334155; padding: 0 0.5rem;">
+                <fieldset style="border: 1px solid var(--color-border, #e2e8f0); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                  <legend style="font-size: 0.813rem; font-weight: 700; color: var(--color-text-body, #334155); padding: 0 0.5rem;">
                     Pregunta ${qi + 1}
                     ${questions.length > 1 ? html`
                       <button type="button" class="btn btn--danger btn--small" style="margin-left: 0.5rem; padding: 0.125rem 0.5rem;" @click=${() => this._removeQuizQuestion(qi)}>Eliminar</button>
@@ -1333,7 +1333,7 @@ export class AdminModulesList extends LitElement {
                   </div>
 
                   <div class="form-group">
-                    <label>Opciones <span style="font-weight: 400; color: #94a3b8;">(selecciona la correcta)</span></label>
+                    <label>Opciones <span style="font-weight: 400; color: var(--color-text-muted, #94a3b8);">(selecciona la correcta)</span></label>
                     ${q.options.map((opt, oi) => html`
                       <div class="option-row">
                         <input
@@ -1379,7 +1379,7 @@ export class AdminModulesList extends LitElement {
                   Añadir pregunta (${questions.length}/3)
                 </button>
               ` : html`
-                <p style="text-align: center; font-size: 0.75rem; color: #94a3b8; margin-bottom: 1rem;">Máximo 3 preguntas</p>
+                <p style="text-align: center; font-size: 0.75rem; color: var(--color-text-muted, #94a3b8); margin-bottom: 1rem;">Máximo 3 preguntas</p>
               `}
 
               ${this._quizFormError ? html`<div class="form-error">${this._quizFormError}</div>` : ''}

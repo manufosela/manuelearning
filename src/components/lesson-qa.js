@@ -26,13 +26,13 @@ export class LessonQA extends LitElement {
   static styles = [stateStyles, css`
     :host { display: block; margin-top: 2rem; }
 
-    h3 { font-size: 1.125rem; font-weight: 700; color: #0f172a; margin: 0 0 1rem; }
+    h3 { font-size: 1.125rem; font-weight: 700; color: var(--color-text-primary, #0f172a); margin: 0 0 1rem; }
 
     .qa-form { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
     .qa-form textarea {
       flex: 1;
       padding: 0.625rem 0.75rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.5rem;
       font-size: 0.875rem;
       font-family: inherit;
@@ -47,7 +47,7 @@ export class LessonQA extends LitElement {
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .question-item {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.5rem;
       padding: 1rem;
       margin-bottom: 0.75rem;
@@ -55,45 +55,61 @@ export class LessonQA extends LitElement {
       border-left: 3px solid #84cc16;
     }
 
-    .question-text { font-size: 0.938rem; color: #0f172a; margin-bottom: 0.375rem; }
-    .question-meta { font-size: 0.75rem; color: #94a3b8; }
-    .privacy-badge { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.688rem; color: #64748b; background: #f1f5f9; padding: 0.125rem 0.5rem; border-radius: 9999px; margin-left: 0.5rem; }
+    .question-text { font-size: 0.938rem; color: var(--color-text-primary, #0f172a); margin-bottom: 0.375rem; }
+    .question-meta { font-size: 0.75rem; color: var(--color-text-muted, #94a3b8); }
+    .privacy-badge { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.688rem; color: var(--color-text-muted, #64748b); background: var(--color-bg-slate-100, #f1f5f9); padding: 0.125rem 0.5rem; border-radius: 9999px; margin-left: 0.5rem; }
     .privacy-badge .material-symbols-outlined { font-size: 0.75rem; }
 
     .pending-badge { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.688rem; color: #b45309; background: #fffbeb; padding: 0.125rem 0.5rem; border-radius: 9999px; margin-left: 0.5rem; }
     .pending-badge .material-symbols-outlined { font-size: 0.75rem; }
-    .answered-badge { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.688rem; color: #166534; background: #f0fdf4; padding: 0.125rem 0.5rem; border-radius: 9999px; margin-left: 0.5rem; }
+    .answered-badge { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.688rem; color: var(--color-success-text, #166534); background: var(--color-success-bg, #f0fdf4); padding: 0.125rem 0.5rem; border-radius: 9999px; margin-left: 0.5rem; }
     .answered-badge .material-symbols-outlined { font-size: 0.75rem; }
     .question-item--pending { border-left-color: #f59e0b; }
 
-    .answer-list { margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid #e2e8f0; }
+    .answer-list { margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid var(--color-border, #e2e8f0); }
     .answer-item { padding: 0.5rem 0; display: flex; gap: 0.5rem; align-items: flex-start; }
     .answer-content { flex: 1; }
-    .answer-text { font-size: 0.875rem; color: #334155; }
-    .answer-meta { font-size: 0.688rem; color: #94a3b8; margin-top: 0.125rem; }
+    .answer-text { font-size: 0.875rem; color: var(--color-text-body, #334155); }
+    .answer-meta { font-size: 0.688rem; color: var(--color-text-muted, #94a3b8); margin-top: 0.125rem; }
 
     .profesor-badge { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.625rem; font-weight: 700; color: #1e40af; background: #dbeafe; padding: 0.125rem 0.5rem; border-radius: 9999px; margin-left: 0.375rem; }
     .profesor-badge .material-symbols-outlined { font-size: 0.75rem; }
 
-    .vote-btn { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; background: #fff; color: #64748b; font-size: 0.688rem; font-family: inherit; cursor: pointer; transition: all 0.15s; flex-shrink: 0; margin-top: 0.25rem; }
-    .vote-btn:hover { background: #f0fdf4; border-color: #84cc16; color: #166534; }
-    .vote-btn.voted { background: #f0fdf4; border-color: #84cc16; color: #166534; }
+    .vote-btn { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.5rem; border: 1px solid var(--color-border, #e2e8f0); border-radius: 0.375rem; background: var(--color-bg-white, #fff); color: var(--color-text-muted, #64748b); font-size: 0.688rem; font-family: inherit; cursor: pointer; transition: all 0.15s; flex-shrink: 0; margin-top: 0.25rem; }
+    .vote-btn:hover { background: var(--color-success-bg, #f0fdf4); border-color: #84cc16; color: var(--color-success-text, #166534); }
+    .vote-btn.voted { background: var(--color-success-bg, #f0fdf4); border-color: #84cc16; color: var(--color-success-text, #166534); }
     .vote-btn .material-symbols-outlined { font-size: 0.875rem; }
 
-    .reply-btn { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.625rem; border: none; border-radius: 0.375rem; background: #f1f5f9; color: #64748b; font-size: 0.688rem; font-family: inherit; cursor: pointer; margin-top: 0.5rem; }
-    .reply-btn:hover { background: #e2e8f0; color: #334155; }
+    .reply-btn { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.625rem; border: none; border-radius: 0.375rem; background: var(--color-bg-slate-100, #f1f5f9); color: var(--color-text-muted, #64748b); font-size: 0.688rem; font-family: inherit; cursor: pointer; margin-top: 0.5rem; }
+    .reply-btn:hover { background: var(--color-border, #e2e8f0); color: var(--color-text-body, #334155); }
     .reply-btn .material-symbols-outlined { font-size: 0.875rem; }
 
     .reply-form { display: flex; gap: 0.5rem; margin-top: 0.5rem; padding-left: 1rem; }
-    .reply-form textarea { flex: 1; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; font-size: 0.813rem; font-family: inherit; resize: vertical; min-height: 2rem; }
+    .reply-form textarea { flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border, #e2e8f0); border-radius: 0.375rem; font-size: 0.813rem; font-family: inherit; resize: vertical; min-height: 2rem; }
     .reply-form textarea:focus { outline: none; border-color: #84cc16; box-shadow: 0 0 0 3px rgba(132,204,22,0.1); }
     .reply-form .btn { font-size: 0.75rem; padding: 0.375rem 0.75rem; align-self: flex-end; }
 
-    .replies-section { margin-top: 0.25rem; padding-left: 1rem; border-left: 2px solid #f1f5f9; }
+    .replies-section { margin-top: 0.25rem; padding-left: 1rem; border-left: 2px solid var(--color-bg-slate-100, #f1f5f9); }
     .replies-section .answer-item { padding: 0.375rem 0; }
 
-    .empty-state { text-align: center; padding: 2rem; color: #94a3b8; font-size: 0.875rem; }
-    .loading { text-align: center; padding: 1rem; color: #94a3b8; font-size: 0.875rem; }
+    .empty-state { text-align: center; padding: 2rem; color: var(--color-text-muted, #94a3b8); font-size: 0.875rem; }
+    .loading { text-align: center; padding: 1rem; color: var(--color-text-muted, #94a3b8); font-size: 0.875rem; }
+
+    @media (max-width: 640px) {
+      .qa-form textarea { min-height: 80px; }
+      .question-item { padding: 1rem; }
+      .question-meta { flex-wrap: wrap; }
+    }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
+    }
   `];
 
   constructor() {
@@ -158,7 +174,7 @@ export class LessonQA extends LitElement {
       <h3>Preguntas y respuestas</h3>
 
       ${this.userId ? html`
-        <form class="qa-form" @submit=${this._handleSubmit}>
+        <form class="qa-form" @submit=${this._handleSubmit} aria-label="Hacer una pregunta">
           <textarea
             placeholder="Escribe tu pregunta sobre esta clase..."
             .value=${this._newQuestion}
@@ -171,7 +187,7 @@ export class LessonQA extends LitElement {
         </form>
       ` : ''}
 
-      ${this._loading ? html`<div class="loading">Cargando preguntas...</div>` : ''}
+      ${this._loading ? html`<div class="loading" role="status" aria-label="Cargando">Cargando preguntas...</div>` : ''}
 
       ${!this._loading && this._error ? html`
         <div class="state-error">
@@ -229,7 +245,7 @@ export class LessonQA extends LitElement {
                   return html`
                     <div class="answer-item">
                       ${a.id ? html`
-                        <button class="vote-btn ${hasVoted ? 'voted' : ''}" @click=${() => this._handleVote(q.id, a.id)} title="Marcar como útil">
+                        <button class="vote-btn ${hasVoted ? 'voted' : ''}" @click=${() => this._handleVote(q.id, a.id)} title="Marcar como útil" aria-label="Votar respuesta, ${itemVotes.length} votos">
                           <span class="material-symbols-outlined">${hasVoted ? 'thumb_up' : 'thumb_up_off_alt'}</span>
                           ${itemVotes.length || ''}
                         </button>
@@ -255,7 +271,7 @@ export class LessonQA extends LitElement {
                   return html`
                     <div class="answer-item">
                       ${r.id ? html`
-                        <button class="vote-btn ${hasVoted ? 'voted' : ''}" @click=${() => this._handleVote(q.id, r.id)} title="Marcar como útil">
+                        <button class="vote-btn ${hasVoted ? 'voted' : ''}" @click=${() => this._handleVote(q.id, r.id)} title="Marcar como útil" aria-label="Votar respuesta, ${itemVotes.length} votos">
                           <span class="material-symbols-outlined">${hasVoted ? 'thumb_up' : 'thumb_up_off_alt'}</span>
                           ${itemVotes.length || ''}
                         </button>

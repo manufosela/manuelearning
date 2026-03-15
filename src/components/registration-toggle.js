@@ -20,7 +20,7 @@ export class RegistrationToggle extends LitElement {
     }
 
     .toggle-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       padding: 1.5rem;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
@@ -33,13 +33,13 @@ export class RegistrationToggle extends LitElement {
     .toggle-info h3 {
       font-size: 1rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 0.25rem;
     }
 
     .toggle-info p {
       font-size: 0.813rem;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
     }
 
     .toggle-switch {
@@ -58,7 +58,7 @@ export class RegistrationToggle extends LitElement {
     .toggle-slider {
       position: absolute;
       inset: 0;
-      background-color: #cbd5e1;
+      background-color: var(--color-border-light, #cbd5e1);
       border-radius: 9999px;
       cursor: pointer;
       transition: background-color 0.2s;
@@ -92,22 +92,22 @@ export class RegistrationToggle extends LitElement {
     }
 
     .status--open {
-      background: #f0fdf4;
-      color: #166534;
+      background: var(--color-success-bg, #f0fdf4);
+      color: var(--color-success-text, #166534);
     }
 
     .status--closed {
-      background: #fef2f2;
-      color: #991b1b;
+      background: var(--color-error-bg, #fef2f2);
+      color: var(--color-error-text, #991b1b);
     }
 
     .toggle-error {
       margin-top: 0.75rem;
       padding: 0.5rem 0.75rem;
-      background: #fef2f2;
+      background: var(--color-error-bg, #fef2f2);
       border-radius: 0.375rem;
       font-size: 0.813rem;
-      color: #991b1b;
+      color: var(--color-error-text, #991b1b);
     }
   `];
 

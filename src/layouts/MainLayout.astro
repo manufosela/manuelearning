@@ -93,13 +93,12 @@ const {
       <div class="site-footer__grid">
         <div class="site-footer__brand">
           <div class="site-footer__logo">
-            <img src="/logo.svg" alt={SITE.name} height="32" />
+            <img src="/logo.svg" alt={SITE.name} height="32" loading="lazy" />
           </div>
           <p>{SITE.tagline}</p>
           <div class="site-footer__social">
-            <a href="#" aria-label="Web"><span class="material-symbols-outlined">public</span></a>
-            <a href="#" aria-label="Chat"><span class="material-symbols-outlined">chat</span></a>
-            <a href="#" aria-label="Email"><span class="material-symbols-outlined">mail</span></a>
+            <a href="https://manufosela.es" aria-label="Web" target="_blank" rel="noopener"><span class="material-symbols-outlined">public</span></a>
+            <a href="mailto:mjfosela@gmail.com" aria-label="Email"><span class="material-symbols-outlined">mail</span></a>
           </div>
         </div>
         <div class="site-footer__links">
@@ -113,8 +112,7 @@ const {
         <div class="site-footer__links">
           <h4>Recursos</h4>
           <ul>
-            <li><a href="#">GitHub del curso</a></li>
-            <li><a href="#">Blog</a></li>
+            <li><a href="https://github.com/manufosela" target="_blank" rel="noopener">GitHub</a></li>
             <li><a href="/sobre-manu">Sobre Mánu</a></li>
           </ul>
         </div>
@@ -305,7 +303,7 @@ const {
   }
 
   .header-user__logout:hover {
-    color: #991b1b;
+    color: var(--color-error-text, #991b1b);
   }
 
   .header-user__logout .material-symbols-outlined {
@@ -385,8 +383,8 @@ const {
   }
 
   .site-footer__social a {
-    width: 2rem;
-    height: 2rem;
+    width: 2.75rem;
+    height: 2.75rem;
     border-radius: var(--radius-full);
     background-color: #1e293b;
     display: flex;

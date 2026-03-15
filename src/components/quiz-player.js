@@ -35,7 +35,7 @@ export class QuizPlayer extends LitElement {
     .spinner {
       width: 2rem;
       height: 2rem;
-      border: 3px solid #e2e8f0;
+      border: 3px solid var(--color-border, #e2e8f0);
       border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
@@ -47,15 +47,15 @@ export class QuizPlayer extends LitElement {
     }
 
     .loading p {
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
       font-size: 0.938rem;
     }
 
     .error-container {
-      background: #fef2f2;
-      color: #991b1b;
+      background: var(--color-error-bg, #fef2f2);
+      color: var(--color-error-text, #991b1b);
       border-radius: 0.75rem;
-      border: 1px solid #fecaca;
+      border: 1px solid var(--color-error-border, #fecaca);
       font-size: 0.875rem;
     }
 
@@ -72,7 +72,7 @@ export class QuizPlayer extends LitElement {
     .quiz-header h1 {
       font-size: 1.5rem;
       font-weight: 800;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 0.5rem;
     }
 
@@ -81,13 +81,13 @@ export class QuizPlayer extends LitElement {
       align-items: center;
       gap: 0.75rem;
       font-size: 0.813rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
 
     .progress-bar {
       flex: 1;
       height: 0.375rem;
-      background: #e2e8f0;
+      background: var(--color-border, #e2e8f0);
       border-radius: 9999px;
       overflow: hidden;
     }
@@ -101,7 +101,7 @@ export class QuizPlayer extends LitElement {
 
     /* Question card */
     .question-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
       padding: 1.5rem;
@@ -120,7 +120,7 @@ export class QuizPlayer extends LitElement {
     .question-text {
       font-size: 1.125rem;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 1.25rem;
       line-height: 1.5;
     }
@@ -138,10 +138,10 @@ export class QuizPlayer extends LitElement {
       gap: 0.75rem;
       width: 100%;
       padding: 0.875rem 1rem;
-      border: 2px solid #e2e8f0;
+      border: 2px solid var(--color-border, #e2e8f0);
       border-radius: 0.5rem;
-      background: #fff;
-      color: #334155;
+      background: var(--color-bg-white, #fff);
+      color: var(--color-text-body, #334155);
       font-size: 0.938rem;
       text-align: left;
       cursor: pointer;
@@ -149,8 +149,8 @@ export class QuizPlayer extends LitElement {
     }
 
     .option-btn:hover {
-      border-color: #cbd5e1;
-      background: #f8fafc;
+      border-color: var(--color-border-light, #cbd5e1);
+      background: var(--color-bg-slate-50, #f8fafc);
     }
 
     .option-btn--selected {
@@ -164,7 +164,7 @@ export class QuizPlayer extends LitElement {
       width: 1.25rem;
       height: 1.25rem;
       border-radius: 50%;
-      border: 2px solid #cbd5e1;
+      border: 2px solid var(--color-border-light, #cbd5e1);
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -192,10 +192,10 @@ export class QuizPlayer extends LitElement {
       width: 100%;
       min-height: 100px;
       padding: 0.75rem 1rem;
-      border: 2px solid #e2e8f0;
+      border: 2px solid var(--color-border, #e2e8f0);
       border-radius: 0.5rem;
       font-size: 0.938rem;
-      color: #334155;
+      color: var(--color-text-body, #334155);
       resize: vertical;
       font-family: inherit;
       transition: border-color 0.15s;
@@ -227,12 +227,12 @@ export class QuizPlayer extends LitElement {
     }
 
     .btn--secondary {
-      background: #f1f5f9;
-      color: #475569;
+      background: var(--color-bg-slate-100, #f1f5f9);
+      color: var(--color-text-secondary, #475569);
     }
 
     .btn--secondary:hover {
-      background: #e2e8f0;
+      background: var(--color-border, #e2e8f0);
     }
 
     .btn--primary {
@@ -255,7 +255,7 @@ export class QuizPlayer extends LitElement {
 
     /* Results */
     .results-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
       padding: 2rem;
@@ -271,12 +271,12 @@ export class QuizPlayer extends LitElement {
     .results-card h2 {
       font-size: 1.25rem;
       font-weight: 800;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 0.5rem;
     }
 
     .results-card p {
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       font-size: 0.938rem;
       margin-bottom: 1.5rem;
     }
@@ -295,12 +295,12 @@ export class QuizPlayer extends LitElement {
     .results-stat__value {
       font-size: 1.5rem;
       font-weight: 800;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     .results-stat__label {
       font-size: 0.75rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -308,21 +308,21 @@ export class QuizPlayer extends LitElement {
     .results-answers {
       text-align: left;
       margin-top: 1.5rem;
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--color-bg-slate-100, #f1f5f9);
       padding-top: 1.5rem;
     }
 
     .results-answers h3 {
       font-size: 0.938rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 1rem;
     }
 
     .result-question {
       margin-bottom: 1rem;
       padding-bottom: 1rem;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--color-bg-slate-100, #f1f5f9);
     }
 
     .result-question:last-child {
@@ -334,13 +334,13 @@ export class QuizPlayer extends LitElement {
     .result-question__text {
       font-size: 0.875rem;
       font-weight: 600;
-      color: #334155;
+      color: var(--color-text-body, #334155);
       margin-bottom: 0.375rem;
     }
 
     .result-question__answer {
       font-size: 0.813rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       display: flex;
       align-items: center;
       gap: 0.375rem;
@@ -360,8 +360,8 @@ export class QuizPlayer extends LitElement {
 
     /* Previously completed */
     .already-completed {
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
+      background: var(--color-success-bg, #f0fdf4);
+      border: 1px solid var(--color-success-border, #bbf7d0);
       border-radius: 0.75rem;
       padding: 1.5rem;
       text-align: center;
@@ -383,8 +383,28 @@ export class QuizPlayer extends LitElement {
     }
 
     .already-completed p {
-      color: #166534;
+      color: var(--color-success-text, #166534);
       font-size: 0.875rem;
+    }
+
+    @media (max-width: 640px) {
+      .quiz-header h1 { font-size: 1.25rem; }
+      .question-card { padding: 1rem; }
+      .question-text { font-size: 1rem; }
+      .option-btn { padding: 0.75rem; font-size: 0.875rem; }
+      .nav-buttons { flex-direction: column; }
+      .nav-buttons .btn { width: 100%; justify-content: center; }
+      .results-summary { flex-direction: column; gap: 0.75rem; }
+    }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
     }
   `;
 
@@ -451,7 +471,7 @@ export class QuizPlayer extends LitElement {
     if (this._loading) {
       return html`
         ${materialIconsLink}
-        <div class="loading">
+        <div class="loading" role="status" aria-label="Cargando">
           <div class="spinner"></div>
           <p>Cargando quiz...</p>
         </div>
@@ -489,7 +509,7 @@ export class QuizPlayer extends LitElement {
         <h1>${this._quiz.title}</h1>
         <div class="quiz-progress">
           <span>Pregunta ${this._currentQuestion + 1} de ${total}</span>
-          <div class="progress-bar">
+          <div class="progress-bar" role="progressbar" aria-valuenow=${progress} aria-valuemin="0" aria-valuemax="100" aria-label="Progreso del quiz">
             <div class="progress-bar__fill" style="width: ${progress}%"></div>
           </div>
         </div>
@@ -506,6 +526,8 @@ export class QuizPlayer extends LitElement {
                   (opt) => html`
                     <button
                       class="option-btn ${this._answers[this._currentQuestion] === opt ? 'option-btn--selected' : ''}"
+                      role="radio"
+                      aria-checked=${this._answers[this._currentQuestion] === opt}
                       @click=${() => this._selectOption(opt)}
                     >
                       <span class="option-indicator">
@@ -532,6 +554,7 @@ export class QuizPlayer extends LitElement {
           class="btn btn--secondary"
           ?hidden=${this._currentQuestion === 0}
           @click=${this._prevQuestion}
+          aria-label="Pregunta anterior"
         >
           <span class="material-symbols-outlined">arrow_back</span>
           Anterior
@@ -554,6 +577,7 @@ export class QuizPlayer extends LitElement {
                 class="btn btn--primary"
                 ?disabled=${!hasAnswer}
                 @click=${this._nextQuestion}
+                aria-label="Pregunta siguiente"
               >
                 Siguiente
                 <span class="material-symbols-outlined">arrow_forward</span>

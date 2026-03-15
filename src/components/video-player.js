@@ -79,15 +79,15 @@ export class VideoPlayer extends LitElement {
       flex-direction: column;
       gap: 0.5rem;
       padding: 3rem;
-      background: #f1f5f9;
+      background: var(--color-bg-slate-100, #f1f5f9);
       border-radius: 0.75rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       text-align: center;
     }
 
     .no-video .material-symbols-outlined {
       font-size: 2.5rem;
-      color: #cbd5e1;
+      color: var(--color-border-light, #cbd5e1);
     }
 
     .controls {
@@ -107,16 +107,16 @@ export class VideoPlayer extends LitElement {
     .speed-label {
       font-size: 0.813rem;
       font-weight: 600;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
       margin-right: 0.25rem;
     }
 
     .speed-btn {
       padding: 0.25rem 0.5rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.375rem;
-      background: #fff;
-      color: #334155;
+      background: var(--color-bg-white, #fff);
+      color: var(--color-text-body, #334155);
       font-size: 0.813rem;
       font-family: inherit;
       cursor: pointer;
@@ -124,8 +124,8 @@ export class VideoPlayer extends LitElement {
     }
 
     .speed-btn:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
+      background: var(--color-bg-slate-50, #f8fafc);
+      border-color: var(--color-border-light, #cbd5e1);
     }
 
     .speed-btn--active {
@@ -143,10 +143,10 @@ export class VideoPlayer extends LitElement {
       align-items: center;
       gap: 0.25rem;
       padding: 0.25rem 0.625rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.375rem;
-      background: #fff;
-      color: #334155;
+      background: var(--color-bg-white, #fff);
+      color: var(--color-text-body, #334155);
       font-size: 0.813rem;
       font-family: inherit;
       cursor: pointer;
@@ -175,7 +175,7 @@ export class VideoPlayer extends LitElement {
       align-items: center;
       gap: 0.25rem;
       padding: 0.25rem 0.5rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 1rem;
       background: #fffbeb;
       color: #92400e;
@@ -185,7 +185,7 @@ export class VideoPlayer extends LitElement {
     }
 
     .bookmark-chip:hover {
-      background: #fef3c7;
+      background: var(--color-warning-bg, #fef3c7);
       border-color: #fbbf24;
     }
 
@@ -224,7 +224,7 @@ export class VideoPlayer extends LitElement {
     .bookmark-note-input {
       flex: 1;
       padding: 0.375rem 0.625rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.375rem;
       font-size: 0.813rem;
       font-family: inherit;
@@ -239,9 +239,9 @@ export class VideoPlayer extends LitElement {
     .bookmark-save-btn,
     .bookmark-cancel-btn {
       padding: 0.25rem 0.5rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.375rem;
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       font-size: 0.813rem;
       font-family: inherit;
       cursor: pointer;
@@ -254,7 +254,22 @@ export class VideoPlayer extends LitElement {
     }
 
     .bookmark-cancel-btn:hover {
-      background: #f8fafc;
+      background: var(--color-bg-slate-50, #f8fafc);
+    }
+
+    @media (max-width: 640px) {
+      .controls { flex-wrap: wrap; gap: 0.25rem; }
+      .controls button { min-width: 2.75rem; min-height: 2.75rem; }
+    }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
     }
   `;
 
@@ -456,10 +471,11 @@ export class VideoPlayer extends LitElement {
               <button
                 class="speed-btn ${this._speed === s ? 'speed-btn--active' : ''}"
                 @click=${() => this._setSpeed(s)}
+                aria-label="Velocidad de reproducción ${s}x"
               >${s}x</button>
             `)}
           </div>
-          <button class="bookmark-btn" @click=${this._onBookmarkAdd} ?disabled=${this._showBookmarkInput}>
+          <button class="bookmark-btn" @click=${this._onBookmarkAdd} ?disabled=${this._showBookmarkInput} aria-label="Añadir marcador">
             <span class="material-symbols-outlined">bookmark_add</span>
             Marcador
           </button>
@@ -488,6 +504,7 @@ export class VideoPlayer extends LitElement {
                   class="bookmark-remove"
                   @click=${(e) => this._onBookmarkRemove(e, bm)}
                   title="Eliminar marcador"
+                  aria-label="Eliminar marcador en ${this._formatTime(bm.seconds)}"
                 >
                   <span class="material-symbols-outlined">close</span>
                 </button>

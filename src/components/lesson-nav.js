@@ -23,7 +23,7 @@ export class LessonNav extends LitElement {
       display: block;
       margin-top: 2rem;
       padding-top: 1.5rem;
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid var(--color-border, #e2e8f0);
     }
 
     .nav {
@@ -38,10 +38,10 @@ export class LessonNav extends LitElement {
       align-items: center;
       gap: 0.375rem;
       padding: 0.625rem 1.25rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.5rem;
-      background: #fff;
-      color: #334155;
+      background: var(--color-bg-white, #fff);
+      color: var(--color-text-body, #334155);
       font-size: 0.875rem;
       font-weight: 600;
       font-family: inherit;
@@ -51,8 +51,8 @@ export class LessonNav extends LitElement {
     }
 
     .nav-btn:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
+      background: var(--color-bg-slate-50, #f8fafc);
+      border-color: var(--color-border-light, #cbd5e1);
     }
 
     .nav-btn--primary {

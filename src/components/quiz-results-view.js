@@ -27,17 +27,17 @@ export class QuizResultsView extends LitElement {
     .results-header h2 {
       font-size: 1.25rem;
       font-weight: 800;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 0.25rem;
     }
 
     .results-header p {
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       font-size: 0.875rem;
     }
 
     .quiz-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
       margin-bottom: 0.75rem;
@@ -54,12 +54,12 @@ export class QuizResultsView extends LitElement {
     }
 
     .quiz-card__header:hover {
-      background-color: #f8fafc;
+      background-color: var(--color-bg-slate-50, #f8fafc);
     }
 
     .quiz-card__title {
       font-weight: 600;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       font-size: 0.938rem;
     }
 
@@ -71,12 +71,12 @@ export class QuizResultsView extends LitElement {
 
     .quiz-card__date {
       font-size: 0.75rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
     }
 
     .quiz-card__toggle {
       font-size: 1.25rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       transition: transform 0.2s;
     }
 
@@ -85,14 +85,14 @@ export class QuizResultsView extends LitElement {
     }
 
     .quiz-detail {
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--color-bg-slate-100, #f1f5f9);
       padding: 1rem 1.25rem;
     }
 
     .question-block {
       margin-bottom: 1rem;
       padding-bottom: 1rem;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--color-bg-slate-100, #f1f5f9);
     }
 
     .question-block:last-child {
@@ -104,7 +104,7 @@ export class QuizResultsView extends LitElement {
     .question-label {
       font-size: 0.75rem;
       font-weight: 600;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       text-transform: uppercase;
       letter-spacing: 0.025em;
       margin-bottom: 0.25rem;
@@ -113,7 +113,7 @@ export class QuizResultsView extends LitElement {
     .question-text {
       font-size: 0.875rem;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 0.5rem;
     }
 
@@ -131,7 +131,7 @@ export class QuizResultsView extends LitElement {
     }
 
     .answer--user {
-      color: #334155;
+      color: var(--color-text-body, #334155);
     }
 
     .answer--correct {
@@ -156,7 +156,7 @@ export class QuizResultsView extends LitElement {
     }
 
     .option-item--correct {
-      background: #f0fdf4;
+      background: var(--color-success-bg, #f0fdf4);
       color: #15803d;
       font-weight: 600;
     }
@@ -164,7 +164,7 @@ export class QuizResultsView extends LitElement {
     .empty-state {
       text-align: center;
       padding: 3rem 2rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
     }
 
     .empty-state .material-symbols-outlined {
@@ -180,13 +180,13 @@ export class QuizResultsView extends LitElement {
     .loading {
       text-align: center;
       padding: 3rem;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
     }
 
     .spinner {
       width: 1.5rem;
       height: 1.5rem;
-      border: 3px solid #e2e8f0;
+      border: 3px solid var(--color-border, #e2e8f0);
       border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
@@ -198,12 +198,12 @@ export class QuizResultsView extends LitElement {
     }
 
     .error-msg {
-      background: #fef2f2;
-      color: #991b1b;
+      background: var(--color-error-bg, #fef2f2);
+      color: var(--color-error-text, #991b1b);
       padding: 0.75rem 1rem;
       border-radius: 0.5rem;
       font-size: 0.875rem;
-      border: 1px solid #fecaca;
+      border: 1px solid var(--color-error-border, #fecaca);
     }
 
     .badge {
@@ -211,8 +211,23 @@ export class QuizResultsView extends LitElement {
       font-weight: 700;
       padding: 0.125rem 0.5rem;
       border-radius: 9999px;
-      background: #f0fdf4;
+      background: var(--color-success-bg, #f0fdf4);
       color: #15803d;
+    }
+
+    @media (max-width: 640px) {
+      .quiz-card { padding: 1rem; }
+      .quiz-card__header { flex-direction: column; gap: 0.5rem; }
+    }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
     }
   `;
 
@@ -246,7 +261,7 @@ export class QuizResultsView extends LitElement {
 
   render() {
     if (this._loading) {
-      return html`<div class="loading"><div class="spinner"></div><p>Cargando resultados...</p></div>`;
+      return html`<div class="loading" role="status"><div class="spinner"></div><p>Cargando resultados...</p></div>`;
     }
 
     if (this._error) {
@@ -270,7 +285,7 @@ export class QuizResultsView extends LitElement {
               <p>Completa las lecciones del curso para desbloquear quizzes.</p>
             </div>
           `
-        : this._results.map((r) => this._renderQuizCard(r))}
+        : html`<div role="list" aria-label="Resultados de quizzes">${this._results.map((r) => this._renderQuizCard(r))}</div>`}
     `;
   }
 

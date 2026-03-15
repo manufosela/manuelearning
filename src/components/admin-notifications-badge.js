@@ -22,7 +22,7 @@ export class AdminNotificationsBadge extends LitElement {
       height: 1.25rem;
       padding: 0 0.375rem;
       background: #84cc16;
-      color: #fff;
+      color: var(--color-bg-white, #fff);
       border-radius: 9999px;
       font-size: 0.688rem;
       font-weight: 700;

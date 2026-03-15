@@ -38,12 +38,12 @@ export class StudentDashboardView extends LitElement {
     .dashboard-header h1 {
       font-size: 1.5rem;
       font-weight: 900;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 0.25rem;
     }
 
     .dashboard-header p {
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       font-size: 0.938rem;
     }
 
@@ -55,7 +55,7 @@ export class StudentDashboardView extends LitElement {
     }
 
     .stat-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       padding: 1.25rem;
       box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
@@ -64,7 +64,7 @@ export class StudentDashboardView extends LitElement {
     .stat-label {
       font-size: 0.75rem;
       font-weight: 600;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-bottom: 0.375rem;
@@ -73,7 +73,7 @@ export class StudentDashboardView extends LitElement {
     .stat-value {
       font-size: 1.75rem;
       font-weight: 900;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     .stat-value--accent {
@@ -81,7 +81,7 @@ export class StudentDashboardView extends LitElement {
     }
 
     .streak-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       padding: 1.25rem;
       box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
@@ -103,7 +103,7 @@ export class StudentDashboardView extends LitElement {
     .streak-current {
       font-size: 1.5rem;
       font-weight: 900;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     .streak-current span {
@@ -112,7 +112,7 @@ export class StudentDashboardView extends LitElement {
 
     .streak-best {
       font-size: 0.813rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       margin-top: 0.125rem;
     }
 
@@ -127,8 +127,8 @@ export class StudentDashboardView extends LitElement {
       gap: 0.25rem;
       padding: 0.25rem 0.625rem;
       border-radius: 9999px;
-      background: #fef3c7;
-      color: #92400e;
+      background: var(--color-warning-bg, #fef3c7);
+      color: var(--color-warning-text, #92400e);
       font-size: 0.75rem;
       font-weight: 600;
     }
@@ -138,7 +138,7 @@ export class StudentDashboardView extends LitElement {
     }
 
     .global-progress {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       padding: 1.5rem;
       box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
@@ -148,12 +148,12 @@ export class StudentDashboardView extends LitElement {
     .global-progress h2 {
       font-size: 1rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 1rem;
     }
 
     .progress-bar-container {
-      background: #f1f5f9;
+      background: var(--color-bg-slate-100, #f1f5f9);
       border-radius: 9999px;
       height: 1rem;
       overflow: hidden;
@@ -169,18 +169,18 @@ export class StudentDashboardView extends LitElement {
 
     .progress-text {
       font-size: 0.813rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
 
     .modules-section h2 {
       font-size: 1rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 1rem;
     }
 
     .module-progress {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       padding: 1rem 1.25rem;
       box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
@@ -197,7 +197,7 @@ export class StudentDashboardView extends LitElement {
     .module-progress-title {
       font-size: 0.875rem;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     .module-progress-percent {
@@ -207,7 +207,7 @@ export class StudentDashboardView extends LitElement {
     }
 
     .progress-bar-sm {
-      background: #f1f5f9;
+      background: var(--color-bg-slate-100, #f1f5f9);
       border-radius: 9999px;
       height: 0.5rem;
       overflow: hidden;
@@ -246,13 +246,13 @@ export class StudentDashboardView extends LitElement {
     .loading {
       text-align: center;
       padding: 3rem;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
     }
 
     .spinner {
       width: 1.5rem;
       height: 1.5rem;
-      border: 3px solid #e2e8f0;
+      border: 3px solid var(--color-border, #e2e8f0);
       border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
@@ -264,7 +264,7 @@ export class StudentDashboardView extends LitElement {
     .error-msg {
       text-align: center;
       padding: 3rem;
-      color: #991b1b;
+      color: var(--color-error-text, #991b1b);
     }
 
     .expired-banner {
@@ -279,7 +279,7 @@ export class StudentDashboardView extends LitElement {
     }
 
     .course-details {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
       overflow: hidden;
@@ -295,7 +295,7 @@ export class StudentDashboardView extends LitElement {
     .course-details summary::-webkit-details-marker { display: none; }
 
     .course-details summary:hover {
-      background: #f8fafc;
+      background: var(--color-bg-slate-50, #f8fafc);
     }
 
     .course-section-header {
@@ -313,7 +313,7 @@ export class StudentDashboardView extends LitElement {
 
     .course-toggle-icon {
       font-size: 1.25rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       transition: transform 0.2s;
     }
 
@@ -326,7 +326,7 @@ export class StudentDashboardView extends LitElement {
       align-items: center;
       gap: 0.375rem;
       text-decoration: none;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       transition: color 0.15s;
     }
 
@@ -356,7 +356,7 @@ export class StudentDashboardView extends LitElement {
     }
 
     .course-progress-bar {
-      background: #f1f5f9;
+      background: var(--color-bg-slate-100, #f1f5f9);
       border-radius: 9999px;
       height: 0.625rem;
       overflow: hidden;
@@ -399,19 +399,19 @@ export class StudentDashboardView extends LitElement {
     .expired-banner h2 {
       font-size: 1.25rem;
       font-weight: 800;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 0.75rem;
     }
 
     .expired-banner p {
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
       line-height: 1.7;
     }
 
     /* ── Analytics Section ──────────────────────────────── */
 
     .analytics-section {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       padding: 1.5rem;
       box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
@@ -421,7 +421,7 @@ export class StudentDashboardView extends LitElement {
     .analytics-section h2 {
       font-size: 1rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 1.25rem;
     }
 
@@ -438,7 +438,7 @@ export class StudentDashboardView extends LitElement {
     }
 
     .analytics-card {
-      background: #f8fafc;
+      background: var(--color-bg-slate-50, #f8fafc);
       border-radius: 0.5rem;
       padding: 1rem;
     }
@@ -446,7 +446,7 @@ export class StudentDashboardView extends LitElement {
     .analytics-card h3 {
       font-size: 0.75rem;
       font-weight: 600;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-bottom: 0.75rem;
@@ -482,12 +482,12 @@ export class StudentDashboardView extends LitElement {
     .chart-bar-value {
       font-size: 0.688rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     .chart-bar-label {
       font-size: 0.625rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       white-space: nowrap;
     }
 
@@ -502,7 +502,7 @@ export class StudentDashboardView extends LitElement {
 
     .quiz-detail {
       font-size: 0.75rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
 
     /* Completion estimate */
@@ -510,13 +510,13 @@ export class StudentDashboardView extends LitElement {
     .estimate-value {
       font-size: 1.25rem;
       font-weight: 800;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 0.25rem;
     }
 
     .estimate-detail {
       font-size: 0.75rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
 
     /* Module performance bars */
@@ -534,7 +534,7 @@ export class StudentDashboardView extends LitElement {
 
     .module-perf-name {
       font-size: 0.75rem;
-      color: #334155;
+      color: var(--color-text-body, #334155);
       min-width: 80px;
       max-width: 120px;
       overflow: hidden;
@@ -544,7 +544,7 @@ export class StudentDashboardView extends LitElement {
 
     .module-perf-bar-bg {
       flex: 1;
-      background: #e2e8f0;
+      background: var(--color-border, #e2e8f0);
       border-radius: 9999px;
       height: 0.5rem;
       overflow: hidden;
@@ -559,9 +559,19 @@ export class StudentDashboardView extends LitElement {
     .module-perf-percent {
       font-size: 0.75rem;
       font-weight: 700;
-      color: #334155;
+      color: var(--color-text-body, #334155);
       min-width: 32px;
       text-align: right;
+    }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
     }
   `;
 
@@ -721,7 +731,7 @@ export class StudentDashboardView extends LitElement {
 
   render() {
     if (this._loading) {
-      return html`<div class="loading"><div class="spinner"></div><p>Cargando dashboard...</p></div>`;
+      return html`<div class="loading" role="status" aria-label="Cargando"><div class="spinner"></div><p>Cargando dashboard...</p></div>`;
     }
 
     if (this._error) {
@@ -752,7 +762,7 @@ export class StudentDashboardView extends LitElement {
         <p>Sigue tu avance en tus cursos</p>
       </div>
 
-      <div class="stats-grid">
+      <div class="stats-grid" role="group" aria-label="Estadísticas">
         <div class="stat-card">
           <div class="stat-label">Avance global</div>
           <div class="stat-value stat-value--accent">${s.globalPercent}%</div>
@@ -768,7 +778,7 @@ export class StudentDashboardView extends LitElement {
       </div>
 
       ${this._streak ? html`
-        <div class="streak-card">
+        <div class="streak-card" role="status" aria-label="Racha de estudio">
           <span class="material-symbols-outlined streak-icon">local_fire_department</span>
           <div class="streak-info">
             <div class="streak-current"><span>${this._streak.current}</span> ${this._streak.current === 1 ? 'día' : 'días'} de racha</div>
@@ -791,7 +801,7 @@ export class StudentDashboardView extends LitElement {
 
       <div class="global-progress">
         <h2>Progreso general</h2>
-        <div class="progress-bar-container">
+        <div class="progress-bar-container" role="progressbar" aria-valuenow=${s.globalPercent} aria-valuemin="0" aria-valuemax="100" aria-label="Progreso general">
           <div class="progress-bar" style="width: ${s.globalPercent}%"></div>
         </div>
         <div class="progress-text">${s.completedCount} de ${s.totalLessons} clases completadas</div>

@@ -17,12 +17,12 @@ export class MarkdownContent extends LitElement {
     :host {
       display: block;
       line-height: 1.7;
-      color: #334155;
+      color: var(--color-text-body, #334155);
       font-size: 0.938rem;
     }
 
     h1, h2, h3, h4 {
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       font-weight: 700;
       margin-top: 1.5rem;
       margin-bottom: 0.75rem;
@@ -46,7 +46,7 @@ export class MarkdownContent extends LitElement {
     }
 
     code {
-      background: #f1f5f9;
+      background: var(--color-bg-slate-100, #f1f5f9);
       padding: 0.125rem 0.375rem;
       border-radius: 0.25rem;
       font-size: 0.85em;
@@ -73,8 +73,8 @@ export class MarkdownContent extends LitElement {
       border-left: 4px solid #84cc16;
       padding: 0.5rem 1rem;
       margin: 1rem 0;
-      background: #fef2f2;
-      color: #475569;
+      background: var(--color-error-bg, #fef2f2);
+      color: var(--color-text-secondary, #475569);
     }
 
     a {
@@ -99,18 +99,18 @@ export class MarkdownContent extends LitElement {
 
     th, td {
       padding: 0.5rem 0.75rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       text-align: left;
     }
 
     th {
-      background: #f8fafc;
+      background: var(--color-bg-slate-50, #f8fafc);
       font-weight: 600;
     }
 
     hr {
       border: none;
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid var(--color-border, #e2e8f0);
       margin: 1.5rem 0;
     }
   `;

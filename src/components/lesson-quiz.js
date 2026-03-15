@@ -33,7 +33,7 @@ export class LessonQuiz extends LitElement {
       }
 
       .quiz-container {
-        background: #fff;
+        background: var(--color-bg-white, #fff);
         border-radius: 0.75rem;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         overflow: hidden;
@@ -44,8 +44,8 @@ export class LessonQuiz extends LitElement {
         align-items: center;
         gap: 0.75rem;
         padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid #f1f5f9;
-        background: #f8fafc;
+        border-bottom: 1px solid var(--color-bg-slate-100, #f1f5f9);
+        background: var(--color-bg-slate-50, #f8fafc);
       }
 
       .quiz-header .material-symbols-outlined {
@@ -56,7 +56,7 @@ export class LessonQuiz extends LitElement {
       .quiz-header h3 {
         font-size: 1.063rem;
         font-weight: 700;
-        color: #0f172a;
+        color: var(--color-text-primary, #0f172a);
         margin: 0;
       }
 
@@ -67,7 +67,7 @@ export class LessonQuiz extends LitElement {
       .question-block {
         margin-bottom: 1.5rem;
         padding-bottom: 1.5rem;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid var(--color-bg-slate-100, #f1f5f9);
       }
 
       .question-block:last-child {
@@ -79,7 +79,7 @@ export class LessonQuiz extends LitElement {
       .question-label {
         font-size: 0.75rem;
         font-weight: 600;
-        color: #94a3b8;
+        color: var(--color-text-muted, #94a3b8);
         text-transform: uppercase;
         letter-spacing: 0.025em;
         margin-bottom: 0.375rem;
@@ -88,7 +88,7 @@ export class LessonQuiz extends LitElement {
       .question-text {
         font-size: 0.938rem;
         font-weight: 600;
-        color: #0f172a;
+        color: var(--color-text-primary, #0f172a);
         margin-bottom: 0.75rem;
       }
 
@@ -103,17 +103,17 @@ export class LessonQuiz extends LitElement {
         align-items: center;
         gap: 0.625rem;
         padding: 0.625rem 0.875rem;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--color-border, #e2e8f0);
         border-radius: 0.5rem;
         cursor: pointer;
         transition: all 0.15s;
         font-size: 0.875rem;
-        color: #334155;
+        color: var(--color-text-body, #334155);
       }
 
       .option-label:hover {
-        border-color: #cbd5e1;
-        background: #f8fafc;
+        border-color: var(--color-border-light, #cbd5e1);
+        background: var(--color-bg-slate-50, #f8fafc);
       }
 
       .option-label--selected {
@@ -123,14 +123,14 @@ export class LessonQuiz extends LitElement {
 
       .option-label--correct {
         border-color: #22c55e;
-        background: #f0fdf4;
-        color: #166534;
+        background: var(--color-success-bg, #f0fdf4);
+        color: var(--color-success-text, #166534);
       }
 
       .option-label--incorrect {
         border-color: #ef4444;
-        background: #fef2f2;
-        color: #991b1b;
+        background: var(--color-error-bg, #fef2f2);
+        color: var(--color-error-text, #991b1b);
       }
 
       .option-label--disabled {
@@ -145,7 +145,7 @@ export class LessonQuiz extends LitElement {
       .open-answer {
         width: 100%;
         padding: 0.625rem 0.875rem;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--color-border, #e2e8f0);
         border-radius: 0.5rem;
         font-size: 0.875rem;
         font-family: inherit;
@@ -162,7 +162,7 @@ export class LessonQuiz extends LitElement {
       }
 
       .open-answer:disabled {
-        background: #f8fafc;
+        background: var(--color-bg-slate-50, #f8fafc);
         cursor: default;
       }
 
@@ -198,7 +198,7 @@ export class LessonQuiz extends LitElement {
       }
 
       .feedback-icon--incorrect {
-        color: #991b1b;
+        color: var(--color-error-text, #991b1b);
       }
 
       .feedback-icon .material-symbols-outlined {
@@ -207,7 +207,7 @@ export class LessonQuiz extends LitElement {
 
       .quiz-actions {
         padding: 1rem 1.5rem;
-        border-top: 1px solid #f1f5f9;
+        border-top: 1px solid var(--color-bg-slate-100, #f1f5f9);
         display: flex;
         justify-content: flex-end;
       }
@@ -233,7 +233,7 @@ export class LessonQuiz extends LitElement {
       }
 
       .submit-btn:disabled {
-        background: #cbd5e1;
+        background: var(--color-border-light, #cbd5e1);
         cursor: default;
       }
 
@@ -241,7 +241,7 @@ export class LessonQuiz extends LitElement {
         margin-left: auto;
         font-size: 0.75rem;
         font-weight: 600;
-        color: #94a3b8;
+        color: var(--color-text-muted, #94a3b8);
       }
 
       .completed-badge {
@@ -249,8 +249,8 @@ export class LessonQuiz extends LitElement {
         align-items: center;
         gap: 0.375rem;
         padding: 0.375rem 0.75rem;
-        background: #f0fdf4;
-        color: #166534;
+        background: var(--color-success-bg, #f0fdf4);
+        color: var(--color-success-text, #166534);
         border-radius: 9999px;
         font-size: 0.75rem;
         font-weight: 700;
@@ -258,6 +258,16 @@ export class LessonQuiz extends LitElement {
 
       .completed-badge .material-symbols-outlined {
         font-size: 0.938rem;
+      }
+
+      /* Focus indicators */
+      button:focus-visible,
+      a:focus-visible,
+      select:focus-visible,
+      input:focus-visible,
+      textarea:focus-visible {
+        outline: 3px solid var(--color-primary, #84cc16);
+        outline-offset: 2px;
       }
     `,
   ];
@@ -426,7 +436,7 @@ export class LessonQuiz extends LitElement {
 
   render() {
     if (this._loading) {
-      return html`<div class="state-loading"><div class="state-spinner"></div><p>Cargando quiz...</p></div>`;
+      return html`<div class="state-loading" role="status" aria-label="Cargando"><div class="state-spinner"></div><p>Cargando quiz...</p></div>`;
     }
 
     if (!this._quiz) return '';
@@ -438,7 +448,7 @@ export class LessonQuiz extends LitElement {
 
     return html`
       ${materialIconsLink}
-      <div class="quiz-container">
+      <div class="quiz-container" role="region" aria-label="Quiz de la lección">
         <div class="quiz-header">
           <span class="material-symbols-outlined">quiz</span>
           <h3>Comprobación de comprensión</h3>

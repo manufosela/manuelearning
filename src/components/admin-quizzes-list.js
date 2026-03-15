@@ -41,73 +41,73 @@ export class AdminQuizzesList extends LitElement {
     .btn { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.5rem 1rem; border: none; border-radius: 0.5rem; font-size: 0.813rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background-color 0.15s; }
     .btn--primary { background: linear-gradient(to right, #84cc16, #fb923c); color: #0f172a; }
     .btn--primary:hover { background: #d11111; }
-    .btn--secondary { background: #f1f5f9; color: #334155; }
-    .btn--secondary:hover { background: #e2e8f0; }
-    .btn--danger { background: #fef2f2; color: #991b1b; }
+    .btn--secondary { background: var(--color-bg-slate-100, #f1f5f9); color: var(--color-text-body, #334155); }
+    .btn--secondary:hover { background: var(--color-border, #e2e8f0); }
+    .btn--danger { background: var(--color-error-bg, #fef2f2); color: var(--color-error-text, #991b1b); }
     .btn--danger:hover { background: #fee2e2; }
     .btn--small { padding: 0.375rem 0.75rem; font-size: 0.75rem; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .quiz-card { background: #fff; border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); margin-bottom: 1rem; }
+    .quiz-card { background: var(--color-bg-white, #fff); border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); margin-bottom: 1rem; }
     .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-    .quiz-title { font-size: 1rem; font-weight: 700; color: #0f172a; }
-    .quiz-meta { font-size: 0.813rem; color: #64748b; }
+    .quiz-title { font-size: 1rem; font-weight: 700; color: var(--color-text-primary, #0f172a); }
+    .quiz-meta { font-size: 0.813rem; color: var(--color-text-muted, #64748b); }
     .quiz-actions { display: flex; gap: 0.5rem; }
 
-    .responses-panel { border-top: 1px solid #f1f5f9; margin-top: 1rem; padding-top: 1rem; }
-    .response-item { background: #f8fafc; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; font-size: 0.875rem; }
-    .response-user { font-weight: 600; color: #0f172a; margin-bottom: 0.25rem; }
-    .response-answer { color: #334155; }
+    .responses-panel { border-top: 1px solid var(--color-bg-slate-100, #f1f5f9); margin-top: 1rem; padding-top: 1rem; }
+    .response-item { background: var(--color-bg-slate-50, #f8fafc); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; font-size: 0.875rem; }
+    .response-user { font-weight: 600; color: var(--color-text-primary, #0f172a); margin-bottom: 0.25rem; }
+    .response-answer { color: var(--color-text-body, #334155); }
 
     .form-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
-    .form-card { background: #fff; border-radius: 0.75rem; padding: 2rem; width: 100%; max-width: 560px; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); max-height: 90vh; overflow-y: auto; }
-    .form-card h3 { margin: 0 0 1.5rem; font-size: 1.125rem; font-weight: 700; color: #0f172a; }
+    .form-card { background: var(--color-bg-white, #fff); border-radius: 0.75rem; padding: 2rem; width: 100%; max-width: 560px; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); max-height: 90vh; overflow-y: auto; }
+    .form-card h3 { margin: 0 0 1.5rem; font-size: 1.125rem; font-weight: 700; color: var(--color-text-primary, #0f172a); }
     .form-group { margin-bottom: 1rem; }
-    .form-group label { display: block; font-size: 0.813rem; font-weight: 600; color: #334155; margin-bottom: 0.375rem; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; font-size: 0.875rem; font-family: inherit; box-sizing: border-box; }
+    .form-group label { display: block; font-size: 0.813rem; font-weight: 600; color: var(--color-text-body, #334155); margin-bottom: 0.375rem; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border, #e2e8f0); border-radius: 0.375rem; font-size: 0.875rem; font-family: inherit; box-sizing: border-box; }
     .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #84cc16; box-shadow: 0 0 0 3px rgba(132,204,22,0.1); }
-    .form-error { color: #991b1b; font-size: 0.813rem; margin-bottom: 1rem; }
+    .form-error { color: var(--color-error-text, #991b1b); font-size: 0.813rem; margin-bottom: 1rem; }
     .form-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; }
 
-    .question-block { background: #f8fafc; padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.75rem; border: 1px solid #e2e8f0; }
+    .question-block { background: var(--color-bg-slate-50, #f8fafc); padding: 1rem; border-radius: 0.5rem; margin-bottom: 0.75rem; border: 1px solid var(--color-border, #e2e8f0); }
     .question-block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-    .question-number { font-size: 0.75rem; font-weight: 700; color: #475569; }
+    .question-number { font-size: 0.75rem; font-weight: 700; color: var(--color-text-secondary, #475569); }
 
     .stats-summary { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-    .stats-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem 1.25rem; flex: 1; min-width: 120px; text-align: center; }
-    .stats-card__value { font-size: 1.5rem; font-weight: 800; color: #0f172a; }
-    .stats-card__label { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; }
+    .stats-card { background: var(--color-bg-slate-50, #f8fafc); border: 1px solid var(--color-border, #e2e8f0); border-radius: 0.5rem; padding: 1rem 1.25rem; flex: 1; min-width: 120px; text-align: center; }
+    .stats-card__value { font-size: 1.5rem; font-weight: 800; color: var(--color-text-primary, #0f172a); }
+    .stats-card__label { font-size: 0.75rem; color: var(--color-text-muted, #64748b); margin-top: 0.25rem; }
 
     .stats-question { margin-bottom: 1.25rem; }
-    .stats-question__title { font-size: 0.875rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem; }
-    .stats-question__type { font-size: 0.75rem; color: #64748b; font-weight: 400; }
+    .stats-question__title { font-size: 0.875rem; font-weight: 700; color: var(--color-text-primary, #0f172a); margin-bottom: 0.5rem; }
+    .stats-question__type { font-size: 0.75rem; color: var(--color-text-muted, #64748b); font-weight: 400; }
     .stats-bar { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem; }
-    .stats-bar__label { font-size: 0.813rem; color: #334155; min-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .stats-bar__track { flex: 1; height: 1.25rem; background: #e2e8f0; border-radius: 0.25rem; overflow: hidden; }
+    .stats-bar__label { font-size: 0.813rem; color: var(--color-text-body, #334155); min-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stats-bar__track { flex: 1; height: 1.25rem; background: var(--color-border, #e2e8f0); border-radius: 0.25rem; overflow: hidden; }
     .stats-bar__fill { height: 100%; background: linear-gradient(to right, #84cc16, #a3e635); border-radius: 0.25rem; transition: width 0.3s; }
-    .stats-bar__count { font-size: 0.75rem; color: #64748b; min-width: 2.5rem; text-align: right; }
+    .stats-bar__count { font-size: 0.75rem; color: var(--color-text-muted, #64748b); min-width: 2.5rem; text-align: right; }
 
     .stats-students { margin-top: 1.5rem; }
-    .stats-students__title { font-size: 0.938rem; font-weight: 700; color: #0f172a; margin-bottom: 0.75rem; }
-    .stats-student { background: #f8fafc; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 0.5rem; border: 1px solid #e2e8f0; }
-    .stats-student__name { font-weight: 600; color: #0f172a; font-size: 0.875rem; margin-bottom: 0.375rem; }
-    .stats-student__date { font-size: 0.75rem; color: #94a3b8; }
-    .stats-student__answers { font-size: 0.813rem; color: #334155; }
+    .stats-students__title { font-size: 0.938rem; font-weight: 700; color: var(--color-text-primary, #0f172a); margin-bottom: 0.75rem; }
+    .stats-student { background: var(--color-bg-slate-50, #f8fafc); padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 0.5rem; border: 1px solid var(--color-border, #e2e8f0); }
+    .stats-student__name { font-weight: 600; color: var(--color-text-primary, #0f172a); font-size: 0.875rem; margin-bottom: 0.375rem; }
+    .stats-student__date { font-size: 0.75rem; color: var(--color-text-muted, #94a3b8); }
+    .stats-student__answers { font-size: 0.813rem; color: var(--color-text-body, #334155); }
     .stats-student__answers div { margin-top: 0.25rem; }
     .stats-student__answer--correct { color: #15803d; }
-    .stats-student__answer--incorrect { color: #991b1b; }
-    .stats-card--correct { border-color: #86efac; background: #f0fdf4; }
+    .stats-student__answer--incorrect { color: var(--color-error-text, #991b1b); }
+    .stats-card--correct { border-color: #86efac; background: var(--color-success-bg, #f0fdf4); }
     .stats-card--correct .stats-card__value { color: #15803d; }
-    .stats-card--incorrect { border-color: #fca5a5; background: #fef2f2; }
-    .stats-card--incorrect .stats-card__value { color: #991b1b; }
+    .stats-card--incorrect { border-color: #fca5a5; background: var(--color-error-bg, #fef2f2); }
+    .stats-card--incorrect .stats-card__value { color: var(--color-error-text, #991b1b); }
     .stats-bar__fill--correct { background: linear-gradient(to right, #22c55e, #86efac); }
     .stats-bar__fill--incorrect { background: linear-gradient(to right, #ef4444, #fca5a5); }
 
-    .loading, .error-msg { text-align: center; padding: 3rem; color: #475569; }
-    .error-msg { color: #991b1b; }
-    .spinner { width: 1.5rem; height: 1.5rem; border: 3px solid #e2e8f0; border-top-color: #84cc16; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 0.75rem; }
+    .loading, .error-msg { text-align: center; padding: 3rem; color: var(--color-text-secondary, #475569); }
+    .error-msg { color: var(--color-error-text, #991b1b); }
+    .spinner { width: 1.5rem; height: 1.5rem; border: 3px solid var(--color-border, #e2e8f0); border-top-color: #84cc16; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 0.75rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .empty-state { text-align: center; padding: 3rem; color: #64748b; }
+    .empty-state { text-align: center; padding: 3rem; color: var(--color-text-muted, #64748b); }
   `;
 
   constructor() {
@@ -414,9 +414,9 @@ export class AdminQuizzesList extends LitElement {
         </div>
         ${qs.type === 'multiple' && qs.distribution ? html`
           ${qs.correctAnswer && total > 0 ? html`
-            <div style="font-size: 0.813rem; color: #64748b; margin-bottom: 0.5rem;">
+            <div style="font-size: 0.813rem; color: var(--color-text-muted, #64748b); margin-bottom: 0.5rem;">
               Correctas: <strong style="color: #15803d;">${qs.correctCount}/${total} (${Math.round((qs.correctCount / total) * 100)}%)</strong>
-              · Incorrectas: <strong style="color: #991b1b;">${qs.incorrectCount}/${total} (${Math.round((qs.incorrectCount / total) * 100)}%)</strong>
+              · Incorrectas: <strong style="color: var(--color-error-text, #991b1b);">${qs.incorrectCount}/${total} (${Math.round((qs.incorrectCount / total) * 100)}%)</strong>
             </div>
           ` : ''}
           ${Object.entries(qs.distribution).map(([option, count]) => {
@@ -433,7 +433,7 @@ export class AdminQuizzesList extends LitElement {
             `;
           })}
         ` : html`
-          <div style="font-size: 0.813rem; color: #64748b;">${total} respuesta${total !== 1 ? 's' : ''} recibida${total !== 1 ? 's' : ''}</div>
+          <div style="font-size: 0.813rem; color: var(--color-text-muted, #64748b);">${total} respuesta${total !== 1 ? 's' : ''} recibida${total !== 1 ? 's' : ''}</div>
         `}
       </div>
     `;
@@ -501,7 +501,7 @@ export class AdminQuizzesList extends LitElement {
               <input id="quiz-lesson" name="lessonId" type="text" .value=${this._formData.lessonId} @input=${this._handleInput} />
             </div>
 
-            <h4 style="margin: 1rem 0 0.75rem; font-size: 0.875rem; color: #0f172a;">Preguntas</h4>
+            <h4 style="margin: 1rem 0 0.75rem; font-size: 0.875rem; color: var(--color-text-primary, #0f172a);">Preguntas</h4>
             ${this._formData.questions.map((q, i) => html`
               <div class="question-block">
                 <div class="question-block-header">
@@ -554,7 +554,7 @@ export class AdminQuizzesList extends LitElement {
                 + Añadir pregunta
               </button>
             ` : html`
-              <p style="font-size: 0.813rem; color: #94a3b8; margin-bottom: 1rem;">Máximo 3 preguntas por quiz</p>
+              <p style="font-size: 0.813rem; color: var(--color-text-muted, #94a3b8); margin-bottom: 1rem;">Máximo 3 preguntas por quiz</p>
             `}
 
             ${this._formError ? html`<div class="form-error">${this._formError}</div>` : ''}

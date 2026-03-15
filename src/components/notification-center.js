@@ -32,7 +32,7 @@ export class NotificationCenter extends LitElement {
     :host { display: block; }
 
     .notif-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
       margin-bottom: 1.5rem;
@@ -48,7 +48,7 @@ export class NotificationCenter extends LitElement {
       border-radius: 0.75rem;
     }
 
-    .notif-header:hover { background: #f8fafc; }
+    .notif-header:hover { background: var(--color-bg-slate-50, #f8fafc); }
 
     .notif-header-left {
       display: flex;
@@ -59,7 +59,7 @@ export class NotificationCenter extends LitElement {
     .notif-icon {
       position: relative;
       font-size: 1.5rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
 
     .notif-badge {
@@ -83,7 +83,7 @@ export class NotificationCenter extends LitElement {
     .notif-title {
       font-size: 0.938rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     .notif-actions {
@@ -104,10 +104,10 @@ export class NotificationCenter extends LitElement {
       border-radius: 0.25rem;
     }
 
-    .btn-text:hover { background: #fef2f2; }
+    .btn-text:hover { background: var(--color-bg-slate-50, #f8fafc); }
 
     .notif-list {
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--color-bg-slate-100, #f1f5f9);
       max-height: 320px;
       overflow-y: auto;
     }
@@ -121,15 +121,15 @@ export class NotificationCenter extends LitElement {
     }
 
     .notif-item:not(:last-child) {
-      border-bottom: 1px solid #f8fafc;
+      border-bottom: 1px solid var(--color-bg-slate-50, #f8fafc);
     }
 
     .notif-item--unread {
-      background: #fef2f2;
+      background: var(--color-bg-slate-50, #f8fafc);
     }
 
     .notif-item-icon {
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       font-size: 1.25rem;
       flex-shrink: 0;
       margin-top: 0.125rem;
@@ -144,7 +144,7 @@ export class NotificationCenter extends LitElement {
 
     .notif-item-message {
       font-size: 0.813rem;
-      color: #334155;
+      color: var(--color-text-body, #334155);
       line-height: 1.4;
     }
 
@@ -154,7 +154,7 @@ export class NotificationCenter extends LitElement {
 
     .notif-item-time {
       font-size: 0.688rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       margin-top: 0.125rem;
     }
 
@@ -162,34 +162,34 @@ export class NotificationCenter extends LitElement {
       background: none;
       border: none;
       cursor: pointer;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       padding: 0.25rem;
       border-radius: 0.25rem;
       font-size: 1rem;
       flex-shrink: 0;
     }
 
-    .notif-item-mark:hover { color: #84cc16; background: #fff; }
+    .notif-item-mark:hover { color: #84cc16; background: var(--color-bg-white, #fff); }
 
     .notif-empty {
       text-align: center;
       padding: 2rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
       font-size: 0.813rem;
     }
 
     .push-toggle {
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid var(--color-bg-slate-100, #f1f5f9);
       padding: 0.75rem 1.25rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       font-size: 0.75rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
 
     .push-btn {
-      background: #f1f5f9;
+      background: var(--color-bg-slate-100, #f1f5f9);
       border: none;
       border-radius: 0.375rem;
       padding: 0.375rem 0.75rem;
@@ -197,16 +197,16 @@ export class NotificationCenter extends LitElement {
       font-weight: 600;
       cursor: pointer;
       font-family: inherit;
-      color: #334155;
+      color: var(--color-text-body, #334155);
     }
 
-    .push-btn:hover { background: #e2e8f0; }
-    .push-btn--active { background: #dcfce7; color: #166534; }
+    .push-btn:hover { background: var(--color-border, #e2e8f0); }
+    .push-btn--active { background: var(--color-success-bg, #f0fdf4); color: var(--color-success-text, #166534); }
 
     .spinner {
       width: 1rem;
       height: 1rem;
-      border: 2px solid #e2e8f0;
+      border: 2px solid var(--color-border, #e2e8f0);
       border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
@@ -214,6 +214,21 @@ export class NotificationCenter extends LitElement {
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 640px) {
+      .notif-header { flex-direction: column; gap: 0.5rem; align-items: stretch; }
+      .notif-item { padding: 0.75rem; }
+    }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
+    }
   `;
 
   constructor() {
@@ -324,9 +339,9 @@ export class NotificationCenter extends LitElement {
         </div>
 
         ${this._expanded ? html`
-          <div class="notif-list">
+          <div class="notif-list" role="list" aria-label="Notificaciones">
             ${this._loading
-              ? html`<div class="spinner"></div>`
+              ? html`<div class="spinner" role="status"></div>`
               : this._notifications.length === 0
                 ? html`<div class="notif-empty">No tienes notificaciones</div>`
                 : this._notifications.map((n) => this._renderNotification(n))}
@@ -347,14 +362,14 @@ export class NotificationCenter extends LitElement {
   _renderNotification(n) {
     const { icon, timeAgo } = formatNotification(n);
     return html`
-      <div class="notif-item ${n.read ? '' : 'notif-item--unread'}">
+      <div class="notif-item ${n.read ? '' : 'notif-item--unread'}" role="listitem">
         <span class="material-symbols-outlined notif-item-icon">${icon}</span>
         <div class="notif-item-content">
           <div class="notif-item-message">${n.message}</div>
           ${timeAgo ? html`<div class="notif-item-time">${timeAgo}</div>` : ''}
         </div>
         ${!n.read ? html`
-          <button class="notif-item-mark" @click=${() => this._markAsRead(n.id)} title="Marcar como leída">
+          <button class="notif-item-mark" aria-label="Marcar como leída" @click=${() => this._markAsRead(n.id)} title="Marcar como leída">
             <span class="material-symbols-outlined">check</span>
           </button>
         ` : ''}

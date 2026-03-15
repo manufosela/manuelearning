@@ -20,7 +20,7 @@ export class CertificateVerify extends LitElement {
     .verify-card {
       max-width: 600px;
       margin: 2rem auto;
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
       overflow: hidden;
@@ -56,13 +56,13 @@ export class CertificateVerify extends LitElement {
     }
 
     .verify-status--valid {
-      background: #f0fdf4;
-      color: #166534;
+      background: var(--color-success-bg, #f0fdf4);
+      color: var(--color-success-text, #166534);
     }
 
     .verify-status--invalid {
-      background: #fef2f2;
-      color: #991b1b;
+      background: var(--color-error-bg, #fef2f2);
+      color: var(--color-error-text, #991b1b);
     }
 
     .verify-status .material-symbols-outlined {
@@ -82,7 +82,7 @@ export class CertificateVerify extends LitElement {
     .verify-label {
       font-size: 0.75rem;
       font-weight: 600;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-bottom: 0.25rem;
@@ -91,20 +91,35 @@ export class CertificateVerify extends LitElement {
     .verify-value {
       font-size: 1rem;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     .not-found {
       text-align: center;
       padding: 3rem 2rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
 
     .not-found .material-symbols-outlined {
       font-size: 3rem;
-      color: #cbd5e1;
+      color: var(--color-border-light, #cbd5e1);
       display: block;
       margin-bottom: 0.75rem;
+    }
+
+    @media (max-width: 640px) {
+      .verify-card { padding: 1.25rem; }
+      .verify-details { gap: 0.75rem; }
+    }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
     }
   `];
 
@@ -173,12 +188,12 @@ export class CertificateVerify extends LitElement {
       : 'N/A';
 
     return html`
-      <div class="verify-card">
+      <div class="verify-card" aria-label="Verificar certificado">
         <div class="verify-header">
           <h2>${SITE.name}</h2>
           <p>Verificación de certificado</p>
         </div>
-        <div class="verify-status verify-status--valid">
+        <div class="verify-status verify-status--valid" role="status">
           <span class="material-symbols-outlined">verified</span>
           Certificado válido
         </div>
