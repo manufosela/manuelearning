@@ -72,13 +72,13 @@ export class AdminUsersList extends LitElement {
     }
 
     .role-badge--admin {
-      background: #fef2f2;
-      color: #991b1b;
+      background: var(--color-error-bg, #fef2f2);
+      color: var(--color-error-text, #991b1b);
     }
 
     .role-badge--student {
-      background: #f0fdf4;
-      color: #166534;
+      background: var(--color-success-bg, #f0fdf4);
+      color: var(--color-success-text, #166534);
     }
 
     .status-badge {
@@ -91,18 +91,18 @@ export class AdminUsersList extends LitElement {
     }
 
     .status-badge--pending {
-      background: #fef3c7;
-      color: #92400e;
+      background: var(--color-warning-bg, #fef3c7);
+      color: var(--color-warning-text, #92400e);
     }
 
     .status-badge--active {
-      background: #f0fdf4;
-      color: #166534;
+      background: var(--color-success-bg, #f0fdf4);
+      color: var(--color-success-text, #166534);
     }
 
     .status-badge--inactive {
-      background: #fef2f2;
-      color: #991b1b;
+      background: var(--color-error-bg, #fef2f2);
+      color: var(--color-error-text, #991b1b);
     }
 
     .role-select {
@@ -187,7 +187,7 @@ export class AdminUsersList extends LitElement {
     }
 
     .error {
-      color: #991b1b;
+      color: var(--color-error-text, #991b1b);
     }
 
     .spinner {
@@ -280,7 +280,7 @@ export class AdminUsersList extends LitElement {
 
     .btn-action--reject {
       background: var(--color-bg-slate-50, #f1f5f9);
-      color: #991b1b;
+      color: var(--color-error-text, #991b1b);
       border: 1px solid var(--color-border, #e2e8f0);
     }
 
@@ -299,6 +299,16 @@ export class AdminUsersList extends LitElement {
       .hide-mobile {
         display: none;
       }
+    }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
     }
   `;
 
@@ -392,7 +402,7 @@ export class AdminUsersList extends LitElement {
   render() {
     if (this._loading) {
       return html`
-        <div class="loading">
+        <div class="loading" role="status">
           <div class="spinner"></div>
           <p>Cargando usuarios...</p>
         </div>
@@ -457,6 +467,7 @@ export class AdminUsersList extends LitElement {
         <input
           class="search-input"
           type="text"
+          aria-label="Buscar usuarios"
           placeholder="Buscar por email, nombre o rol..."
           .value=${this._searchQuery}
           @input=${(e) => { this._searchQuery = e.target.value; }}
@@ -465,7 +476,7 @@ export class AdminUsersList extends LitElement {
       ${filtered.length === 0
         ? html`<div class="no-results">Sin resultados. Prueba con otro término de búsqueda.</div>`
         : html`
-          <table class="users-table">
+          <table class="users-table" aria-label="Lista de usuarios">
             <thead>
               <tr>
                 <th>Email</th>
@@ -497,6 +508,7 @@ export class AdminUsersList extends LitElement {
                       <div class="actions-cell">
                         <select
                           class="role-select"
+                          aria-label="Cambiar rol de ${user.email}"
                           data-uid=${user.uid}
                           .value=${user.role}
                           @change=${this._handleRoleChange}
@@ -507,22 +519,26 @@ export class AdminUsersList extends LitElement {
                         ${this._activeTab === 'pending' ? html`
                           <button
                             class="btn-action btn-action--validate"
+                            aria-label="Validar usuario ${user.email}"
                             @click=${() => this._handleStatusChange(user.uid, 'active')}
                           >Validar</button>
                           <button
                             class="btn-action btn-action--reject"
+                            aria-label="Rechazar usuario ${user.email}"
                             @click=${() => this._handleStatusChange(user.uid, 'inactive')}
                           >Rechazar</button>
                         ` : ''}
                         ${this._activeTab === 'active' ? html`
                           <button
                             class="btn-action btn-action--deactivate"
+                            aria-label="Desactivar usuario ${user.email}"
                             @click=${() => this._handleStatusChange(user.uid, 'inactive')}
                           >Desactivar</button>
                         ` : ''}
                         ${this._activeTab === 'inactive' ? html`
                           <button
                             class="btn-action btn-action--reactivate"
+                            aria-label="Reactivar usuario ${user.email}"
                             @click=${() => this._handleStatusChange(user.uid, 'active')}
                           >Reactivar</button>
                         ` : ''}

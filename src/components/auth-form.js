@@ -59,12 +59,12 @@ export class AuthForm extends LitElement {
     }
 
     .error-message {
-      background-color: #fef2f2;
-      color: #991b1b;
+      background-color: var(--color-error-bg, #fef2f2);
+      color: var(--color-error-text, #991b1b);
       padding: 0.75rem 1rem;
       border-radius: 0.5rem;
       font-size: 0.875rem;
-      border: 1px solid #fecaca;
+      border: 1px solid var(--color-error-border, #fecaca);
     }
 
     .google-btn {
@@ -168,18 +168,28 @@ export class AuthForm extends LitElement {
     }
 
     .success-message {
-      background-color: #f0fdf4;
-      color: #166534;
+      background-color: var(--color-success-bg, #f0fdf4);
+      color: var(--color-success-text, #166534);
       padding: 0.75rem 1rem;
       border-radius: 0.5rem;
       font-size: 0.875rem;
-      border: 1px solid #bbf7d0;
+      border: 1px solid var(--color-success-border, #bbf7d0);
     }
 
     .info-text {
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       font-size: 0.875rem;
       line-height: 1.5;
+    }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
     }
   `;
 
@@ -198,7 +208,7 @@ export class AuthForm extends LitElement {
     if (this._registered) {
       return html`
         <div class="auth-form">
-          <div class="success-message">
+          <div class="success-message" role="status">
             Tu registro se ha completado. Recibirás un email cuando tu cuenta sea validada por el administrador.
           </div>
         </div>
@@ -214,11 +224,13 @@ export class AuthForm extends LitElement {
     return html`
       <div class="auth-form">
         ${this._error
-          ? html`<div class="error-message">${this._error}</div>`
+          ? html`<div class="error-message" role="alert">${this._error}</div>`
           : ''}
 
         <button
           class="google-btn"
+          aria-label="Iniciar sesión con Google"
+          aria-busy=${this._loading}
           @click=${this._handleGoogleLogin}
           ?disabled=${this._loading}
         >
@@ -236,7 +248,7 @@ export class AuthForm extends LitElement {
 
   _renderRegistrationForm() {
     return html`
-      <form class="auth-form" @submit=${this._handleRegistrationSubmit}>
+      <form class="auth-form" aria-label="Formulario de registro" @submit=${this._handleRegistrationSubmit}>
         <p class="welcome-text">
           Hola <strong>${this._pendingUser.displayName || this._pendingUser.email}</strong>,
           es tu primera vez. Selecciona tu convocatoria para completar el registro.
@@ -264,10 +276,10 @@ export class AuthForm extends LitElement {
         }
 
         ${this._error
-          ? html`<div class="error-message">${this._error}</div>`
+          ? html`<div class="error-message" role="alert">${this._error}</div>`
           : ''}
 
-        <button type="submit" class="submit-btn" ?disabled=${this._loading || this._loadingConvocatorias}>
+        <button type="submit" class="submit-btn" aria-busy=${this._loading} ?disabled=${this._loading || this._loadingConvocatorias}>
           ${this._loading ? 'Registrando...' : 'Completar registro'}
         </button>
 

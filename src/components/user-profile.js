@@ -29,7 +29,7 @@ export class UserProfile extends LitElement {
     }
 
     .profile-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
       overflow: hidden;
@@ -82,7 +82,7 @@ export class UserProfile extends LitElement {
       justify-content: space-between;
       align-items: center;
       padding: 1rem 0;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--color-bg-slate-100, #f1f5f9);
     }
 
     .field:last-child {
@@ -92,14 +92,14 @@ export class UserProfile extends LitElement {
     .field__label {
       font-size: 0.813rem;
       font-weight: 600;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
 
     .field__value {
       font-size: 0.938rem;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       font-weight: 500;
     }
 
@@ -111,7 +111,7 @@ export class UserProfile extends LitElement {
 
     .edit-row input {
       padding: 0.375rem 0.75rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.375rem;
       font-size: 0.875rem;
       font-family: inherit;
@@ -146,11 +146,11 @@ export class UserProfile extends LitElement {
     .btn--primary:hover { background: #d11111; }
 
     .btn--secondary {
-      background: #f1f5f9;
-      color: #334155;
+      background: var(--color-bg-slate-100, #f1f5f9);
+      color: var(--color-text-body, #334155);
     }
 
-    .btn--secondary:hover { background: #e2e8f0; }
+    .btn--secondary:hover { background: var(--color-border, #e2e8f0); }
 
     .btn:disabled {
       opacity: 0.6;
@@ -165,27 +165,27 @@ export class UserProfile extends LitElement {
     }
 
     .message--success {
-      background: #f0fdf4;
-      color: #166534;
-      border: 1px solid #bbf7d0;
+      background: var(--color-success-bg, #f0fdf4);
+      color: var(--color-success-text, #166534);
+      border: 1px solid var(--color-success-border, #bbf7d0);
     }
 
     .message--error {
-      background: #fef2f2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
+      background: var(--color-error-bg, #fef2f2);
+      color: var(--color-error-text, #991b1b);
+      border: 1px solid var(--color-error-border, #fecaca);
     }
 
     .loading {
       text-align: center;
       padding: 3rem;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
     }
 
     .spinner {
       width: 1.5rem;
       height: 1.5rem;
-      border: 3px solid #e2e8f0;
+      border: 3px solid var(--color-border, #e2e8f0);
       border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
@@ -205,17 +205,17 @@ export class UserProfile extends LitElement {
     }
 
     .role-badge--admin {
-      background: #fef2f2;
-      color: #991b1b;
+      background: var(--color-error-bg, #fef2f2);
+      color: var(--color-error-text, #991b1b);
     }
 
     .role-badge--student {
-      background: #f0fdf4;
-      color: #166534;
+      background: var(--color-success-bg, #f0fdf4);
+      color: var(--color-success-text, #166534);
     }
 
     .badges-section {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
       padding: 1.5rem 2rem;
@@ -225,7 +225,7 @@ export class UserProfile extends LitElement {
     .badges-section__title {
       font-size: 1rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin: 0 0 1rem;
       display: flex;
       align-items: center;
@@ -244,8 +244,8 @@ export class UserProfile extends LitElement {
       gap: 0.75rem;
       padding: 0.75rem 1rem;
       border-radius: 0.5rem;
-      border: 1px solid #e2e8f0;
-      background: #fafafa;
+      border: 1px solid var(--color-border, #e2e8f0);
+      background: var(--color-bg-light, #f8f9fa);
     }
 
     .badge-card__icon {
@@ -276,7 +276,7 @@ export class UserProfile extends LitElement {
     .badge-card__title {
       font-size: 0.813rem;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -284,18 +284,18 @@ export class UserProfile extends LitElement {
 
     .badge-card__date {
       font-size: 0.75rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
 
     .badges-empty {
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       font-size: 0.875rem;
       text-align: center;
       padding: 1rem 0;
     }
 
     .preferences-section {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
       padding: 1.5rem 2rem;
@@ -305,7 +305,7 @@ export class UserProfile extends LitElement {
     .preferences-section__title {
       font-size: 1rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin: 0 0 1rem;
       display: flex;
       align-items: center;
@@ -328,12 +328,12 @@ export class UserProfile extends LitElement {
     .preference-row__title {
       font-size: 0.875rem;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     .preference-row__desc {
       font-size: 0.75rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
 
     .toggle {
@@ -352,7 +352,7 @@ export class UserProfile extends LitElement {
     .toggle__slider {
       position: absolute;
       inset: 0;
-      background: #cbd5e1;
+      background: var(--color-border-light, #cbd5e1);
       border-radius: 9999px;
       cursor: pointer;
       transition: background-color 0.2s;
@@ -381,6 +381,23 @@ export class UserProfile extends LitElement {
     .toggle input:disabled + .toggle__slider {
       opacity: 0.6;
       cursor: not-allowed;
+    }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 640px) {
+      .profile-card { padding: 1.25rem; }
+      .profile-header { flex-direction: column; text-align: center; }
+      .edit-row { flex-direction: column; }
+      .edit-row input { width: 100%; }
     }
   `;
 
@@ -494,7 +511,7 @@ export class UserProfile extends LitElement {
   render() {
     if (this._loading) {
       return html`
-        <div class="loading">
+        <div class="loading" role="status" aria-label="Cargando">
           <div class="spinner"></div>
           <p>Cargando perfil...</p>
         </div>
@@ -506,7 +523,7 @@ export class UserProfile extends LitElement {
     }
 
     return html`
-      <div class="profile-card">
+      <div class="profile-card" role="region" aria-label="Mi perfil">
         <div class="profile-header">
           <div class="avatar">${this._getInitials()}</div>
           <div class="profile-header__info">
@@ -534,7 +551,7 @@ export class UserProfile extends LitElement {
               : html`
                 <div class="edit-row">
                   <span class="field__value">${this._user.displayName || '-'}</span>
-                  <button class="btn btn--secondary" @click=${this._startEdit}>Editar</button>
+                  <button class="btn btn--secondary" aria-label="Editar nombre" @click=${this._startEdit}>Editar</button>
                 </div>`
             }
           </div>

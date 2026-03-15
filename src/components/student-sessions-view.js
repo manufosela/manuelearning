@@ -17,10 +17,10 @@ export class StudentSessionsView extends LitElement {
   static styles = css`
     :host { display: block; }
 
-    h2 { font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0 0 1.5rem; }
+    h2 { font-size: 1.25rem; font-weight: 800; color: var(--color-text-primary, #0f172a); margin: 0 0 1.5rem; }
 
     .session-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       padding: 1.25rem;
       box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
@@ -29,18 +29,18 @@ export class StudentSessionsView extends LitElement {
     }
 
     .session-card--past {
-      border-left-color: #cbd5e1;
+      border-left-color: var(--color-border-light, #cbd5e1);
       opacity: 0.7;
     }
 
-    .session-title { font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.375rem; }
+    .session-title { font-size: 1rem; font-weight: 700; color: var(--color-text-primary, #0f172a); margin-bottom: 0.375rem; }
 
     .session-meta {
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
       font-size: 0.813rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       margin-bottom: 0.75rem;
     }
 
@@ -56,7 +56,7 @@ export class StudentSessionsView extends LitElement {
     }
 
     .badge--upcoming { background: #dbeafe; color: #1e40af; }
-    .badge--past { background: #f1f5f9; color: #64748b; }
+    .badge--past { background: var(--color-bg-slate-100, #f1f5f9); color: var(--color-text-muted, #64748b); }
 
     .session-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
 
@@ -90,11 +90,21 @@ export class StudentSessionsView extends LitElement {
       border-radius: 0.375rem;
     }
 
-    .loading, .error-msg { text-align: center; padding: 3rem; color: #475569; }
-    .error-msg { color: #991b1b; }
-    .spinner { width: 1.5rem; height: 1.5rem; border: 3px solid #e2e8f0; border-top-color: #84cc16; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 0.75rem; }
+    .loading, .error-msg { text-align: center; padding: 3rem; color: var(--color-text-secondary, #475569); }
+    .error-msg { color: var(--color-error-text, #991b1b); }
+    .spinner { width: 1.5rem; height: 1.5rem; border: 3px solid var(--color-border, #e2e8f0); border-top-color: #84cc16; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 0.75rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .empty-state { text-align: center; padding: 3rem; color: #64748b; }
+    .empty-state { text-align: center; padding: 3rem; color: var(--color-text-muted, #64748b); }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
+    }
   `;
 
   constructor() {
@@ -138,7 +148,7 @@ export class StudentSessionsView extends LitElement {
   }
 
   render() {
-    if (this._loading) return html`<div class="loading"><div class="spinner"></div><p>Cargando sesiones...</p></div>`;
+    if (this._loading) return html`<div class="loading" role="status"><div class="spinner"></div><p>Cargando sesiones...</p></div>`;
     if (this._error) return html`<div class="error-msg">${this._error}</div>`;
 
     const upcoming = this._sessions.filter((s) => this._isUpcoming(s.date));
@@ -148,11 +158,11 @@ export class StudentSessionsView extends LitElement {
       <h2>Próximas sesiones</h2>
       ${upcoming.length === 0
         ? html`<div class="empty-state"><p>No hay sesiones programadas próximamente</p></div>`
-        : upcoming.map((s) => this._renderSession(s, true))}
+        : html`<div role="list" aria-label="Sesiones">${upcoming.map((s) => this._renderSession(s, true))}</div>`}
 
       ${past.length > 0 ? html`
         <h2 style="margin-top: 2rem;">Sesiones pasadas</h2>
-        ${past.map((s) => this._renderSession(s, false))}
+        <div role="list" aria-label="Sesiones pasadas">${past.map((s) => this._renderSession(s, false))}</div>
       ` : ''}
     `;
   }

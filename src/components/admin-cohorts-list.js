@@ -52,7 +52,7 @@ export class AdminCohortsList extends LitElement {
 
     .btn--primary {
       background: #84cc16;
-      color: #fff;
+      color: var(--color-bg-white, #fff);
     }
 
     .btn--primary:hover {
@@ -60,12 +60,12 @@ export class AdminCohortsList extends LitElement {
     }
 
     .btn--secondary {
-      background: #f1f5f9;
-      color: #334155;
+      background: var(--color-bg-slate-100, #f1f5f9);
+      color: var(--color-text-body, #334155);
     }
 
     .btn--secondary:hover {
-      background: #e2e8f0;
+      background: var(--color-border, #e2e8f0);
     }
 
     .btn--small {
@@ -81,7 +81,7 @@ export class AdminCohortsList extends LitElement {
     .cohorts-table {
       width: 100%;
       border-collapse: collapse;
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       overflow: hidden;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
@@ -93,19 +93,19 @@ export class AdminCohortsList extends LitElement {
     }
 
     th {
-      background: #f8fafc;
+      background: var(--color-bg-slate-50, #f8fafc);
       font-size: 0.75rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #475569;
-      border-bottom: 1px solid #e2e8f0;
+      color: var(--color-text-secondary, #475569);
+      border-bottom: 1px solid var(--color-border, #e2e8f0);
     }
 
     td {
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--color-bg-slate-100, #f1f5f9);
       font-size: 0.875rem;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     tr:last-child td {
@@ -113,7 +113,7 @@ export class AdminCohortsList extends LitElement {
     }
 
     tr:hover td {
-      background: #f8fafc;
+      background: var(--color-bg-slate-50, #f8fafc);
     }
 
     .status-badge {
@@ -126,18 +126,18 @@ export class AdminCohortsList extends LitElement {
     }
 
     .status-badge--active {
-      background: #f0fdf4;
-      color: #166534;
+      background: var(--color-success-bg, #f0fdf4);
+      color: var(--color-success-text, #166534);
     }
 
     .status-badge--inactive {
-      background: #fef2f2;
-      color: #991b1b;
+      background: var(--color-error-bg, #fef2f2);
+      color: var(--color-error-text, #991b1b);
     }
 
     .status-badge--expired {
-      background: #fef3c7;
-      color: #92400e;
+      background: var(--color-warning-bg, #fef3c7);
+      color: var(--color-warning-text, #92400e);
     }
 
     .row--expired td {
@@ -161,7 +161,7 @@ export class AdminCohortsList extends LitElement {
     }
 
     .form-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       padding: 2rem;
       width: 100%;
@@ -173,7 +173,7 @@ export class AdminCohortsList extends LitElement {
       margin: 0 0 1.5rem;
       font-size: 1.125rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
     }
 
     .form-group {
@@ -184,14 +184,14 @@ export class AdminCohortsList extends LitElement {
       display: block;
       font-size: 0.813rem;
       font-weight: 600;
-      color: #334155;
+      color: var(--color-text-body, #334155);
       margin-bottom: 0.375rem;
     }
 
     .form-group input {
       width: 100%;
       padding: 0.5rem 0.75rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.375rem;
       font-size: 0.875rem;
       font-family: inherit;
@@ -205,7 +205,7 @@ export class AdminCohortsList extends LitElement {
     }
 
     .form-error {
-      color: #991b1b;
+      color: var(--color-error-text, #991b1b);
       font-size: 0.813rem;
       margin-bottom: 1rem;
     }
@@ -220,17 +220,17 @@ export class AdminCohortsList extends LitElement {
     .loading, .error-msg {
       text-align: center;
       padding: 3rem;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
     }
 
     .error-msg {
-      color: #991b1b;
+      color: var(--color-error-text, #991b1b);
     }
 
     .spinner {
       width: 1.5rem;
       height: 1.5rem;
-      border: 3px solid #e2e8f0;
+      border: 3px solid var(--color-border, #e2e8f0);
       border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
@@ -244,20 +244,20 @@ export class AdminCohortsList extends LitElement {
     .empty-state {
       text-align: center;
       padding: 3rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
 
     .empty-state .material-symbols-outlined {
       font-size: 3rem;
-      color: #cbd5e1;
+      color: var(--color-border-light, #cbd5e1);
       margin-bottom: 0.75rem;
     }
 
     .slug-display {
       font-family: monospace;
       font-size: 0.813rem;
-      color: #64748b;
-      background: #f1f5f9;
+      color: var(--color-text-muted, #64748b);
+      background: var(--color-bg-slate-100, #f1f5f9);
       padding: 0.375rem 0.75rem;
       border-radius: 0.375rem;
       display: block;

@@ -8,13 +8,13 @@ export const stateStyles = css`
   .state-loading {
     text-align: center;
     padding: 3rem 2rem;
-    color: #475569;
+    color: var(--color-text-secondary, #475569);
   }
 
   .state-spinner {
     width: 1.5rem;
     height: 1.5rem;
-    border: 3px solid #e2e8f0;
+    border: 3px solid var(--color-border, #e2e8f0);
     border-top-color: #84cc16;
     border-radius: 50%;
     animation: state-spin 0.6s linear infinite;
@@ -28,16 +28,16 @@ export const stateStyles = css`
   .state-empty {
     text-align: center;
     padding: 2rem;
-    color: #94a3b8;
+    color: var(--color-text-muted, #94a3b8);
     font-size: 0.875rem;
-    background: #fff;
+    background: var(--color-bg-white, #fff);
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
 
   .state-empty .material-symbols-outlined {
     font-size: 2.5rem;
-    color: #cbd5e1;
+    color: var(--color-border-light, #cbd5e1);
     display: block;
     margin-bottom: 0.5rem;
   }
@@ -45,9 +45,9 @@ export const stateStyles = css`
   .state-error {
     text-align: center;
     padding: 2rem;
-    background: #fef2f2;
+    background: var(--color-error-bg, #fef2f2);
     border-radius: 0.75rem;
-    color: #991b1b;
+    color: var(--color-error-text, #991b1b);
     font-size: 0.875rem;
   }
 
@@ -60,9 +60,9 @@ export const stateStyles = css`
     align-items: center;
     gap: 0.375rem;
     padding: 0.5rem 1rem;
-    background: #fff;
-    color: #991b1b;
-    border: 1px solid #fecaca;
+    background: var(--color-bg-white, #fff);
+    color: var(--color-error-text, #991b1b);
+    border: 1px solid var(--color-error-border, #fecaca);
     border-radius: 0.5rem;
     font-size: 0.813rem;
     font-weight: 600;
@@ -72,7 +72,7 @@ export const stateStyles = css`
   }
 
   .state-retry-btn:hover {
-    background: #fef2f2;
+    background: var(--color-error-bg, #fef2f2);
   }
 
   .state-retry-btn .material-symbols-outlined {

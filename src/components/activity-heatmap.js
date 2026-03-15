@@ -23,7 +23,7 @@ export class ActivityHeatmap extends LitElement {
     }
 
     .heatmap-card {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       border-radius: 0.75rem;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
       padding: 1.5rem;
@@ -32,13 +32,13 @@ export class ActivityHeatmap extends LitElement {
     .heatmap-title {
       font-size: 1rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin: 0 0 0.25rem;
     }
 
     .heatmap-subtitle {
       font-size: 0.813rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       margin: 0 0 1rem;
     }
 
@@ -71,7 +71,7 @@ export class ActivityHeatmap extends LitElement {
     .months-row {
       display: flex;
       font-size: 0.688rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       margin-bottom: 0.375rem;
       padding-left: 2px;
     }
@@ -86,7 +86,7 @@ export class ActivityHeatmap extends LitElement {
       gap: 3px;
       margin-right: 6px;
       font-size: 0.625rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
 
     .days-labels span {
@@ -106,7 +106,7 @@ export class ActivityHeatmap extends LitElement {
       gap: 0.375rem;
       margin-top: 0.75rem;
       font-size: 0.688rem;
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
     }
 
     .legend-cell {
@@ -139,10 +139,20 @@ export class ActivityHeatmap extends LitElement {
     }
 
     .loading-text {
-      color: #64748b;
+      color: var(--color-text-muted, #64748b);
       font-size: 0.875rem;
       text-align: center;
       padding: 2rem 0;
+    }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
     }
   `;
 
@@ -276,7 +286,7 @@ export class ActivityHeatmap extends LitElement {
     if (this._loading) {
       return html`
         <div class="heatmap-card">
-          <p class="loading-text">Cargando actividad...</p>
+          <p class="loading-text" role="status">Cargando actividad...</p>
         </div>
       `;
     }
@@ -307,7 +317,7 @@ export class ActivityHeatmap extends LitElement {
             <div class="days-labels">
               ${dayLabels.map((d) => html`<span>${d}</span>`)}
             </div>
-            <div class="heatmap-container">
+            <div class="heatmap-container" role="img" aria-label="Mapa de actividad">
               ${cells.map(
                 (cell) => html`
                   <div

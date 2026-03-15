@@ -67,18 +67,18 @@ export class LessonView extends LitElement {
     }
 
     .docs-section {
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       padding: 2rem;
       border-radius: 0.75rem;
       box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
       line-height: 1.7;
-      color: #334155;
+      color: var(--color-text-body, #334155);
     }
 
     .docs-section h2 {
       font-size: 1.125rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--color-text-primary, #0f172a);
       margin-bottom: 1rem;
     }
 
@@ -90,13 +90,13 @@ export class LessonView extends LitElement {
     .loading {
       text-align: center;
       padding: 3rem;
-      color: #475569;
+      color: var(--color-text-secondary, #475569);
     }
 
     .spinner {
       width: 1.5rem;
       height: 1.5rem;
-      border: 3px solid #e2e8f0;
+      border: 3px solid var(--color-border, #e2e8f0);
       border-top-color: #84cc16;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
@@ -110,13 +110,13 @@ export class LessonView extends LitElement {
     .error-msg {
       text-align: center;
       padding: 3rem;
-      color: #991b1b;
+      color: var(--color-error-text, #991b1b);
     }
 
     .lesson-footer {
       margin-top: 2rem;
       padding-top: 1.5rem;
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid var(--color-border, #e2e8f0);
     }
 
     .footer-complete {
@@ -138,13 +138,13 @@ export class LessonView extends LitElement {
       font-family: inherit;
       cursor: pointer;
       transition: all 0.2s;
-      background: #fff;
+      background: var(--color-bg-white, #fff);
       color: #365314;
     }
 
     .complete-btn:hover:not(:disabled) {
       background: #84cc16;
-      color: #fff;
+      color: var(--color-bg-white, #fff);
     }
 
     .complete-btn:disabled {
@@ -152,22 +152,22 @@ export class LessonView extends LitElement {
     }
 
     .complete-btn--done {
-      background: #f0fdf4;
+      background: var(--color-success-bg, #f0fdf4);
       border-color: #22c55e;
-      color: #166534;
+      color: var(--color-success-text, #166534);
     }
 
     .complete-btn--locked {
       opacity: 0.5;
-      border-color: #cbd5e1;
-      color: #94a3b8;
+      border-color: var(--color-border-light, #cbd5e1);
+      color: var(--color-text-muted, #94a3b8);
     }
 
     .complete-hint {
       text-align: center;
       margin-top: 0.5rem;
       font-size: 0.813rem;
-      color: #94a3b8;
+      color: var(--color-text-muted, #94a3b8);
     }
 
     .footer-nav {
@@ -182,10 +182,10 @@ export class LessonView extends LitElement {
       align-items: center;
       gap: 0.375rem;
       padding: 0.625rem 1.25rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--color-border, #e2e8f0);
       border-radius: 0.5rem;
-      background: #fff;
-      color: #334155;
+      background: var(--color-bg-white, #fff);
+      color: var(--color-text-body, #334155);
       font-size: 0.875rem;
       font-weight: 600;
       font-family: inherit;
@@ -195,13 +195,13 @@ export class LessonView extends LitElement {
     }
 
     .nav-btn:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
+      background: var(--color-bg-slate-50, #f8fafc);
+      border-color: var(--color-border-light, #cbd5e1);
     }
 
     .nav-btn--next {
       background: #84cc16;
-      color: #fff;
+      color: var(--color-bg-white, #fff);
       border-color: #84cc16;
     }
 
@@ -217,6 +217,24 @@ export class LessonView extends LitElement {
 
     .nav-btn--hidden {
       visibility: hidden;
+    }
+
+    /* Focus indicators */
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid var(--color-primary, #84cc16);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 640px) {
+      .lesson-header h1 { font-size: 1.25rem; }
+      .docs-section { padding: 1rem; }
+      .footer-nav { flex-direction: column; }
+      .footer-nav .nav-btn { width: 100%; justify-content: center; text-align: center; }
+      .nav-btn--hidden { display: none; }
     }
   `;
 
@@ -410,7 +428,7 @@ export class LessonView extends LitElement {
 
   render() {
     if (this._loading) {
-      return html`<div class="loading"><div class="spinner"></div><p>Cargando clase...</p></div>`;
+      return html`<div class="loading" role="status" aria-label="Cargando"><div class="spinner"></div><p>Cargando clase...</p></div>`;
     }
 
     if (this._error) {
@@ -448,11 +466,12 @@ export class LessonView extends LitElement {
       <div class="lesson-footer">
         <div class="footer-complete">
           ${this._completed
-            ? html`<button class="complete-btn complete-btn--done" disabled>✓ Completada</button>`
+            ? html`<button class="complete-btn complete-btn--done" disabled aria-label="Lección completada">✓ Completada</button>`
             : html`<button
                 class="complete-btn ${this._quizRequired && !this._quizAnswered ? 'complete-btn--locked' : ''}"
                 @click=${this._markComplete}
                 ?disabled=${this._completing || (this._quizRequired && !this._quizAnswered)}
+                aria-label=${this._completing ? 'Guardando progreso' : 'Marcar lección como completada'}
               >${this._completing ? 'Guardando...' : 'Marcar como completada'}</button>`
           }
           ${this._quizRequired && !this._quizAnswered && !this._completed
@@ -464,12 +483,12 @@ export class LessonView extends LitElement {
         </div>
         <div class="footer-nav">
           ${this._prevRef
-            ? html`<a href="/leccion?m=${this._prevRef.moduleId}&l=${this._prevRef.lessonId}" class="nav-btn">← Anterior</a>`
+            ? html`<a href="/leccion?m=${this._prevRef.moduleId}&l=${this._prevRef.lessonId}" class="nav-btn" aria-label="Lección anterior">← Anterior</a>`
             : html`<span class="nav-btn nav-btn--hidden">← Anterior</span>`
           }
           <a href="/cursos" class="nav-btn">Temario</a>
           ${this._nextRef
-            ? html`<a href="/leccion?m=${this._nextRef.moduleId}&l=${this._nextRef.lessonId}" class="nav-btn nav-btn--next ${this._completed ? '' : 'nav-btn--disabled'}">Siguiente →</a>`
+            ? html`<a href="/leccion?m=${this._nextRef.moduleId}&l=${this._nextRef.lessonId}" class="nav-btn nav-btn--next ${this._completed ? '' : 'nav-btn--disabled'}" aria-label="Lección siguiente">Siguiente →</a>`
             : html`<span class="nav-btn nav-btn--hidden">Siguiente →</span>`
           }
         </div>

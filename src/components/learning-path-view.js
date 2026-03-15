@@ -132,7 +132,7 @@ export class LearningPathView extends LitElement {
     .error-msg {
       text-align: center;
       padding: 3rem;
-      color: #991b1b;
+      color: var(--color-error-text, #991b1b);
     }
 
     .empty-state {
