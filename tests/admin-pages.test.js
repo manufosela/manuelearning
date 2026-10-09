@@ -1,22 +1,14 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import fs from 'fs';
-import path from 'path';
-
-const buildDir = path.resolve('dist');
+import { parseAstroPages } from './helpers/astro-source.js';
 
 /**
- * @param {string} pagePath
+ * Admin pages structure, analysed from the .astro sources (layout + page),
+ * not from dist/ (MEL-BUG-0005).
+ * @param {string} pagePath - path under src/pages without extension
  * @returns {{ html: string, doc: Document }}
  */
 function loadPage(pagePath) {
-  const filePath = path.join(buildDir, pagePath, 'index.html');
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Build output not found: ${filePath}. Run "npm run build" first.`);
-  }
-  const pageHtml = fs.readFileSync(filePath, 'utf-8');
-  const parser = new DOMParser();
-  const pageDoc = parser.parseFromString(pageHtml, 'text/html');
-  return { html: pageHtml, doc: pageDoc };
+  return parseAstroPages('src/layouts/AdminLayout.astro', `src/pages/${pagePath}.astro`);
 }
 
 describe('Admin Users page (/admin/users)', () => {
@@ -61,7 +53,6 @@ describe('Admin Users page (/admin/users)', () => {
   });
 
   it('should have title containing Admin', () => {
-    const title = page.doc.querySelector('title');
-    expect(title.textContent).toContain('Admin');
+    expect(page.html).toMatch(/title="[^"]*Admin"/);
   });
 });
