@@ -60,3 +60,4 @@ docs/
 !.karajan/supervisor-signers.json
 !.karajan/rules.yml
 !.karajan/security-level.json
+.karajan/identity.local.yml

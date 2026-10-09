@@ -3,7 +3,6 @@
   "type": "module",
   "version": "1.0.55",
   "scripts": {
-    "prepare": "git config --local core.hooksPath scripts/git-hooks",
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
