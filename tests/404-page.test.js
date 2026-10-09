@@ -1,16 +1,13 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import fs from 'fs';
-import path from 'path';
+import { parseAstroPages } from './helpers/astro-source.js';
 
 /**
- * Tests para LCT-TSK-0033: Página 404 personalizada
+ * Tests para MEL-TSK-0033: Página 404 personalizada (fuente, no dist/).
  *
  * Criterios de aceptación:
  * - Un usuario que navega a una ruta inexistente ve una página 404
  *   con mensaje claro y enlace para volver al inicio o dashboard
  */
-
-const buildDir = path.resolve('dist');
 
 /** @type {string} */
 let html;
@@ -19,20 +16,12 @@ let html;
 let doc;
 
 beforeAll(() => {
-  const filePath = path.join(buildDir, '404.html');
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Build output not found: ${filePath}. Run "npm run build" first.`);
-  }
-  html = fs.readFileSync(filePath, 'utf-8');
-  const parser = new DOMParser();
-  doc = parser.parseFromString(html, 'text/html');
+  ({ html, doc } = parseAstroPages('src/layouts/MainLayout.astro', 'src/pages/404.astro'));
 });
 
 describe('404 page - Structure', () => {
   it('should have a page title containing 404', () => {
-    const title = doc.querySelector('title');
-    expect(title).not.toBeNull();
-    expect(title.textContent).toContain('404');
+    expect(html).toMatch(/title="404 \|/);
   });
 
   it('should display the 404 error code prominently', () => {
