@@ -1,36 +1,21 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import { parseAstroPages } from './helpers/astro-source.js';
 
 /**
- * Tests para LCT-TSK-0002: Landing page de registro
+ * Tests de estructura de la landing (MEL-TSK-0002, actualizados en MEL-BUG-0005).
  *
- * Criterios de aceptación:
- * 1. Se muestra landing con diseño rojo/gris, hero section, plan de estudios,
- *    sección de maestría y footer
- * 2. El botón "Regístrate ahora" navega al formulario de registro
- * 3. El diseño es responsive (clases CSS responsive presentes)
+ * Se analiza el marcado fuente de src/pages/index.astro y del layout, no la
+ * salida de dist/: así la suite no depende de un build previo ni de un
+ * servidor local, y no se queda obsoleta en silencio cuando cambia el build.
  */
-
-/** @type {string} */
-let indexHtml;
 
 /** @type {Document} */
 let doc;
 
-beforeAll(async () => {
-  const buildDir = path.resolve('dist');
-  const indexPath = path.join(buildDir, 'index.html');
-
-  if (!fs.existsSync(indexPath)) {
-    throw new Error(
-      'Build output not found. Run "npm run build" before running tests.'
-    );
-  }
-
-  indexHtml = fs.readFileSync(indexPath, 'utf-8');
-  const parser = new DOMParser();
-  doc = parser.parseFromString(indexHtml, 'text/html');
+beforeAll(() => {
+  ({ doc } = parseAstroPages('src/layouts/MainLayout.astro', 'src/pages/index.astro'));
 });
 
 describe('Landing page - Estructura principal', () => {
@@ -42,7 +27,7 @@ describe('Landing page - Estructura principal', () => {
   it('should have the hero title with correct text', () => {
     const title = doc.querySelector('.hero__title');
     expect(title).not.toBeNull();
-    expect(title.textContent).toContain('Construcción Lean');
+    expect(title.textContent).toContain('Aprende tecnología de verdad');
   });
 
   it('should have the hero badge', () => {
@@ -56,24 +41,24 @@ describe('Landing page - Estructura principal', () => {
     expect(desc.textContent.length).toBeGreaterThan(0);
   });
 
-  it('should have hero call-to-action buttons', () => {
+  it('should have a hero call-to-action button', () => {
     const actions = doc.querySelector('.hero__actions');
     expect(actions).not.toBeNull();
     const buttons = actions.querySelectorAll('a, button');
-    expect(buttons.length).toBeGreaterThanOrEqual(2);
+    expect(buttons.length).toBeGreaterThanOrEqual(1);
   });
 });
 
-describe('Landing page - Plan de estudios (Services section)', () => {
+describe('Landing page - Cursos (Services section)', () => {
   it('should have the services section', () => {
     const services = doc.querySelector('.services');
     expect(services).not.toBeNull();
   });
 
-  it('should have "Plan de estudios" heading', () => {
+  it('should have "Cursos" heading', () => {
     const label = doc.querySelector('.services .section-label');
     expect(label).not.toBeNull();
-    expect(label.textContent).toContain('Plan de estudios');
+    expect(label.textContent).toContain('Cursos');
   });
 
   it('should display at least 3 service cards', () => {
@@ -90,16 +75,16 @@ describe('Landing page - Plan de estudios (Services section)', () => {
   });
 });
 
-describe('Landing page - Sección de maestría (Why Lean)', () => {
+describe('Landing page - Sección "¿Para quién es esto?" (Why Lean)', () => {
   it('should have the why-lean section', () => {
     const section = doc.querySelector('.why-lean');
     expect(section).not.toBeNull();
   });
 
-  it('should have "Maestría en Construcción Lean" title', () => {
+  it('should have the "Para quien quiere aprender" title', () => {
     const title = doc.querySelector('.why-lean__title');
     expect(title).not.toBeNull();
-    expect(title.textContent).toContain('Maestría en Construcción Lean');
+    expect(title.textContent).toContain('Para quien quiere aprender');
   });
 
   it('should show an image of a professional', () => {
@@ -113,10 +98,10 @@ describe('Landing page - Sección de maestría (Why Lean)', () => {
     expect(features.length).toBeGreaterThanOrEqual(3);
   });
 
-  it('should show completion statistics', () => {
-    const stat = doc.querySelector('.why-lean__stat-number');
-    expect(stat).not.toBeNull();
-    expect(stat.textContent).toContain('98%');
+  it('should show experience statistics', () => {
+    const stats = doc.querySelectorAll('.why-lean__stat-number');
+    expect(stats.length).toBeGreaterThanOrEqual(3);
+    stats.forEach((stat) => expect(stat.textContent).toMatch(/^\+\d+$/));
   });
 });
 
@@ -128,12 +113,11 @@ describe('Landing page - Header y Footer', () => {
     expect(brand).not.toBeNull();
   });
 
-  it('should have the registration button in header', () => {
-    const nav = doc.querySelector('.site-header__nav');
-    expect(nav).not.toBeNull();
-    const regBtn = nav.querySelector('a, button');
-    expect(regBtn).not.toBeNull();
-    expect(regBtn.textContent).toContain('Regístrate');
+  it('should have the login button in header', () => {
+    const loginBtn = doc.querySelector('.site-header__actions #header-login-btn');
+    expect(loginBtn).not.toBeNull();
+    expect(loginBtn.getAttribute('href')).toBe('/login');
+    expect(loginBtn.textContent).toContain('Acceder');
   });
 
   it('should have a footer with grid sections', () => {
@@ -151,31 +135,32 @@ describe('Landing page - Header y Footer', () => {
     expect(headings).toContain('Contacto');
   });
 
-  it('should have copyright in footer', () => {
+  it('should have copyright and legal links in footer', () => {
     const bottom = doc.querySelector('.site-footer__bottom');
     expect(bottom).not.toBeNull();
-    expect(bottom.textContent).toContain('ManuElearning');
+    expect(bottom.textContent).toContain('Todos los derechos reservados');
+    expect(bottom.querySelector('a[href="/privacidad"]')).not.toBeNull();
   });
 });
 
-describe('Landing page - Registro navigation', () => {
-  it('hero "Regístrate ahora" should link to /registro', () => {
+describe('Landing page - Navegación', () => {
+  it('hero button should link to /cursos', () => {
     const heroActions = doc.querySelector('.hero__actions');
-    const registerLink = heroActions.querySelector('a[href="/registro"]');
-    expect(registerLink).not.toBeNull();
-    expect(registerLink.textContent).toContain('Regístrate ahora');
+    const coursesLink = heroActions.querySelector('a[href="/cursos"]');
+    expect(coursesLink).not.toBeNull();
+    expect(coursesLink.textContent).toContain('Ver cursos');
   });
 
-  it('header "Regístrate" should link to /registro', () => {
-    const nav = doc.querySelector('.site-header__nav');
-    const registerLink = nav.querySelector('a[href="/registro"]');
-    expect(registerLink).not.toBeNull();
+  it('header button should link to /login', () => {
+    const loginLink = doc.querySelector('.site-header__actions a[href="/login"]');
+    expect(loginLink).not.toBeNull();
   });
 
-  it('CTA "Inscríbete ya" should link to /registro', () => {
-    const cta = doc.querySelector('.cta-banner');
-    const registerLink = cta.querySelector('a[href="/registro"]');
-    expect(registerLink).not.toBeNull();
+  it('access CTA should link to /solicitar-acceso', () => {
+    const cta = doc.querySelector('#cta-access');
+    expect(cta).not.toBeNull();
+    expect(cta.getAttribute('href')).toBe('/solicitar-acceso');
+    expect(cta.textContent).toContain('Solicitar acceso');
   });
 });
 
@@ -184,15 +169,13 @@ describe('Landing page - Responsive design', () => {
   let allCss;
 
   beforeAll(() => {
-    const cssDir = path.join(path.resolve('dist'), '_astro');
-    if (fs.existsSync(cssDir)) {
-      const cssFiles = fs.readdirSync(cssDir).filter((f) => f.endsWith('.css'));
-      allCss = cssFiles
-        .map((f) => fs.readFileSync(path.join(cssDir, f), 'utf-8'))
-        .join('\n');
-    } else {
-      allCss = indexHtml;
-    }
+    allCss = [
+      'src/styles/global.css',
+      'src/layouts/MainLayout.astro',
+      'src/pages/index.astro',
+    ]
+      .map((f) => fs.readFileSync(path.resolve(f), 'utf-8'))
+      .join('\n');
   });
 
   it('should have viewport meta tag', () => {

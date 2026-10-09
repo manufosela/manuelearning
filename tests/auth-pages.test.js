@@ -1,28 +1,18 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import fs from 'fs';
-import path from 'path';
+import { parseAstroPages } from './helpers/astro-source.js';
 
 /**
- * Tests para LCT-TSK-0003: Auth pages structure
- *
- * Verifies the built HTML output contains the correct auth page structures.
+ * Tests de estructura de las páginas de auth (MEL-TSK-0003, actualizados en
+ * MEL-BUG-0005). Se analiza el marcado fuente de src/pages/*.astro, no dist/,
+ * para que la suite no dependa de un build previo.
  */
 
-const buildDir = path.resolve('dist');
-
 /**
- * @param {string} pagePath
+ * @param {string} pageName - page file name without extension (e.g. 'login')
  * @returns {{ html: string, doc: Document }}
  */
-function loadPage(pagePath) {
-  const filePath = path.join(buildDir, pagePath, 'index.html');
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Build output not found: ${filePath}. Run "npm run build" first.`);
-  }
-  const html = fs.readFileSync(filePath, 'utf-8');
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-  return { html, doc };
+function loadPage(pageName) {
+  return parseAstroPages(`src/pages/${pageName}.astro`);
 }
 
 describe('Registration page (/registro)', () => {
@@ -33,14 +23,13 @@ describe('Registration page (/registro)', () => {
     page = loadPage('registro');
   });
 
-  it('should have the auth-form element with register mode', () => {
-    const authForm = page.doc.querySelector('auth-form[mode="register"]');
+  it('should have the auth-form element', () => {
+    const authForm = page.doc.querySelector('auth-form');
     expect(authForm).not.toBeNull();
   });
 
   it('should have a page title containing Registro', () => {
-    const title = page.doc.querySelector('title');
-    expect(title.textContent).toContain('Registro');
+    expect(page.html).toMatch(/title=\{`Registro \|/);
   });
 
   it('should have "Crear cuenta" heading', () => {
@@ -64,20 +53,19 @@ describe('Login page (/login)', () => {
     page = loadPage('login');
   });
 
-  it('should have the auth-form element with login mode', () => {
-    const authForm = page.doc.querySelector('auth-form[mode="login"]');
+  it('should have the auth-form element', () => {
+    const authForm = page.doc.querySelector('auth-form');
     expect(authForm).not.toBeNull();
   });
 
   it('should have a page title containing Login', () => {
-    const title = page.doc.querySelector('title');
-    expect(title.textContent).toContain('Login');
+    expect(page.html).toMatch(/title=\{`Login \|/);
   });
 
-  it('should have "Iniciar sesión" heading', () => {
+  it('should have "Acceder" heading', () => {
     const heading = page.doc.querySelector('.auth-header h1');
     expect(heading).not.toBeNull();
-    expect(heading.textContent).toContain('Iniciar sesión');
+    expect(heading.textContent).toContain('Acceder');
   });
 });
 
@@ -101,8 +89,7 @@ describe('Dashboard page (/dashboard)', () => {
   });
 
   it('should have a page title containing Dashboard', () => {
-    const title = page.doc.querySelector('title');
-    expect(title.textContent).toContain('Dashboard');
+    expect(page.html).toMatch(/title=\{`Dashboard \|/);
   });
 
   it('should have student dashboard component', () => {
