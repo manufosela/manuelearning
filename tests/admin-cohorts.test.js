@@ -6,15 +6,17 @@ vi.mock('firebase/auth', () => ({ getAuth: vi.fn(() => ({ currentUser: null })) 
 const mockGetDocs = vi.fn();
 const mockGetDoc = vi.fn();
 const mockAddDoc = vi.fn();
+const mockSetDoc = vi.fn();
 const mockUpdateDoc = vi.fn();
 
 vi.mock('firebase/firestore', () => ({
   getFirestore: vi.fn(() => ({})),
   collection: vi.fn(),
-  doc: vi.fn(),
+  doc: vi.fn(() => 'doc-ref'),
   getDocs: (...a) => mockGetDocs(...a),
   getDoc: (...a) => mockGetDoc(...a),
   addDoc: (...a) => mockAddDoc(...a),
+  setDoc: (...a) => mockSetDoc(...a),
   updateDoc: (...a) => mockUpdateDoc(...a),
   query: vi.fn(),
   orderBy: vi.fn(),
@@ -79,42 +81,40 @@ describe('Admin Cohorts – integration flows', () => {
   });
 
   describe('create cohort flow', () => {
-    it('should create cohort with all required fields', async () => {
-      mockAddDoc.mockResolvedValue({ id: 'new-c' });
+    it('should create cohort with all required fields using the slug as id', async () => {
+      mockSetDoc.mockResolvedValue();
       const data = {
         name: 'Cohorte Test',
-        code: '2026-05',
         startDate: '2026-05-01',
         expiryDate: '2026-08-01',
       };
       const result = await createCohort(data);
       expect(result.success).toBe(true);
-      expect(result.id).toBe('new-c');
-      expect(mockAddDoc).toHaveBeenCalledTimes(1);
+      expect(result.id).toBe('cohorte-test');
+      expect(mockSetDoc).toHaveBeenCalledTimes(1);
+      expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ name: 'Cohorte Test', slug: 'cohorte-test', active: true });
     });
 
-    it('should reject cohort with invalid code for admin form', async () => {
+    it('should reject cohort without name for admin form', async () => {
       const data = {
-        name: 'Cohorte Test',
-        code: 'bad',
+        name: '   ',
         startDate: '2026-05-01',
         expiryDate: '2026-08-01',
       };
       const result = await createCohort(data);
       expect(result.success).toBe(false);
-      expect(mockAddDoc).not.toHaveBeenCalled();
+      expect(mockSetDoc).not.toHaveBeenCalled();
     });
 
     it('should reject cohort with expiry before start for admin form', async () => {
       const data = {
         name: 'Cohorte Test',
-        code: '2026-05',
         startDate: '2026-08-01',
         expiryDate: '2026-05-01',
       };
       const result = await createCohort(data);
       expect(result.success).toBe(false);
-      expect(mockAddDoc).not.toHaveBeenCalled();
+      expect(mockSetDoc).not.toHaveBeenCalled();
     });
   });
 
