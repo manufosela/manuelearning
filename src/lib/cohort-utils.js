@@ -21,16 +21,29 @@ export function generateCohortSlug(name) {
 }
 
 /**
+ * Format a Date as YYYY-MM-DD in the local time zone.
+ * Cohort dates are stored as plain calendar dates, so comparisons must not
+ * go through UTC (toISOString shifts the day near midnight).
+ * @param {Date} date
+ * @returns {string}
+ */
+export function toLocalIsoDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * Check if a cohort has expired based on its expiryDate.
+ * A cohort is still valid on its expiry day; it expires the day after.
  * @param {{ expiryDate?: string }} cohort
  * @returns {boolean}
  */
 export function isCohortExpired(cohort) {
   if (!cohort || !cohort.expiryDate) return false;
-  const expiry = new Date(cohort.expiryDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return expiry < today;
+  const expiry = String(cohort.expiryDate).slice(0, 10);
+  return expiry < toLocalIsoDate(new Date());
 }
 
 /**

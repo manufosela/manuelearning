@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('firebase/app', () => ({ initializeApp: vi.fn(() => ({})) }));
 vi.mock('firebase/auth', () => ({ getAuth: vi.fn(() => ({ currentUser: null })) }));
+// updateStreak writes its own Firestore doc; keep it out of the setDoc call counts.
+vi.mock('../src/lib/firebase/streaks.js', () => ({ updateStreak: vi.fn(() => Promise.resolve()) }));
 
 const mockGetDocs = vi.fn();
 const mockGetDoc = vi.fn();

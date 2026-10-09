@@ -1,5 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { isCohortExpired, getCohortStatus, validateCohort, generateCohortSlug } from '../src/lib/cohort-utils.js';
+import {
+  isCohortExpired,
+  getCohortStatus,
+  validateCohort,
+  generateCohortSlug,
+  toLocalIsoDate,
+} from '../src/lib/cohort-utils.js';
+
+describe('toLocalIsoDate', () => {
+  it('should format a date as YYYY-MM-DD using local calendar fields', () => {
+    const date = new Date(2026, 0, 5, 23, 30);
+    expect(toLocalIsoDate(date)).toBe('2026-01-05');
+  });
+
+  it('should zero-pad month and day', () => {
+    expect(toLocalIsoDate(new Date(2026, 9, 1))).toBe('2026-10-01');
+  });
+});
 
 describe('isCohortExpired', () => {
   it('should return false when cohort is null', () => {
@@ -21,8 +38,14 @@ describe('isCohortExpired', () => {
   });
 
   it('should return false when expiryDate is today', () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = toLocalIsoDate(new Date());
     expect(isCohortExpired({ expiryDate: today })).toBe(false);
+  });
+
+  it('should return true when expiryDate was yesterday', () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    expect(isCohortExpired({ expiryDate: toLocalIsoDate(yesterday) })).toBe(true);
   });
 });
 

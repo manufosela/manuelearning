@@ -32,8 +32,10 @@ describe('extractYouTubeId', () => {
 });
 
 describe('buildEmbedUrl', () => {
-  it('should build embed URL from video ID', () => {
-    expect(buildEmbedUrl('dQw4w9WgXcQ')).toBe('https://www.youtube.com/embed/dQw4w9WgXcQ');
+  it('should build embed URL from video ID with JS API enabled for the current origin', () => {
+    expect(buildEmbedUrl('dQw4w9WgXcQ')).toBe(
+      `https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1&origin=${window.location.origin}`
+    );
   });
 
   it('should return empty string for null ID', () => {
