@@ -1,21 +1,19 @@
 /**
- * Seed script: uploads Docker and JavaScript courses to Firestore.
+ * Seed script: uploads the Docker course to Firestore.
  *
  * Usage:
  *   node scripts/seed-courses.mjs
- *   node scripts/seed-courses.mjs --docker-only
- *   node scripts/seed-courses.mjs --js-only
  *   node scripts/seed-courses.mjs --dry-run
  *
  * Prerequisites:
  *   - serviceAccountKey.json in project root
- *   - npm install mammoth (for docx conversion)
+ *   - docs/docker/introduccion-docker.md (course material, not tracked in git)
  */
 
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { readFileSync, readdirSync } from 'fs';
-import { resolve, dirname, basename } from 'path';
+import { readFileSync } from 'fs';
+import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -25,8 +23,6 @@ const serviceAccount = JSON.parse(readFileSync(keyPath, 'utf-8'));
 
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
-const DOCKER_ONLY = args.includes('--docker-only');
-const JS_ONLY = args.includes('--js-only');
 
 const app = initializeApp({ credential: cert(serviceAccount) });
 const db = getFirestore(app);
@@ -176,211 +172,6 @@ function parseDockerCourse() {
   return modules;
 }
 
-// ─── JavaScript Course ──────────────────────────────────────
-
-const JS_MODULE_MAP = [
-  {
-    title: 'Fundamentos de JavaScript',
-    description: 'Conceptos básicos, variables, scope y tipos de datos',
-    order: 0,
-    prefixes: ['BASICO', 'BÁSICO'],
-    extraFiles: [
-      '✨♻️ JavaScript Visualized.docx',
-      'OPINION TypeScript vs JavaScript.docx',
-    ],
-  },
-  {
-    title: 'Variables y Scope',
-    description: 'Variables, closures, hoisting, TDZ y scope',
-    order: 1,
-    prefixes: ['VARIABLES'],
-  },
-  {
-    title: 'Funciones',
-    description: 'Funciones, callbacks, arrow functions y funciones de orden superior',
-    order: 2,
-    prefixes: ['FUNCIONES', 'CALLBACKS'],
-  },
-  {
-    title: 'Objetos y Clases',
-    description: 'Objetos, clases, herencia prototípica y polimorfismo',
-    order: 3,
-    prefixes: ['OBJETOS', 'CLASES'],
-  },
-  {
-    title: 'Arrays y Strings',
-    description: 'Métodos de arrays, strings y manipulación de datos',
-    order: 4,
-    prefixes: ['ARRAYS', 'STRINGS'],
-  },
-  {
-    title: 'Bucles e Iteraciones',
-    description: 'For...of, iteradores y procesamiento inmutable de datos',
-    order: 5,
-    prefixes: ['BUCLES', 'AVANAZADO'],
-  },
-  {
-    title: 'JavaScript Avanzado',
-    description: 'Proxies, Web Workers, SharedArrayBuffers y metaprogramación',
-    order: 13,
-    prefixes: ['AVANZADO'],
-  },
-  {
-    title: 'Conceptos Avanzados',
-    description: 'Currying, memoization, proxies, programación funcional',
-    order: 6,
-    prefixes: ['CONCEPTOS'],
-  },
-  {
-    title: 'Asincronía y Promesas',
-    description: 'Event loop, callbacks, promesas, async/await',
-    order: 7,
-    prefixes: ['PROMESAS', 'EVENT LOOP'],
-  },
-  {
-    title: 'Fetch y HTTP',
-    description: 'Fetch API, JSON, CORS y peticiones HTTP',
-    order: 8,
-    prefixes: ['FETCH'],
-  },
-  {
-    title: 'Módulos e Imports',
-    description: 'ECMAScript modules, import/export, Node.js modules',
-    order: 9,
-    prefixes: ['IMPORT', 'IMPORTS'],
-  },
-  {
-    title: 'Patrones de Diseño',
-    description: 'Patrones de diseño esenciales en JavaScript',
-    order: 10,
-    prefixes: ['PATRONES'],
-  },
-  {
-    title: 'Testing',
-    description: 'Conceptos de testing, TDD y herramientas',
-    order: 11,
-    prefixes: ['TESTS'],
-  },
-  {
-    title: 'Extras y Herramientas',
-    description: 'TypeScript, Big O, PRPL, HTML avanzado, Curl y más',
-    order: 12,
-    prefixes: ['EXTRA', 'TYPESCRIPT', 'ARQUITECTURA'],
-    extraFiles: [
-      'Opciones para eliminar oyentes de eventos.docx',
-    ],
-  },
-];
-
-async function convertDocxToMarkdown(filePath) {
-  try {
-    const mammoth = await import('mammoth');
-    const result = await mammoth.default.convertToMarkdown({ path: filePath });
-    let md = result.value;
-    // Strip base64 embedded images (can be megabytes)
-    md = md.replace(/!\[([^\]]*)\]\(data:image\/[^)]+\)/g, '*[imagen]*');
-    // Remove excessive whitespace
-    md = md.replace(/\n{4,}/g, '\n\n\n');
-    return md;
-  } catch (err) {
-    console.error(`  Error converting ${basename(filePath)}: ${err.message}`);
-    return null;
-  }
-}
-
-function cleanTitle(filename) {
-  // Remove .docx extension
-  let name = filename.replace(/\.docx$/i, '');
-  // Remove leading category prefixes like "BASICO ", "ARRAYS ", etc.
-  name = name.replace(/^(BÁSICO|BASICO|ARRAYS|STRINGS|FUNCIONES|CALLBACKS|CLASES|OBJETOS|BUCLES|CONCEPTOS|PROMESAS|FETCH|IMPORT|IMPORTS|PATRONES|TESTS|EXTRA|TYPESCRIPT|ARQUITECTURA|AVANZADO|AVANAZADO|EVENT LOOP|OPINION|VARIABLES)[.:_ ]+/i, '');
-  // Clean up dots and underscores at start
-  name = name.replace(/^[._ ]+/, '').trim();
-  // Remove trailing underscores
-  name = name.replace(/_+$/, '').trim();
-  return name || filename.replace(/\.docx$/i, '');
-}
-
-function getModuleForFile(filename) {
-  const upper = filename.toUpperCase();
-
-  for (const mod of JS_MODULE_MAP) {
-    // Check extra files first
-    if (mod.extraFiles && mod.extraFiles.some(f => filename === f)) {
-      return mod;
-    }
-    // Check prefixes
-    for (const prefix of mod.prefixes) {
-      if (upper.startsWith(prefix)) {
-        return mod;
-      }
-    }
-  }
-
-  // Default to Extras
-  return JS_MODULE_MAP[JS_MODULE_MAP.length - 1];
-}
-
-async function parseJavaScriptCourse() {
-  const themesDir = resolve(ROOT, 'docs/javascript/Temas de Javascript');
-  const extraDir = resolve(ROOT, 'docs/javascript');
-
-  const modules = JS_MODULE_MAP.map(m => ({
-    ...m,
-    lessons: [],
-  }));
-
-  // Process theme files
-  const themeFiles = readdirSync(themesDir)
-    .filter(f => f.endsWith('.docx') && !f.startsWith('__'))
-    .sort();
-
-  console.log(`  Found ${themeFiles.length} theme files to process`);
-
-  for (const file of themeFiles) {
-    const mod = getModuleForFile(file);
-    const moduleData = modules.find(m => m.title === mod.title);
-    const filePath = resolve(themesDir, file);
-
-    console.log(`  Converting: ${file} → ${mod.title}`);
-    const markdown = await convertDocxToMarkdown(filePath);
-    if (!markdown) continue;
-
-    moduleData.lessons.push({
-      title: cleanTitle(file),
-      description: '',
-      documentation: markdown,
-      order: moduleData.lessons.length,
-    });
-  }
-
-  // Process extra root-level docx files
-  const extraFiles = readdirSync(extraDir)
-    .filter(f => f.endsWith('.docx'))
-    .sort();
-
-  console.log(`  Found ${extraFiles.length} extra files`);
-
-  for (const file of extraFiles) {
-    const mod = getModuleForFile(file);
-    const moduleData = modules.find(m => m.title === mod.title);
-    const filePath = resolve(extraDir, file);
-
-    console.log(`  Converting extra: ${file} → ${mod.title}`);
-    const markdown = await convertDocxToMarkdown(filePath);
-    if (!markdown) continue;
-
-    moduleData.lessons.push({
-      title: cleanTitle(file),
-      description: '',
-      documentation: markdown,
-      order: moduleData.lessons.length,
-    });
-  }
-
-  // Filter out empty modules
-  return modules.filter(m => m.lessons.length > 0);
-}
-
 // ─── Upload to Firestore ────────────────────────────────────
 
 async function uploadCourse(courseName, modules) {
@@ -435,19 +226,11 @@ async function uploadCourse(courseName, modules) {
 
 async function main() {
   try {
-    if (!JS_ONLY) {
-      console.log('\n═══ DOCKER COURSE ═══');
-      const dockerModules = parseDockerCourse();
-      await uploadCourse('docker', dockerModules);
-    }
+    console.log('\n═══ DOCKER COURSE ═══');
+    const dockerModules = parseDockerCourse();
+    await uploadCourse('docker', dockerModules);
 
-    if (!DOCKER_ONLY) {
-      console.log('\n═══ JAVASCRIPT COURSE ═══');
-      const jsModules = await parseJavaScriptCourse();
-      await uploadCourse('javascript', jsModules);
-    }
-
-    console.log('\n✓ All courses uploaded successfully');
+    console.log('\n✓ Course uploaded successfully');
   } catch (err) {
     console.error('\nError:', err.message);
     process.exit(1);

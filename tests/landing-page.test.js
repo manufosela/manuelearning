@@ -61,9 +61,14 @@ describe('Landing page - Cursos (Services section)', () => {
     expect(label.textContent).toContain('Cursos');
   });
 
-  it('should display at least 3 service cards', () => {
+  it('should display at least 2 service cards', () => {
     const cards = doc.querySelectorAll('.service-card');
-    expect(cards.length).toBeGreaterThanOrEqual(3);
+    expect(cards.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('should not advertise the retired JavaScript demo course', () => {
+    const titles = [...doc.querySelectorAll('.service-card__title')].map((t) => t.textContent);
+    expect(titles.some((t) => /javascript/i.test(t))).toBe(false);
   });
 
   it('each service card should have title and text', () => {
