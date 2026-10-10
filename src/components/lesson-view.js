@@ -13,6 +13,7 @@ import {
 import { trackActivity } from '../lib/firebase/users.js';
 import { fetchQuizzesByLessonId, getStudentQuizResponse } from '../lib/firebase/quizzes.js';
 import { waitForAuth } from '../lib/auth-ready.js';
+import { lessonQueryFor } from '../lib/lesson-audience.js';
 import './video-player.js';
 import './markdown-content.js';
 import './lesson-nav.js';
@@ -348,9 +349,11 @@ export class LessonView extends LitElement {
     const modulesResult = await fetchAllModules();
     if (!modulesResult.success) return;
 
+    // Admins navigate through instructor material too; students skip it.
+    const lessonQuery = await lessonQueryFor(this._userId);
     const lessonsByModule = {};
     for (const mod of modulesResult.modules) {
-      const res = await fetchLessons(mod.id);
+      const res = await fetchLessons(mod.id, lessonQuery);
       lessonsByModule[mod.id] = res.success ? res.lessons : [];
     }
 

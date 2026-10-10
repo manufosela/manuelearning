@@ -1,6 +1,6 @@
 /**
  * @typedef {{ moduleId: string, lessonId: string }} LessonRef
- * @typedef {{ moduleId: string, moduleTitle: string, lessonId: string, lessonTitle: string, index: number }} PathItem
+ * @typedef {{ moduleId: string, moduleTitle: string, lessonId: string, lessonTitle: string, audience: 'student'|'instructor', index: number }} PathItem
  */
 
 /**
@@ -81,6 +81,7 @@ export function buildLearningPath(modules, lessonsByModule) {
         moduleTitle: mod.title,
         lessonId: lesson.id,
         lessonTitle: lesson.title,
+        audience: lesson.audience ?? 'student',
         index: index++,
       });
     }
