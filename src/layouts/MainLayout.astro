@@ -104,7 +104,7 @@ const {
         <div class="site-footer__links">
           <h4>Cursos</h4>
           <ul>
-            <li><a href="/curso?c=docker">Docker</a></li>
+            <course-nav-links style="display: contents"></course-nav-links>
             <li><a href="/cursos">Ver todos</a></li>
           </ul>
         </div>
@@ -139,6 +139,9 @@ const {
         navigator.serviceWorker.register('/service-worker.js');
       });
     }
+  </script>
+  <script>
+    import '../components/course-nav-links.js';
   </script>
   <script>
     const themeToggle = document.getElementById('theme-toggle');
@@ -417,7 +420,8 @@ const {
     font-size: 0.875rem;
   }
 
-  .site-footer__links li {
+  /* :global — <course-nav-links> renders <li><a> without Astro's scope attribute */
+  .site-footer__links :global(li) {
     display: flex;
     gap: 0.5rem;
     align-items: center;
@@ -427,7 +431,7 @@ const {
     font-size: 0.875rem;
   }
 
-  .site-footer__links a:hover {
+  .site-footer__links :global(a):hover {
     color: var(--color-text-white);
     transition: color var(--transition-fast);
   }
