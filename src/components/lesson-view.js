@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { fetchLesson, fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
-import { getNextLesson, getPrevLesson } from '../lib/learning-path.js';
+import { getNextLesson, getPrevLesson, modulesOfSameCourse } from '../lib/learning-path.js';
 import {
   markLessonCompleted,
   isLessonCompleted,
@@ -348,17 +348,18 @@ export class LessonView extends LitElement {
   async _loadNavigation(moduleId, lessonId) {
     const modulesResult = await fetchAllModules();
     if (!modulesResult.success) return;
+    const courseModules = modulesOfSameCourse(modulesResult.modules, moduleId);
 
     // Admins navigate through instructor material too; students skip it.
     const lessonQuery = await lessonQueryFor(this._userId);
     const lessonsByModule = {};
-    for (const mod of modulesResult.modules) {
+    for (const mod of courseModules) {
       const res = await fetchLessons(mod.id, lessonQuery);
       lessonsByModule[mod.id] = res.success ? res.lessons : [];
     }
 
-    this._prevRef = getPrevLesson(modulesResult.modules, lessonsByModule, moduleId, lessonId);
-    this._nextRef = getNextLesson(modulesResult.modules, lessonsByModule, moduleId, lessonId);
+    this._prevRef = getPrevLesson(courseModules, lessonsByModule, moduleId, lessonId);
+    this._nextRef = getNextLesson(courseModules, lessonsByModule, moduleId, lessonId);
   }
 
   async _markComplete() {
