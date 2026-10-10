@@ -16,8 +16,8 @@ describe('firestore.indexes.json', () => {
     expect(Array.isArray(indexesContent.fieldOverrides)).toBe(true);
   });
 
-  it('should have 9 composite indexes', () => {
-    expect(indexesContent.indexes).toHaveLength(9);
+  it('should have 10 composite indexes', () => {
+    expect(indexesContent.indexes).toHaveLength(10);
   });
 
   it('each index should have required fields', () => {
@@ -49,6 +49,7 @@ describe('firestore.indexes.json', () => {
     { collection: 'userNotifications', fields: ['userId', 'createdAt'] },
     { collection: 'userNotifications', fields: ['userId', 'read'] },
     { collection: 'modules', fields: ['course', 'order'] },
+    { collection: 'courses', fields: ['published', 'order'] },
   ];
 
   for (const req of requiredIndexes) {
