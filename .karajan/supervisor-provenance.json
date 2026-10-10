@@ -1,6 +1,6 @@
 {
-  "kj_version": "4.47.0",
-  "generated_at": "2026-10-10T10:40:25.028Z",
+  "kj_version": "4.48.1",
+  "generated_at": "2026-10-10T19:49:59.911Z",
   "generation": {
     "profile": "standard",
     "cmds": {},
@@ -23,7 +23,7 @@
     },
     {
       "file": ".karajan/harness/pretooluse-sentinel.mjs",
-      "sha256": "76d64ad9222ce50c7421f101a44789edca1560fce5b1ad0da4d3e2bcb2e94852"
+      "sha256": "44705c90f476605dd2083694b13ccba7378c39c33391f07aeab89b686de05302"
     },
     {
       "file": ".karajan/harness/pretooluse.mjs",
@@ -51,7 +51,7 @@
     },
     {
       "file": ".karajan/harness/sentinel-shell.mjs",
-      "sha256": "5c84390fa3adab05ded396032d6bca65df388410cef7de78a6dab266be644ceb"
+      "sha256": "3fe9c7f3856e0e6403a47f2f7bb5f4614d4693dcb5938530929eeb7857c222c9"
     },
     {
       "file": ".karajan/harness/sessionstart.mjs",
@@ -71,7 +71,7 @@
     },
     {
       "file": ".karajan/hooks/pre-commit",
-      "sha256": "e4ae5e2bf8c5ff8e6fc14b995a859b0b42edbd88e5acbf25c9c261c818dd4cc9"
+      "sha256": "119573cf90ebf9f4b8369b8616fac87f2b5877d97452503b9d918ea186162c73"
     },
     {
       "file": ".karajan/hooks/pre-push",
@@ -83,15 +83,15 @@
     }
   ],
   "signature": {
-    "cid": "372488d53990be97d35585a54c89c093",
-    "nonce": "56ab43fd6ca6c221db99938e240ee9e1",
+    "cid": "7931578cbc7bd855f2d69613b240a6fc",
+    "nonce": "f1bdd43f98e0ed0a7be92ec333c817a4",
     "project": "manuelearning",
-    "filesHash": "01750d60083d1c1322f8f7e1be1012ba8ba93927a5c45cb4f397cc1690e65f3b",
+    "filesHash": "41ab784a4b6d4a8bced944ce13085de1ca936853616ec57d0533bd44aed2b87c",
     "v": 2,
-    "kjVersion": "4.47.0",
-    "issuedMs": 1791628775208,
-    "expiresMs": 1791628835208,
+    "kjVersion": "4.48.1",
+    "issuedMs": 1791661788843,
+    "expiresMs": 1791661848843,
     "signer": "EgMc2b95g5nUh8e6LDCeLjv7G69cQaszUCIy+3aLpPQ=",
-    "signature": "PU4iY6DxQFi527u56hTrKR1HDfwlKUtsBPlZm+G374BihfMw+VHszcCh2ratWHrYiRK3cvOF01KQEB7EFpgkBw=="
+    "signature": "B/qIgHKl7RQEHNa0HEmnPUxeIw7cpSzp2ZxKU45wqAnz1J4X4mm2L/Bx/Se9BYdT1Yc2yiex4dt5PVIxMSGDBA=="
   }
 }
