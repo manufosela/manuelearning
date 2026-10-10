@@ -3,9 +3,12 @@ import {
   doc,
   getDoc,
   getDocs,
+  setDoc,
+  deleteDoc,
   query,
   where,
   orderBy,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './config.js';
 
@@ -103,5 +106,51 @@ export async function fetchCourse(slug) {
     return { success: true, course: toCourse(snap) };
   } catch (err) {
     return failure('Error al cargar el curso', err);
+  }
+}
+
+/**
+ * Create or update a course (document id = slug).
+ * @param {Course} data
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function saveCourse(data) {
+  const validation = validateCourse(data);
+  if (!validation.valid) return { success: false, error: validation.error };
+
+  try {
+    await setDoc(
+      doc(db, COLLECTION, data.slug),
+      {
+        slug: data.slug,
+        title: data.title.trim(),
+        description: data.description || '',
+        icon: data.icon || 'school',
+        color: data.color || '#d32f2f',
+        order: data.order,
+        published: data.published === true,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    return { success: true };
+  } catch (err) {
+    return failure('Error al guardar el curso', err);
+  }
+}
+
+/**
+ * Delete a course document. Its modules are not touched.
+ * @param {string} slug
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function deleteCourse(slug) {
+  if (!slug) return { success: false, error: 'El slug es obligatorio' };
+
+  try {
+    await deleteDoc(doc(db, COLLECTION, slug));
+    return { success: true };
+  } catch (err) {
+    return failure('Error al eliminar el curso', err);
   }
 }
