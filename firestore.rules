@@ -40,6 +40,15 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // ── courses ──────────────────────────────────────────────
+    match /courses/{slug} {
+      // Published courses are public (the /cursos catalogue has no auth guard);
+      // admins can read unpublished ones too
+      allow read: if resource.data.published == true || isAdmin();
+      // Only admins (and the import script via Admin SDK) manage courses
+      allow create, update, delete: if isAdmin();
+    }
+
     // ── modules ──────────────────────────────────────────────
     match /modules/{moduleId} {
       // Any signed-in user can read modules
