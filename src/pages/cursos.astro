@@ -1,17 +1,6 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import { SITE } from '../config/site.config.js';
-
-const courses = [
-  {
-    id: 'docker',
-    title: 'Docker desde cero',
-    description: 'Aprende Docker y docker-compose creando una aplicación fullstack con Node, MongoDB y Nginx.',
-    icon: 'deployed_code',
-    modules: 4,
-    color: '#0db7ed',
-  },
-];
 ---
 
 <MainLayout title={`Cursos | ${SITE.name}`}>
@@ -21,29 +10,17 @@ const courses = [
       <p>Elige un curso y empieza a aprender a tu ritmo</p>
     </div>
 
-    <div class="courses-grid">
-      {courses.map((course) => (
-        <a href={`/curso?c=${course.id}`} class="course-card">
-          <div class="course-card__icon" style={`background-color: ${course.color}20; color: ${course.color};`}>
-            <span class="material-symbols-outlined">{course.icon}</span>
-          </div>
-          <h2 class="course-card__title">{course.title}</h2>
-          <p class="course-card__desc">{course.description}</p>
-          <div class="course-card__meta">
-            <span class="material-symbols-outlined">school</span>
-            {course.modules} módulos
-          </div>
-          <div class="course-card__cta">
-            Ver temario
-            <span class="material-symbols-outlined">arrow_forward</span>
-          </div>
-        </a>
-      ))}
-    </div>
+    <course-list></course-list>
   </section>
 </MainLayout>
 
-<style>
+<script>
+  import '../components/course-list.js';
+</script>
+
+<!-- Global: the cards are rendered by <course-list> in light DOM, where
+     Astro's scoped data-astro-cid attributes do not reach. -->
+<style is:global>
   .courses-page {
     padding: 3rem var(--section-px);
     max-width: 900px;
@@ -150,5 +127,15 @@ const courses = [
 
   .course-card:hover .course-card__cta .material-symbols-outlined {
     transform: translateX(4px);
+  }
+
+  .courses-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--color-text-secondary);
+  }
+
+  .courses-state--error {
+    color: var(--color-error-text, #991b1b);
   }
 </style>
