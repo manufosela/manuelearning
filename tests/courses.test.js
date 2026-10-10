@@ -29,6 +29,8 @@ import {
   fetchPublishedCourses,
   fetchAllCourses,
   fetchCourse,
+  saveCourse,
+  deleteCourse,
 } from '../src/lib/firebase/courses.js';
 
 const validCourse = () => ({
@@ -123,5 +125,52 @@ describe('fetchCourse', () => {
   it('returns an error when Firestore fails', async () => {
     mockGetDoc.mockRejectedValue(new Error('boom'));
     expect((await fetchCourse('docker')).error).toBe('Error al cargar el curso');
+  });
+});
+
+describe('saveCourse', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('validates before writing', async () => {
+    const result = await saveCourse({ ...validCourse(), title: '' });
+    expect(result.success).toBe(false);
+    expect(mockSetDoc).not.toHaveBeenCalled();
+  });
+
+  it('writes the document under the slug with merge and defaults', async () => {
+    mockSetDoc.mockResolvedValue();
+    const { icon, color, description, ...minimal } = validCourse();
+    const result = await saveCourse({ ...minimal, published: undefined });
+    expect(result.success).toBe(true);
+    expect(mockSetDoc).toHaveBeenCalledWith(
+      'doc:karajan-v4',
+      expect.objectContaining({ slug: 'karajan-v4', icon: 'school', color: '#d32f2f', description: '', published: false, updatedAt: 'TS' }),
+      { merge: true }
+    );
+  });
+
+  it('returns an error when Firestore fails', async () => {
+    mockSetDoc.mockRejectedValue(new Error('boom'));
+    expect((await saveCourse(validCourse())).error).toBe('Error al guardar el curso');
+  });
+});
+
+describe('deleteCourse', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('rejects an empty slug', async () => {
+    expect((await deleteCourse('')).success).toBe(false);
+    expect(mockDeleteDoc).not.toHaveBeenCalled();
+  });
+
+  it('deletes the document', async () => {
+    mockDeleteDoc.mockResolvedValue();
+    expect(await deleteCourse('docker')).toEqual({ success: true });
+    expect(mockDeleteDoc).toHaveBeenCalledWith('doc:docker');
+  });
+
+  it('returns an error when Firestore fails', async () => {
+    mockDeleteDoc.mockRejectedValue(new Error('boom'));
+    expect((await deleteCourse('docker')).error).toBe('Error al eliminar el curso');
   });
 });
