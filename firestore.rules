@@ -58,7 +58,9 @@ service cloud.firestore {
 
       // ── lessons (subcollection) ────────────────────────────
       match /lessons/{lessonId} {
-        allow read: if isSignedIn();
+        // Students only read student lessons; instructor material is admin-only.
+        // Student list queries must filter audience == 'student' (rules are not filters).
+        allow read: if isAdmin() || (isSignedIn() && resource.data.audience == 'student');
         allow create, update, delete: if isAdmin();
       }
     }
