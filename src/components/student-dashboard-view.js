@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, nothing } from 'lit';
 import { fetchAllModules, fetchLessons } from '../lib/firebase/modules.js';
 import { trackActivity } from '../lib/firebase/users.js';
 import { getUserProgress } from '../lib/firebase/progress.js';
@@ -11,6 +11,8 @@ import { computeDashboardStats } from '../lib/dashboard-stats.js';
 import { getUserQuizResults } from '../lib/firebase/quizzes.js';
 import { computeWeeklyCompletions, computeQuizPerformance, estimateCompletionDate } from '../lib/analytics-utils.js';
 import { materialIconsLink } from './shared/material-icons.js';
+import { fetchPublishedCourses } from '../lib/firebase/courses.js';
+import './certificate-download.js';
 
 /**
  * @element student-dashboard-view
@@ -24,6 +26,8 @@ export class StudentDashboardView extends LitElement {
     _cohortExpired: { type: Boolean, state: true },
     _streak: { type: Object, state: true },
     _analytics: { type: Object, state: true },
+    _courseTitles: { type: Object, state: true },
+    _student: { type: Object, state: true },
   };
 
   static styles = css`
@@ -583,6 +587,9 @@ export class StudentDashboardView extends LitElement {
     this._cohortExpired = false;
     this._streak = null;
     this._analytics = null;
+    /** @type {Map<string, string>} course slug → title */
+    this._courseTitles = new Map();
+    this._student = null;
   }
 
   connectedCallback() {
@@ -595,6 +602,9 @@ export class StudentDashboardView extends LitElement {
     trackActivity(user.uid);
 
     const userResult = await fetchUser(user.uid);
+    // Name printed on certificates: profile name, then auth name, then email.
+    const profileName = userResult.success ? userResult.user.displayName : null;
+    this._student = { uid: user.uid, name: profileName ?? user.displayName ?? user.email };
     if (userResult.success && userResult.user.cohortId && !userResult.user.lifetimeAccess) {
       const cohortResult = await fetchCohort(userResult.user.cohortId);
       if (cohortResult.success && isCohortExpired(cohortResult.cohort)) {
@@ -604,11 +614,15 @@ export class StudentDashboardView extends LitElement {
       }
     }
 
-    const [modulesResult, progressResult, streakResult] = await Promise.all([
+    const [modulesResult, progressResult, streakResult, coursesResult] = await Promise.all([
       fetchAllModules(),
       getUserProgress(user.uid),
       getStreak(user.uid),
+      fetchPublishedCourses(),
     ]);
+    if (coursesResult.success) {
+      this._courseTitles = new Map(coursesResult.courses.map((c) => [c.slug, c.title]));
+    }
 
     if (!modulesResult.success) {
       this._loading = false;
@@ -652,6 +666,25 @@ export class StudentDashboardView extends LitElement {
     }
 
     this._loading = false;
+  }
+
+  /**
+   * Certificate for a fully completed, published course.
+   * @private
+   */
+  _renderCertificate(group) {
+    const courseTitle = this._courseTitles.get(group.course);
+    const eligible = group.percent === 100 && Boolean(courseTitle) && Boolean(this._student);
+    return html`${eligible
+      ? html`<certificate-download
+          class="course-certificate"
+          .userId=${this._student.uid}
+          .userName=${this._student.name}
+          .progress=${100}
+          .courseSlug=${group.course}
+          .courseTitle=${courseTitle}
+        ></certificate-download>`
+      : nothing}`;
   }
 
   /** @private */
@@ -818,7 +851,7 @@ export class StudentDashboardView extends LitElement {
                     <div class="course-summary-left">
                       <span class="material-symbols-outlined course-toggle-icon">chevron_right</span>
                       <a href="/curso?c=${encodeURIComponent(group.course)}" class="course-section-title-link" @click=${(e) => e.stopPropagation()}>
-                        <span class="course-section-title">${group.course}</span>
+                        <span class="course-section-title">${this._courseTitles.get(group.course) ?? group.course}</span>
                         <span class="material-symbols-outlined course-section-arrow">arrow_forward</span>
                       </a>
                     </div>
@@ -852,6 +885,7 @@ export class StudentDashboardView extends LitElement {
                       }
                     )}
                   </div>
+                  ${this._renderCertificate(group)}
                 </div>
               </details>
             </div>
