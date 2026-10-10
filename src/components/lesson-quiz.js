@@ -3,6 +3,7 @@ import { fetchQuizzesByLessonId, submitLessonQuizResponse, getStudentQuizRespons
 import { waitForAuth } from '../lib/auth-ready.js';
 import { stateStyles } from '../lib/shared-styles.js';
 import { materialIconsLink } from './shared/material-icons.js';
+import { normalizeQuestion, isAnswered, buildAnswers, restoreAnswers } from '../lib/lesson-quiz-utils.js';
 
 /**
  * @element lesson-quiz
@@ -260,6 +261,33 @@ export class LessonQuiz extends LitElement {
         font-size: 0.938rem;
       }
 
+      .open-answer {
+        display: block;
+        width: 100%;
+        min-height: 7rem;
+        padding: 0.75rem;
+        border: 1px solid var(--color-border, #e2e8f0);
+        border-radius: 0.5rem;
+        font: inherit;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        resize: vertical;
+        box-sizing: border-box;
+        background: var(--color-bg-white, #fff);
+        color: var(--color-text-primary, #0f172a);
+      }
+
+      .open-answer:disabled {
+        background: var(--color-bg-light, #f8fafc);
+      }
+
+      .open-answer-label {
+        display: block;
+        font-size: 0.813rem;
+        color: var(--color-text-secondary, #475569);
+        margin-bottom: 0.375rem;
+      }
+
       /* Focus indicators */
       button:focus-visible,
       a:focus-visible,
@@ -324,12 +352,7 @@ export class LessonQuiz extends LitElement {
     this._quiz = {
       id: raw.id,
       lessonId: raw.lessonId,
-      questions: (raw.questions || []).map((q) => ({
-        question: q.text || q.question || '',
-        options: q.options || [],
-        correctIndex: q.correctAnswer ?? q.correctIndex ?? 0,
-        explanation: q.explanation || '',
-      })),
+      questions: (raw.questions || []).map(normalizeQuestion),
     };
     this._answers = new Array(this._quiz.questions.length).fill(null);
     this._currentQuestion = 0;
@@ -339,7 +362,7 @@ export class LessonQuiz extends LitElement {
       const responseResult = await getStudentQuizResponse(this._userId, this.lessonId, this.lessonId);
       if (responseResult.success && responseResult.response) {
         this._previousResponse = responseResult.response;
-        this._answers = (responseResult.response.answers || []).map((a) => a.selectedIndex);
+        this._answers = restoreAnswers(this._quiz.questions, responseResult.response.answers || []);
         this._submitted = true;
         this._confirmedQuestions = new Array(this._quiz.questions.length).fill(true);
         this._currentQuestion = this._quiz.questions.length - 1;
@@ -356,11 +379,21 @@ export class LessonQuiz extends LitElement {
     this._answers = updated;
   }
 
+  _writeOpenAnswer(questionIndex, text) {
+    if (this._submitted || this._confirmedQuestions[questionIndex]) return;
+    const updated = [...this._answers];
+    updated[questionIndex] = text;
+    this._answers = updated;
+  }
+
   _confirmAnswer() {
     if (this._submitted) return;
     const currentIdx = this._currentQuestion;
-    if (this._answers[currentIdx] === null) {
-      this._error = 'Selecciona una respuesta antes de continuar.';
+    const question = this._quiz.questions[currentIdx];
+    if (!isAnswered(question, this._answers[currentIdx])) {
+      this._error = question.type === 'open'
+        ? 'Escribe tu respuesta antes de continuar.'
+        : 'Selecciona una respuesta antes de continuar.';
       return;
     }
     this._error = '';
@@ -387,10 +420,7 @@ export class LessonQuiz extends LitElement {
     this._submitting = true;
     this._error = '';
 
-    const answers = this._quiz.questions.map((q, i) => ({
-      selectedIndex: this._answers[i],
-      isCorrect: this._answers[i] === q.correctIndex,
-    }));
+    const answers = buildAnswers(this._quiz.questions, this._answers);
 
     const result = await submitLessonQuizResponse({
       lessonId: this.lessonId,
@@ -476,7 +506,8 @@ export class LessonQuiz extends LitElement {
                 <button
                   class="submit-btn"
                   @click=${this._confirmAnswer}
-                  ?disabled=${this._submitting || this._answers[this._currentQuestion] === null}
+                  ?disabled=${this._submitting
+                    || !isAnswered(this._quiz.questions[this._currentQuestion], this._answers[this._currentQuestion])}
                 >
                   ${this._submitting
                     ? 'Enviando...'
@@ -493,9 +524,24 @@ export class LessonQuiz extends LitElement {
     `;
   }
 
+  _renderOpenAnswer(index, isDisabled) {
+    const id = `open-answer-${index}`;
+    return html`
+      <label class="open-answer-label" for=${id}>Tu respuesta (caso práctico, no se corrige automáticamente)</label>
+      <textarea
+        id=${id}
+        class="open-answer"
+        .value=${this._answers[index] ?? ''}
+        ?disabled=${isDisabled}
+        @input=${(e) => this._writeOpenAnswer(index, e.target.value)}
+      ></textarea>
+    `;
+  }
+
   _renderQuestion(question, index) {
     const showFeedback = this._submitted || this._confirmedQuestions[index];
-    const isCorrect = showFeedback ? this._isAnswerCorrect(question, index) : null;
+    const isOpen = question.type === 'open';
+    const isCorrect = showFeedback && !isOpen ? this._isAnswerCorrect(question, index) : null;
     const isDisabled = showFeedback || (index !== this._currentQuestion && !this._submitted);
 
     return html`
@@ -503,7 +549,7 @@ export class LessonQuiz extends LitElement {
         <div class="question-label">Pregunta ${index + 1}</div>
         <div class="question-text">${question.question}</div>
 
-        <div class="options-list">
+        ${isOpen ? this._renderOpenAnswer(index, isDisabled) : html`<div class="options-list">
           ${question.options.map(
             (opt, optIdx) => html`
               <label class=${this._getOptionClass(question, optIdx, index)}>
@@ -518,7 +564,7 @@ export class LessonQuiz extends LitElement {
               </label>
             `,
           )}
-        </div>
+        </div>`}
 
         ${showFeedback && isCorrect !== null
           ? html`
@@ -529,14 +575,17 @@ export class LessonQuiz extends LitElement {
             `
           : ''}
 
-        ${showFeedback && question.explanation
-          ? html`
-              <div class="explanation">
-                <span class="material-symbols-outlined">info</span>
-                <span>${question.explanation}</span>
-              </div>
-            `
-          : ''}
+        ${showFeedback && question.explanation ? this._renderExplanation(question, isOpen) : ''}
+      </div>
+    `;
+  }
+
+  _renderExplanation(question, isOpen) {
+    const prefix = isOpen ? html`<strong>Respuesta de referencia:</strong> ` : '';
+    return html`
+      <div class="explanation">
+        <span class="material-symbols-outlined">info</span>
+        <span>${prefix}${question.explanation}</span>
       </div>
     `;
   }
