@@ -64,6 +64,21 @@ export function getPrevLesson(modules, lessonsByModule, currentModuleId, current
 }
 
 /**
+ * Keep only the modules that belong to the same course as `moduleId`, so the
+ * prev/next navigation never jumps into another course.
+ * @template {{ id: string, course?: string }} M
+ * @param {M[]} modules - Sorted by order
+ * @param {string} moduleId
+ * @returns {M[]}
+ */
+export function modulesOfSameCourse(modules, moduleId) {
+  const current = modules.find((m) => m.id === moduleId);
+  if (!current) return [];
+  const course = current.course ?? '';
+  return modules.filter((m) => (m.course ?? '') === course);
+}
+
+/**
  * Build a flat sequential learning path from modules and lessons.
  * @param {Array<{id: string, title: string, order: number}>} modules
  * @param {Record<string, Array<{id: string, title: string, order: number}>>} lessonsByModule
