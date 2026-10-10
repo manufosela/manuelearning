@@ -29,6 +29,9 @@ import { filterBySearch } from '../lib/search-filter.js';
 import { materialIconsLink } from './shared/material-icons.js';
 import { renderMarkdown } from '../lib/markdown.js';
 
+/** Admins manage every lesson, including the instructor-only ones. */
+const ALL_LESSONS = { audience: 'all' };
+
 /**
  * @element admin-modules-list
  * Admin panel for managing course modules and their lessons.
@@ -234,6 +237,11 @@ export class AdminModulesList extends LitElement {
       color: var(--color-error-text, #991b1b);
     }
 
+    .lesson-badge--instructor {
+      background: var(--color-warning-bg, #fef3c7);
+      color: var(--color-warning-text, #92400e);
+    }
+
     /* Form overlay */
     .form-overlay {
       position: fixed;
@@ -276,6 +284,7 @@ export class AdminModulesList extends LitElement {
     }
 
     .form-group input,
+    .form-group select,
     .form-group textarea {
       width: 100%;
       padding: 0.5rem 0.75rem;
@@ -364,6 +373,7 @@ export class AdminModulesList extends LitElement {
     }
 
     .form-group input:focus,
+    .form-group select:focus,
     .form-group textarea:focus {
       outline: none;
       border-color: #84cc16;
@@ -664,7 +674,7 @@ export class AdminModulesList extends LitElement {
   }
 
   _emptyLessonForm() {
-    return { title: '', description: '', order: 0, videoUrl: '', documentation: '' };
+    return { title: '', description: '', order: 0, videoUrl: '', documentation: '', audience: 'student' };
   }
 
   async _loadModules() {
@@ -694,7 +704,7 @@ export class AdminModulesList extends LitElement {
     }
     this._expandedModule = moduleId;
     if (!this._moduleLessons[moduleId]) {
-      const result = await fetchLessons(moduleId);
+      const result = await fetchLessons(moduleId, ALL_LESSONS);
       if (result.success) {
         this._moduleLessons = { ...this._moduleLessons, [moduleId]: result.lessons };
       }
@@ -799,7 +809,7 @@ export class AdminModulesList extends LitElement {
     const lessons = this._moduleLessons[moduleId] || [];
     const result = await reorderLesson(moduleId, lessons, lessonId, direction);
     if (result.success) {
-      const res = await fetchLessons(moduleId);
+      const res = await fetchLessons(moduleId, ALL_LESSONS);
       if (res.success) this._moduleLessons = { ...this._moduleLessons, [moduleId]: res.lessons };
     }
   }
@@ -824,6 +834,7 @@ export class AdminModulesList extends LitElement {
       order: lesson.order,
       videoUrl: lesson.videoUrl || '',
       documentation: lesson.documentation || '',
+      audience: lesson.audience ?? 'student',
     };
     this._lessonFormError = '';
     this._showLessonForm = true;
@@ -860,7 +871,7 @@ export class AdminModulesList extends LitElement {
       this._saving = false;
       if (result.success) {
         this._closeLessonForm();
-        const res = await fetchLessons(mid);
+        const res = await fetchLessons(mid, ALL_LESSONS);
         if (res.success) this._moduleLessons = { ...this._moduleLessons, [mid]: res.lessons };
       } else {
         this._lessonFormError = result.error;
@@ -870,7 +881,7 @@ export class AdminModulesList extends LitElement {
       this._saving = false;
       if (result.success) {
         this._closeLessonForm();
-        const res = await fetchLessons(mid);
+        const res = await fetchLessons(mid, ALL_LESSONS);
         if (res.success) this._moduleLessons = { ...this._moduleLessons, [mid]: res.lessons };
       } else {
         this._lessonFormError = result.error;
@@ -881,7 +892,7 @@ export class AdminModulesList extends LitElement {
   async _handleDeleteLesson(moduleId, lessonId) {
     const result = await deleteLesson(moduleId, lessonId);
     if (result.success) {
-      const res = await fetchLessons(moduleId);
+      const res = await fetchLessons(moduleId, ALL_LESSONS);
       if (res.success) this._moduleLessons = { ...this._moduleLessons, [moduleId]: res.lessons };
     }
   }
@@ -1182,6 +1193,9 @@ export class AdminModulesList extends LitElement {
                       <div class="lesson-title">${lesson.title}</div>
                     </div>
                     <div class="lesson-meta">
+                      ${lesson.audience === 'instructor'
+                        ? html`<span class="lesson-badge lesson-badge--instructor">Formador</span>`
+                        : ''}
                       <span class="lesson-badge ${lesson.videoUrl ? '' : 'lesson-badge--empty'}">
                         ${lesson.videoUrl ? 'Video' : 'Sin video'}
                       </span>
@@ -1265,6 +1279,13 @@ export class AdminModulesList extends LitElement {
             <div class="form-group">
               <label for="les-order">Orden</label>
               <input id="les-order" name="order" type="number" min="0" .value=${String(this._lessonFormData.order)} @input=${this._handleLessonInput} required />
+            </div>
+            <div class="form-group">
+              <label for="les-audience">Audiencia</label>
+              <select id="les-audience" name="audience" .value=${this._lessonFormData.audience} @change=${this._handleLessonInput}>
+                <option value="student" ?selected=${this._lessonFormData.audience === 'student'}>Alumnos</option>
+                <option value="instructor" ?selected=${this._lessonFormData.audience === 'instructor'}>Solo formadores (material del formador)</option>
+              </select>
             </div>
             <div class="form-group">
               <label for="les-video">URL de Video (YouTube)</label>
