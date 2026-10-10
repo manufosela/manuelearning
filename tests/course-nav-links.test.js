@@ -60,4 +60,10 @@ describe('Footer course links (MainLayout)', () => {
   it('has no hardcoded per-course links', () => {
     expect(coursesSection.querySelector('a[href^="/curso?c="]')).toBeNull();
   });
+
+  it('styles footer links globally so the Lit-rendered ones are styled too', () => {
+    const { html } = parseAstroPages('src/layouts/MainLayout.astro');
+    expect(html).toContain('.site-footer__links :global(li)');
+    expect(html).toContain('.site-footer__links :global(a):hover');
+  });
 });

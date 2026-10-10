@@ -420,7 +420,8 @@ const {
     font-size: 0.875rem;
   }
 
-  .site-footer__links li {
+  /* :global — <course-nav-links> renders <li><a> without Astro's scope attribute */
+  .site-footer__links :global(li) {
     display: flex;
     gap: 0.5rem;
     align-items: center;
@@ -430,7 +431,7 @@ const {
     font-size: 0.875rem;
   }
 
-  .site-footer__links a:hover {
+  .site-footer__links :global(a):hover {
     color: var(--color-text-white);
     transition: color var(--transition-fast);
   }
