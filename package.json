@@ -2,6 +2,7 @@
   "name": "manuelearning",
   "type": "module",
   "version": "1.0.55",
+  "license": "MIT",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
