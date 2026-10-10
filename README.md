@@ -6,11 +6,14 @@ Plataforma de formación online de Mánu Fosela.
 
 **ManuElearning** es una plataforma propia tipo LMS diseñada para gestionar cursos de formación online. Sustituye el flujo anterior (videos privados en YouTube + Google Forms) con una experiencia integrada que incluye tracking de progreso, quizzes y sesiones síncronas.
 
-El desarrollo se realiza con agentes de IA para acelerar el proceso de implementación.
+Es multi-curso: cada curso vive en la colección `courses` de Firestore con sus módulos, lecciones y quizzes, y hoy publica **Docker** y **Karajan v4**. Las lecciones pueden ser de alumno o de formador (`audience: student | instructor`); el material del formador solo lo ven los administradores.
+
+El desarrollo se realiza con agentes de IA gobernados por [Karajan v4](https://karajancode.com) (hooks en `.karajan/`, Sentinel de Claude Code y workflows de CI).
 
 ## 🚀 Demo
 
-Firebase project: `manu-elearning`
+- Web: <https://manuelearning.com> (también <https://manu-elearning.web.app>)
+- Firebase project: `manu-elearning`
 
 ## 📚 Módulos Principales
 
@@ -52,9 +55,10 @@ Firebase project: `manu-elearning`
 ## 🛠️ Stack Tecnológico
 
 - **Framework**: Astro
-- **Base de datos**: Firebase
+- **Base de datos y auth**: Firebase (Firestore, Authentication, Hosting)
 - **Componentes**: Lit (Web Components)
 - **Lenguajes**: JavaScript vanilla, HTML y CSS vanilla
+- **Tests**: Vitest + happy-dom
 
 ## 🎨 Diseño
 
@@ -67,6 +71,7 @@ Firebase project: `manu-elearning`
 
 ```bash
 npm install
+cp .env.example .env   # configuración de Firebase y PUBLIC_CONTACT_EMAIL
 ```
 
 ### Desarrollo local
@@ -100,6 +105,16 @@ npm run test:watch
 npm run test:coverage
 ```
 
+### Importar un curso
+
+Un curso se describe con un manifiesto `course.json` (módulos, lecciones en Markdown y quizzes; ver `scripts/lib/course-manifest.js`) y se carga en Firestore con:
+
+```bash
+node scripts/import-course.mjs <slug> [--dry-run] [--replace] [--dir <ruta>]
+```
+
+Requiere `serviceAccountKey.json` en la raíz (nunca se sube al repo).
+
 ## 📝 Licencia
 
-Este proyecto es de código cerrado y propiedad de Mánu Fosela.
+[MIT](LICENSE)
