@@ -17,6 +17,9 @@ import { computeSwap } from '../reorder-utils.js';
 
 const COLLECTION = 'modules';
 
+/** Who a lesson is for. Instructor lessons are readable by admins only (Firestore rules). */
+export const LESSON_AUDIENCES = ['student', 'instructor'];
+
 /**
  * @typedef {Object} Module
  * @property {string} [id]
@@ -34,6 +37,7 @@ const COLLECTION = 'modules';
  * @property {number} order
  * @property {string} [videoUrl]
  * @property {string} [documentation]
+ * @property {'student'|'instructor'} [audience] - defaults to 'student'
  * @property {*} [createdAt]
  */
 
@@ -66,6 +70,10 @@ export function validateLesson(data) {
 
   if (data.order === undefined || data.order === null || typeof data.order !== 'number' || data.order < 0) {
     return { valid: false, error: 'El orden debe ser un número positivo' };
+  }
+
+  if (data.audience !== undefined && !LESSON_AUDIENCES.includes(data.audience)) {
+    return { valid: false, error: 'La audiencia debe ser alumno o formador' };
   }
 
   return { valid: true };
@@ -205,16 +213,25 @@ export async function deleteModule(id) {
 /* ── Lessons (subcollection of a module) ────────────────────── */
 
 /**
- * Fetch all lessons for a module.
+ * Fetch the lessons of a module.
+ * By default only student lessons are queried: Firestore rules deny students
+ * the instructor ones, and rules are not filters, so an unfiltered query from a
+ * student would fail. Admin views pass `{ audience: 'all' }`.
  * @param {string} moduleId
+ * @param {{ audience?: 'student'|'all' }} [options]
  * @returns {Promise<{success: boolean, lessons?: Lesson[], error?: string}>}
  */
-export async function fetchLessons(moduleId) {
+export async function fetchLessons(moduleId, { audience = 'student' } = {}) {
   if (!moduleId) return { success: false, error: 'ID del módulo es obligatorio' };
+  if (audience !== 'student' && audience !== 'all') {
+    return { success: false, error: 'Audiencia de consulta no válida' };
+  }
 
   try {
     const ref = collection(db, COLLECTION, moduleId, 'lessons');
-    const q = query(ref, orderBy('order', 'asc'));
+    const q = audience === 'all'
+      ? query(ref, orderBy('order', 'asc'))
+      : query(ref, where('audience', '==', 'student'), orderBy('order', 'asc'));
     const snapshot = await getDocs(q);
 
     const lessons = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -262,6 +279,7 @@ export async function createLesson(moduleId, data) {
       order: data.order,
       videoUrl: data.videoUrl || '',
       documentation: data.documentation || '',
+      audience: data.audience ?? 'student',
       createdAt: serverTimestamp(),
     });
     return { success: true, id: ref.id };
