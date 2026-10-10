@@ -9,7 +9,6 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './config.js';
-import { SITE } from '../../config/site.config.js';
 
 const HOSTING_URL = 'https://manu-elearning.web.app';
 
@@ -20,7 +19,8 @@ const CERTIFICATES = 'certificates';
  * @property {string} [id]
  * @property {string} userId
  * @property {string} userName
- * @property {string} courseName
+ * @property {string} courseSlug - Course the certificate was earned in (courses/{slug})
+ * @property {string} courseName - Course title at issue time
  * @property {string} completedAt
  * @property {*} [createdAt]
  */
@@ -42,20 +42,23 @@ export function buildCertificateData(userName, courseName, averageGrade = null) 
 }
 
 /**
- * Save a certificate record.
+ * Save a certificate record for one course.
  * @param {string} userId
- * @param {{userName: string, courseName: string, completedAt?: string}} data
+ * @param {{userName: string, courseSlug: string, courseName: string, completedAt?: string, averageGrade?: number|null}} data
  * @returns {Promise<{success: boolean, id?: string, error?: string}>}
  */
 export async function saveCertificate(userId, data) {
   if (!userId) return { success: false, error: 'userId es obligatorio' };
   if (!data.userName) return { success: false, error: 'userName es obligatorio' };
+  if (!data.courseSlug) return { success: false, error: 'courseSlug es obligatorio' };
+  if (!data.courseName) return { success: false, error: 'courseName es obligatorio' };
 
   try {
     const docData = {
       userId,
       userName: data.userName,
-      courseName: data.courseName || SITE.courseName,
+      courseSlug: data.courseSlug,
+      courseName: data.courseName,
       completedAt: data.completedAt || new Date().toISOString(),
       createdAt: serverTimestamp(),
     };
@@ -68,20 +71,25 @@ export async function saveCertificate(userId, data) {
 }
 
 /**
- * Get a user's certificate.
+ * Get a user's certificate for one course.
+ * Filters by course in memory: a user holds a handful of certificates, and the
+ * rules already scope the query to the user's own documents.
  * @param {string} userId
+ * @param {string} courseSlug
  * @returns {Promise<{success: boolean, certificate?: Certificate|null, error?: string}>}
  */
-export async function getUserCertificate(userId) {
+export async function getUserCertificate(userId, courseSlug) {
   if (!userId) return { success: false, error: 'userId es obligatorio' };
+  if (!courseSlug) return { success: false, error: 'courseSlug es obligatorio' };
 
   try {
     const ref = collection(db, CERTIFICATES);
     const q = query(ref, where('userId', '==', userId));
     const snapshot = await getDocs(q);
 
-    if (snapshot.docs.length === 0) return { success: true, certificate: null };
-    return { success: true, certificate: { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } };
+    const match = snapshot.docs.find((d) => d.data().courseSlug === courseSlug);
+    if (!match) return { success: true, certificate: null };
+    return { success: true, certificate: { id: match.id, ...match.data() } };
   } catch (err) {
     return { success: false, error: 'Error al cargar el certificado' };
   }

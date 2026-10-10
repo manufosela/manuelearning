@@ -59,16 +59,24 @@ describe('saveCertificate', () => {
     mockAddDoc.mockResolvedValue({ id: 'cert-1' });
     const result = await saveCertificate('u1', {
       userName: 'Juan',
-      courseName: 'ManuElearning',
+      courseSlug: 'docker',
+      courseName: 'Docker desde cero',
       completedAt: '2026-02-27',
     });
     expect(result.success).toBe(true);
     expect(result.id).toBe('cert-1');
+    expect(mockAddDoc.mock.calls[0][1]).toMatchObject({ courseSlug: 'docker', courseName: 'Docker desde cero' });
+  });
+
+  it('should require the course slug and name (no generic fallback)', async () => {
+    expect((await saveCertificate('u1', { userName: 'U', courseName: 'C' })).error).toBe('courseSlug es obligatorio');
+    expect((await saveCertificate('u1', { userName: 'U', courseSlug: 'c' })).error).toBe('courseName es obligatorio');
+    expect(mockAddDoc).not.toHaveBeenCalled();
   });
 
   it('should handle errors', async () => {
     mockAddDoc.mockRejectedValue(new Error('err'));
-    expect((await saveCertificate('u1', { userName: 'U', courseName: 'C' })).success).toBe(false);
+    expect((await saveCertificate('u1', { userName: 'U', courseSlug: 'c', courseName: 'C' })).success).toBe(false);
   });
 });
 
@@ -76,28 +84,33 @@ describe('saveCertificate', () => {
 describe('getUserCertificate', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('should reject empty userId', async () => {
-    expect((await getUserCertificate('')).success).toBe(false);
+  it('should reject empty userId or courseSlug', async () => {
+    expect((await getUserCertificate('', 'docker')).success).toBe(false);
+    expect((await getUserCertificate('u1', '')).success).toBe(false);
   });
 
   it('should return null when no certificate', async () => {
     mockGetDocs.mockResolvedValue({ docs: [] });
-    const result = await getUserCertificate('u1');
+    const result = await getUserCertificate('u1', 'docker');
     expect(result.success).toBe(true);
     expect(result.certificate).toBeNull();
   });
 
-  it('should return certificate when exists', async () => {
+  it('should return the certificate of the requested course only', async () => {
     mockGetDocs.mockResolvedValue({
-      docs: [{ id: 'cert-1', data: () => ({ userName: 'Juan', completedAt: '2026-02-27' }) }],
+      docs: [
+        { id: 'cert-k', data: () => ({ userName: 'Juan', courseSlug: 'karajan-v4' }) },
+        { id: 'cert-d', data: () => ({ userName: 'Juan', courseSlug: 'docker' }) },
+      ],
     });
-    const result = await getUserCertificate('u1');
+    const result = await getUserCertificate('u1', 'docker');
     expect(result.success).toBe(true);
-    expect(result.certificate.userName).toBe('Juan');
+    expect(result.certificate.id).toBe('cert-d');
+    expect((await getUserCertificate('u1', 'otro')).certificate).toBeNull();
   });
 
   it('should handle errors', async () => {
     mockGetDocs.mockRejectedValue(new Error('err'));
-    expect((await getUserCertificate('u1')).success).toBe(false);
+    expect((await getUserCertificate('u1', 'docker')).success).toBe(false);
   });
 });
