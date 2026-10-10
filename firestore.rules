@@ -156,8 +156,11 @@ service cloud.firestore {
 
     // ── certificates ─────────────────────────────────────────
     match /certificates/{certId} {
-      // Users can read their own certs; admins can read all
-      allow read: if isSignedIn()
+      // Anyone can get one certificate by its (unguessable) id: the public
+      // /verificar-certificado page and LinkedIn shares rely on it.
+      allow get: if true;
+      // Listing stays private: users list their own certs; admins list all
+      allow list: if isSignedIn()
         && (resource.data.userId == request.auth.uid || isAdmin());
       // Users can create their own certificate
       allow create: if isSignedIn()
