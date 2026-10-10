@@ -18,7 +18,7 @@ elif [ ! -f .karajan/identity.local.yml ]; then
   echo 'kj harden: no identity declared for this clone — run kj identity set (advisory)'
 fi
 # Run the test suite before pushing.
-npm test || { echo 'kj harden: tests failed'; exit 1; }
+# (no test command detected for this stack)
 # Chain the machine's previous global hook (kj harden keeps it active).
 if [ -x "$HOME/.git-hooks/pre-push" ]; then
   "$HOME/.git-hooks/pre-push" "$@"; rc=$?
