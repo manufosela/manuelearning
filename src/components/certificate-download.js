@@ -13,6 +13,8 @@ export class CertificateDownload extends LitElement {
     userId: { type: String },
     userName: { type: String },
     progress: { type: Number },
+    courseSlug: { type: String, attribute: 'course-slug' },
+    courseTitle: { type: String, attribute: 'course-title' },
     _certificate: { type: Object, state: true },
     _generating: { type: Boolean, state: true },
     _error: { type: String, state: true },
@@ -77,6 +79,8 @@ export class CertificateDownload extends LitElement {
     this.userId = '';
     this.userName = '';
     this.progress = 0;
+    this.courseSlug = '';
+    this.courseTitle = '';
     this._certificate = null;
     this._generating = false;
     this._error = '';
@@ -84,11 +88,11 @@ export class CertificateDownload extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    if (this.userId) this._checkCertificate();
+    if (this.userId && this.courseSlug) this._checkCertificate();
   }
 
   async _checkCertificate() {
-    const result = await getUserCertificate(this.userId);
+    const result = await getUserCertificate(this.userId, this.courseSlug);
     if (result.success && result.certificate) {
       this._certificate = result.certificate;
     }
@@ -97,7 +101,7 @@ export class CertificateDownload extends LitElement {
   async _generateCertificate() {
     this._generating = true;
     this._error = '';
-    const data = buildCertificateData(this.userName, SITE.courseName);
+    const data = { ...buildCertificateData(this.userName, this.courseTitle), courseSlug: this.courseSlug };
     const result = await saveCertificate(this.userId, data);
     this._generating = false;
 
@@ -141,7 +145,7 @@ export class CertificateDownload extends LitElement {
     // Course name
     ctx.fillStyle = '#ffffff';
     ctx.font = '900 36px Lexend, Inter, sans-serif';
-    ctx.fillText(SITE.courseName, 600, 260);
+    ctx.fillText(cert.courseName, 600, 260);
 
     // Certifies
     ctx.fillStyle = '#94a3b8';
@@ -217,7 +221,7 @@ export class CertificateDownload extends LitElement {
     const certUrl = buildVerificationUrl(cert.id);
     const linkedInUrl = buildLinkedInShareUrl({
       certUrl,
-      courseName: cert.courseName || SITE.courseName,
+      courseName: cert.courseName,
       userName: cert.userName,
     });
     if (linkedInUrl) window.open(linkedInUrl, '_blank', 'noopener');
@@ -229,7 +233,7 @@ export class CertificateDownload extends LitElement {
     return html`
       <div class="certificate-card">
         <h3>Curso completado</h3>
-        <p>Has completado el 100% del programa de ${SITE.courseName}</p>
+        <p>Has completado el 100% del curso ${this.courseTitle}</p>
         ${this._certificate
           ? html`
             <div class="cert-actions">
