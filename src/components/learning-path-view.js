@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { fetchAllModules, fetchModulesByCourse, fetchLessons } from '../lib/firebase/modules.js';
 import { buildLearningPath } from '../lib/learning-path.js';
 import { waitForAuth } from '../lib/auth-ready.js';
+import { lessonQueryFor } from '../lib/lesson-audience.js';
 
 /**
  * @element learning-path-view
@@ -89,6 +90,17 @@ export class LearningPathView extends LitElement {
       transition: background 0.15s;
     }
 
+    .instructor-tag {
+      margin-left: auto;
+      padding: 0.125rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.688rem;
+      font-weight: 700;
+      background: var(--color-warning-bg, #fef3c7);
+      color: var(--color-warning-text, #92400e);
+      white-space: nowrap;
+    }
+
     .lesson-link:hover {
       background: var(--color-bg-slate-50, #f1f5f9);
     }
@@ -153,11 +165,13 @@ export class LearningPathView extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    waitForAuth().then(() => this._loadPath());
+    waitForAuth().then((user) => this._loadPath(user?.uid));
   }
 
-  async _loadPath() {
+  /** @param {string} [uid] */
+  async _loadPath(uid) {
     this._loading = true;
+    const lessonQuery = await lessonQueryFor(uid);
     const result = this.course
       ? await fetchModulesByCourse(this.course)
       : await fetchAllModules();
@@ -172,7 +186,7 @@ export class LearningPathView extends LitElement {
     const lessonsByModule = {};
 
     for (const mod of result.modules) {
-      const lessonsResult = await fetchLessons(mod.id);
+      const lessonsResult = await fetchLessons(mod.id, lessonQuery);
       lessonsByModule[mod.id] = lessonsResult.success ? lessonsResult.lessons : [];
     }
 
@@ -198,7 +212,7 @@ export class LearningPathView extends LitElement {
     return html`
       <div class="path-header">
         <h1>Temario del curso</h1>
-        <p>${this._path.length} clases en ${this._modules.length} módulos</p>
+        <p>${this._path.length} clases en ${grouped.length} módulos</p>
       </div>
 
       ${grouped.map(
@@ -215,6 +229,9 @@ export class LearningPathView extends LitElement {
                     <a href="/leccion?m=${item.moduleId}&l=${item.lessonId}" class="lesson-link">
                       <div class="lesson-order">${item.index + 1}</div>
                       <span class="lesson-name">${item.lessonTitle}</span>
+                      ${item.audience === 'instructor'
+                        ? html`<span class="instructor-tag">Material del formador</span>`
+                        : ''}
                     </a>
                   </li>
                 `

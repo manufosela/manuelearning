@@ -74,8 +74,8 @@ describe('buildLearningPath', () => {
   it('should flatten modules and lessons into sequential path', () => {
     const path = buildLearningPath(modules, lessonsByModule);
     expect(path).toHaveLength(4);
-    expect(path[0]).toEqual({ moduleId: 'm1', moduleTitle: 'Mod 1', lessonId: 'l1', lessonTitle: 'L1', index: 0 });
-    expect(path[3]).toEqual({ moduleId: 'm2', moduleTitle: 'Mod 2', lessonId: 'l4', lessonTitle: 'L4', index: 3 });
+    expect(path[0]).toEqual({ moduleId: 'm1', moduleTitle: 'Mod 1', lessonId: 'l1', lessonTitle: 'L1', audience: 'student', index: 0 });
+    expect(path[3]).toEqual({ moduleId: 'm2', moduleTitle: 'Mod 2', lessonId: 'l4', lessonTitle: 'L4', audience: 'student', index: 3 });
   });
 
   it('should handle empty modules', () => {
