@@ -1,5 +1,6 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from './config.js';
+import { toLocalIsoDate } from '../cohort-utils.js';
 
 const COLLECTION = 'activityStreaks';
 
@@ -84,7 +85,7 @@ export async function updateStreak(userId) {
   if (!userId) return { success: false, error: 'userId es obligatorio' };
 
   try {
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayStr = toLocalIsoDate(new Date());
     const snap = await getDoc(doc(db, COLLECTION, userId));
     const prev = snap.exists() ? snap.data() : null;
     const updated = calculateStreak(prev, todayStr);

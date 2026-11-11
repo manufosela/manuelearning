@@ -63,4 +63,18 @@ describe('updateStreak', () => {
     mockGetDoc.mockRejectedValue(new Error('firestore'));
     expect((await updateStreak('u1')).success).toBe(false);
   });
+
+  it('counts the local calendar day, not the UTC one, just after midnight', async () => {
+    const originalTz = process.env.TZ;
+    process.env.TZ = 'Europe/Madrid';
+    try {
+      vi.setSystemTime(new Date('2026-11-11T00:30:00+01:00'));
+      mockGetDoc.mockResolvedValue(stored({ current: 4, longest: 4, lastActivityDate: '2026-11-10' }));
+      await updateStreak('u1');
+      expect(mockSetDoc.mock.calls[0][1]).toEqual({ current: 5, longest: 5, lastActivityDate: '2026-11-11' });
+    } finally {
+      if (originalTz === undefined) delete process.env.TZ;
+      else process.env.TZ = originalTz;
+    }
+  });
 });
