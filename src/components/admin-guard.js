@@ -62,6 +62,8 @@ export class AdminGuard extends LitElement {
 
       if (adminCheck) {
         this._authorized = true;
+        await this.updateComplete;
+        this.dispatchEvent(new CustomEvent('admin-ready', { detail: { uid: user.uid }, bubbles: true, composed: true }));
       } else {
         window.location.href = '/dashboard';
       }
