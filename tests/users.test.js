@@ -27,6 +27,7 @@ import {
   fetchAllUsers,
   fetchUser,
   updateUserRole,
+  updateUserStatus,
   updateUserDisplayName,
   toggleLifetimeAccess,
   isAdmin,
@@ -127,6 +128,41 @@ describe('updateUserRole', () => {
   it('should return error on Firestore failure', async () => {
     mockUpdateDoc.mockRejectedValue(new Error('Permission denied'));
     const result = await updateUserRole('u1', 'admin');
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('updateUserStatus', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('should reject empty uid', async () => {
+    const result = await updateUserStatus('', 'inactive');
+    expect(result.success).toBe(false);
+  });
+
+  it('should deactivate a user (status the admin panel sends)', async () => {
+    mockUpdateDoc.mockResolvedValue();
+    const result = await updateUserStatus('u1', 'inactive');
+    expect(result.success).toBe(true);
+    expect(mockUpdateDoc).toHaveBeenCalledWith(undefined, { status: 'inactive' });
+  });
+
+  it('should reactivate a user', async () => {
+    mockUpdateDoc.mockResolvedValue();
+    const result = await updateUserStatus('u1', 'active');
+    expect(result.success).toBe(true);
+  });
+
+  it('should reject unknown statuses', async () => {
+    const result = await updateUserStatus('u1', 'suspended');
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Estado no válido');
+    expect(mockUpdateDoc).not.toHaveBeenCalled();
+  });
+
+  it('should return error on Firestore failure', async () => {
+    mockUpdateDoc.mockRejectedValue(new Error('Permission denied'));
+    const result = await updateUserStatus('u1', 'inactive');
     expect(result.success).toBe(false);
   });
 });

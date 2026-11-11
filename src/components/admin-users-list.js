@@ -15,6 +15,7 @@ export class AdminUsersList extends LitElement {
     _users: { type: Array, state: true },
     _loading: { type: Boolean, state: true },
     _error: { type: String, state: true },
+    _actionError: { type: String, state: true },
     _searchQuery: { type: String, state: true },
     _activeTab: { type: String, state: true },
   };
@@ -190,6 +191,14 @@ export class AdminUsersList extends LitElement {
       color: var(--color-error-text, #991b1b);
     }
 
+    .action-error {
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      background: var(--color-error-bg, #fef2f2);
+      color: var(--color-error-text, #991b1b);
+    }
+
     .spinner {
       width: 1.5rem;
       height: 1.5rem;
@@ -318,6 +327,7 @@ export class AdminUsersList extends LitElement {
     this._cohortMap = {};
     this._loading = true;
     this._error = '';
+    this._actionError = '';
     this._searchQuery = '';
     this._activeTab = 'active';
   }
@@ -370,16 +380,20 @@ export class AdminUsersList extends LitElement {
     const newRole = select.value;
 
     const result = await updateUserRole(uid, newRole);
+    this._actionError = result.success ? '' : result.error;
     if (result.success) {
       this._users = this._users.map((u) =>
         u.uid === uid ? { ...u, role: newRole } : u
       );
+    } else {
+      select.value = this._users.find((u) => u.uid === uid)?.role ?? '';
     }
   }
 
   /** @param {string} uid @param {string} newStatus */
   async _handleStatusChange(uid, newStatus) {
     const result = await updateUserStatus(uid, newStatus);
+    this._actionError = result.success ? '' : result.error;
     if (result.success) {
       this._users = this._users.map((u) =>
         u.uid === uid ? { ...u, status: newStatus } : u
@@ -433,6 +447,7 @@ export class AdminUsersList extends LitElement {
 
     return html`
       ${materialIconsLink}
+      ${this._actionError ? html`<div class="action-error" role="alert">${this._actionError}</div>` : ''}
       <div class="toolbar">
         <span>${tabUsers.length} usuarios ${tabLabel}</span>
         <button class="export-btn" @click=${this._exportCsv}>

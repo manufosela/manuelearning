@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { onAuthChange, logoutUser } from '../lib/firebase/auth.js';
 import { fetchUser } from '../lib/firebase/users.js';
+import { accessStateFor } from '../lib/user-status.js';
 import { materialIconsLink } from './shared/material-icons.js';
 
 /**
@@ -128,7 +129,7 @@ export class AuthGuard extends LitElement {
       if (user) {
         const result = await fetchUser(user.uid);
         const status = result.success ? result.user?.status : undefined;
-        this._userStatus = status === 'pending' ? 'pending' : 'active';
+        this._userStatus = accessStateFor(status);
         this._authenticated = true;
       } else {
         window.location.href = '/login';
@@ -155,18 +156,19 @@ export class AuthGuard extends LitElement {
     }
 
     if (this._authenticated && this._userStatus === 'pending') {
-      return html`
-        ${materialIconsLink}
-        <div class="pending">
-          <div class="pending-card">
-            <span class="pending-icon">hourglass_top</span>
-            <h2 class="pending-title">Cuenta pendiente de validación</h2>
-            <p class="pending-text">Tu cuenta está siendo revisada. Recibirás un email cuando sea aprobada por el administrador.</p>
-            <a href="/" class="pending-link">Volver a la página principal</a>
-            <button class="pending-logout" @click=${() => logoutUser()}>Cerrar sesión</button>
-          </div>
-        </div>
-      `;
+      return this._renderBlocked(
+        'hourglass_top',
+        'Cuenta pendiente de validación',
+        'Tu cuenta está siendo revisada. Recibirás un email cuando sea aprobada por el administrador.',
+      );
+    }
+
+    if (this._authenticated && this._userStatus === 'inactive') {
+      return this._renderBlocked(
+        'block',
+        'Cuenta desactivada',
+        'Tu cuenta está desactivada. Si crees que es un error, escribe al administrador.',
+      );
     }
 
     if (this._authenticated) {
@@ -174,6 +176,22 @@ export class AuthGuard extends LitElement {
     }
 
     return html``;
+  }
+
+  /** @param {string} icon @param {string} title @param {string} text */
+  _renderBlocked(icon, title, text) {
+    return html`
+      ${materialIconsLink}
+      <div class="pending">
+        <div class="pending-card" role="alert">
+          <span class="pending-icon">${icon}</span>
+          <h2 class="pending-title">${title}</h2>
+          <p class="pending-text">${text}</p>
+          <a href="/" class="pending-link">Volver a la página principal</a>
+          <button class="pending-logout" @click=${() => logoutUser()}>Cerrar sesión</button>
+        </div>
+      </div>
+    `;
   }
 }
 

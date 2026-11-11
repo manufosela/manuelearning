@@ -9,6 +9,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './config.js';
+import { USER_STATUSES, isValidUserStatus } from '../user-status.js';
 
 /**
  * @typedef {Object} UserProfile
@@ -174,15 +175,14 @@ export async function updateWeeklyDigest(uid, enabled) {
 /**
  * Update a user's status.
  * @param {string} uid
- * @param {string} status - 'pending' | 'active' | 'suspended'
+ * @param {string} status - one of USER_STATUSES
  * @returns {Promise<{success: boolean, error?: string}>}
  */
 export async function updateUserStatus(uid, status) {
   if (!uid) return { success: false, error: 'UID es obligatorio' };
 
-  const validStatuses = ['pending', 'active', 'suspended'];
-  if (!validStatuses.includes(status)) {
-    return { success: false, error: 'Estado no válido. Usa pending, active o suspended' };
+  if (!isValidUserStatus(status)) {
+    return { success: false, error: `Estado no válido. Usa ${USER_STATUSES.join(', ')}` };
   }
 
   try {
