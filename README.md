@@ -115,6 +115,17 @@ node scripts/import-course.mjs <slug> [--dry-run] [--replace] [--dir <ruta>]
 
 Requiere `serviceAccountKey.json` en la raíz (nunca se sube al repo).
 
+### Publicar una versión
+
+En una rama `chore/release-*`, este comando sube la versión de `package.json` según los
+Conventional Commits desde la última versión (major con `!`, minor con `feat`, patch con `fix`) y
+añade la entrada a `CHANGELOG.md`. Después, commit `chore(release): vX.Y.Z` y PR.
+
+```bash
+npm run release -- --dry-run   # muestra la entrada sin escribir nada
+npm run release
+```
+
 ## 📝 Licencia
 
 [MIT](LICENSE)
