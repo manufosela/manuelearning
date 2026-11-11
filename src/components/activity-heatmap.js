@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { getUserProgress } from '../lib/firebase/progress.js';
+import { toLocalIsoDate } from '../lib/cohort-utils.js';
 
 /**
  * @element activity-heatmap
@@ -189,7 +190,7 @@ export class ActivityHeatmap extends LitElement {
       const date = lesson.completedAt.toDate
         ? lesson.completedAt.toDate()
         : new Date(lesson.completedAt);
-      const key = date.toISOString().slice(0, 10);
+      const key = toLocalIsoDate(date);
       map[key] = (map[key] || 0) + 1;
       total += 1;
     }
@@ -207,20 +208,17 @@ export class ActivityHeatmap extends LitElement {
     today.setHours(0, 0, 0, 0);
 
     const dayOfWeek = today.getDay(); // 0=Sun
-    const endDate = new Date(today);
 
     // Go back ~52 weeks (364 days) from the start of the current week column
-    const startDate = new Date(endDate);
-    startDate.setDate(startDate.getDate() - (52 * 7) - dayOfWeek);
-
+    const totalDays = (52 * 7) + dayOfWeek + 1;
     const cells = [];
-    const cursor = new Date(startDate);
 
-    while (cursor <= endDate) {
-      const key = cursor.toISOString().slice(0, 10);
+    for (let offset = totalDays - 1; offset >= 0; offset -= 1) {
+      const day = new Date(today);
+      day.setDate(today.getDate() - offset);
+      const key = toLocalIsoDate(day);
       const count = this._activityMap[key] || 0;
       cells.push({ date: key, count, level: this._getLevel(count) });
-      cursor.setDate(cursor.getDate() + 1);
     }
 
     return cells;
