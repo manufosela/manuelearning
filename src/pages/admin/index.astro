@@ -5,8 +5,16 @@ import { SITE } from '../../config/site.config.js';
 
 <AdminLayout title={`Panel de administración | ${SITE.name}`}>
   <div class="admin-home">
-    <h1>Panel de administración</h1>
-    <p>Vista general de la plataforma</p>
+    <div class="admin-home__header">
+      <div>
+        <h1>Panel de administración</h1>
+        <p>Vista general de la plataforma</p>
+      </div>
+      <button class="btn btn--secondary btn--sm" id="admin-tour-help-btn" type="button" aria-label="Ver el tour guiado">
+        <span class="material-symbols-outlined">help</span>
+        Ayuda
+      </button>
+    </div>
 
     <admin-dashboard></admin-dashboard>
 
@@ -50,11 +58,34 @@ import { SITE } from '../../config/site.config.js';
 
 <script>
   import '../../components/admin-dashboard.js';
+  import { autoStartTour, startTour } from '../../lib/tour.js';
+  import { ADMIN_TOUR_ID, adminTourSteps } from '../../lib/tours/admin-tour.js';
+
+  document.addEventListener('admin-ready', (event) => {
+    autoStartTour(ADMIN_TOUR_ID, event.detail.uid, adminTourSteps());
+  });
+  document.getElementById('admin-tour-help-btn')?.addEventListener('click', () => {
+    startTour(adminTourSteps());
+  });
 </script>
 
 <style>
   .admin-home {
     max-width: 960px;
+  }
+
+  .admin-home__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  #admin-tour-help-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
   }
 
   .shortcuts-heading {
