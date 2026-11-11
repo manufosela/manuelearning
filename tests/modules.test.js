@@ -28,6 +28,7 @@ import {
   validateModule,
   validateLesson,
   fetchAllModules,
+  fetchCourseList,
   fetchModule,
   createModule,
   updateModule,
@@ -59,6 +60,14 @@ describe('validateModule', () => {
     expect(validateModule({ ...valid, order: -1 }).valid).toBe(false);
   });
 
+  it.each([Number.NaN, Infinity, null])('should reject order %s', (order) => {
+    expect(validateModule({ ...valid, order }).valid).toBe(false);
+  });
+
+  it('should accept order 0', () => {
+    expect(validateModule({ ...valid, order: 0 }).valid).toBe(true);
+  });
+
   it('should accept valid module', () => {
     expect(validateModule(valid).valid).toBe(true);
   });
@@ -74,6 +83,10 @@ describe('validateLesson', () => {
 
   it('should reject missing order', () => {
     expect(validateLesson({ ...valid, order: undefined }).valid).toBe(false);
+  });
+
+  it('should reject NaN order', () => {
+    expect(validateLesson({ ...valid, order: Number.NaN }).valid).toBe(false);
   });
 
   it('should accept lesson without optional fields', () => {
@@ -107,6 +120,18 @@ describe('fetchAllModules', () => {
     mockGetDocs.mockRejectedValue(new Error('err'));
     const result = await fetchAllModules();
     expect(result.success).toBe(false);
+  });
+});
+
+/* ── fetchCourseList ────────────────────────────────────────── */
+describe('fetchCourseList', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('returns distinct courses sorted in Spanish order', async () => {
+    const courses = ['Zen', 'Ágil', 'docker', 'Zen', undefined];
+    mockGetDocs.mockResolvedValue({ docs: courses.map((course) => ({ data: () => ({ course }) })) });
+    const result = await fetchCourseList();
+    expect(result.courses).toEqual(['Ágil', 'docker', 'Zen']);
   });
 });
 

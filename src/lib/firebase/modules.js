@@ -42,6 +42,15 @@ export const LESSON_AUDIENCES = ['student', 'instructor'];
  */
 
 /**
+ * An order is a finite number, zero or greater.
+ * @param {unknown} order
+ * @returns {boolean}
+ */
+function isValidOrder(order) {
+  return Number.isFinite(order) && order >= 0;
+}
+
+/**
  * Validate module data.
  * @param {Partial<Module>} data
  * @returns {{ valid: boolean, error?: string }}
@@ -51,7 +60,7 @@ export function validateModule(data) {
     return { valid: false, error: 'El título es obligatorio' };
   }
 
-  if (data.order === undefined || data.order === null || typeof data.order !== 'number' || data.order < 0) {
+  if (!isValidOrder(data.order)) {
     return { valid: false, error: 'El orden debe ser un número positivo' };
   }
 
@@ -68,7 +77,7 @@ export function validateLesson(data) {
     return { valid: false, error: 'El título es obligatorio' };
   }
 
-  if (data.order === undefined || data.order === null || typeof data.order !== 'number' || data.order < 0) {
+  if (!isValidOrder(data.order)) {
     return { valid: false, error: 'El orden debe ser un número positivo' };
   }
 
@@ -131,7 +140,7 @@ export async function fetchCourseList() {
       if (course) courseSet.add(course);
     });
 
-    return { success: true, courses: [...courseSet].sort() };
+    return { success: true, courses: [...courseSet].toSorted((a, b) => a.localeCompare(b, 'es')) };
   } catch (err) {
     return { success: false, error: 'Error al cargar lista de cursos' };
   }
