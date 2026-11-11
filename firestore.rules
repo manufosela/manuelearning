@@ -17,23 +17,60 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    // The invitation was valid for this account before the batch and the same
+    // batch marks it accepted by this user
+    function isAcceptedInvitation(token, cohortId) {
+      let before = get(/databases/$(database)/documents/invitations/$(token)).data;
+      let after = getAfter(/databases/$(database)/documents/invitations/$(token)).data;
+      return before.status == 'pending'
+        && before.expiresAt > request.time
+        && before.email == request.auth.token.email.lower()
+        && before.cohortId == cohortId
+        && after.status == 'accepted'
+        && after.acceptedBy == request.auth.uid;
+    }
+
     // ── users ────────────────────────────────────────────────
     match /users/{uid} {
       // Any signed-in user can read their own profile; admins can read all
       allow read: if isOwner(uid) || isAdmin();
-      // User can create their own profile during registration, only as a pending
-      // student with their own email and the registration fields
+      // User can create their own profile during registration as a student with
+      // their own email: pending, or active only through an accepted invitation
       allow create: if isOwner(uid)
-        && request.resource.data.keys().hasOnly(['email', 'displayName', 'role', 'status', 'cohortId', 'createdAt'])
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.role == 'student'
-        && request.resource.data.status == 'pending';
+        && (
+          (request.resource.data.keys().hasOnly(['email', 'displayName', 'role', 'status', 'cohortId', 'createdAt'])
+            && request.resource.data.status == 'pending')
+          || (request.resource.data.keys().hasOnly(['email', 'displayName', 'role', 'status', 'cohortId', 'createdAt', 'invitationId'])
+            && request.resource.data.status == 'active'
+            && isAcceptedInvitation(request.resource.data.invitationId, request.resource.data.cohortId))
+        );
       // Users can only update safe profile fields (displayName, weeklyDigest, lastActivity);
       // all other fields (role, email, lifetimeAccess, cohortId, etc.) are immutable for non-admins
       allow update: if isOwner(uid)
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['displayName', 'weeklyDigest', 'lastActivity']);
       allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // ── invitations ──────────────────────────────────────────
+    // The document id is the secret token of the invitation link
+    match /invitations/{token} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.status == 'pending';
+      allow update: if isAdmin();
+      // The invitee accepts their own pending invitation in the batch that creates their profile
+      allow update: if isSignedIn()
+        && resource.data.status == 'pending'
+        && resource.data.expiresAt > request.time
+        && resource.data.email == request.auth.token.email.lower()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'acceptedBy', 'acceptedAt'])
+        && request.resource.data.status == 'accepted'
+        && request.resource.data.acceptedBy == request.auth.uid
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.invitationId == token;
       allow delete: if false;
     }
 
