@@ -63,6 +63,44 @@ describe('users rules', () => {
       /request\.resource\.data\.keys\(\)\.hasOnly\(\['email', 'displayName', 'role', 'status', 'cohortId', 'createdAt'\]\)/,
     );
   });
+
+  it('only allows an active self-created profile through an accepted invitation', () => {
+    expect(create).toMatch(/request\.resource\.data\.status == 'active'\s*&& isAcceptedInvitation\(request\.resource\.data\.invitationId, request\.resource\.data\.cohortId\)/);
+  });
+
+  it('checks the invitation before the batch and its consumption after it', () => {
+    const fn = rules.match(/function isAcceptedInvitation\([\s\S]*?\n    }/)?.[0] ?? '';
+    expect(fn).toMatch(/before\.status == 'pending'/);
+    expect(fn).toMatch(/before\.expiresAt > request\.time/);
+    expect(fn).toMatch(/before\.email == request\.auth\.token\.email\.lower\(\)/);
+    expect(fn).toMatch(/before\.cohortId == cohortId/);
+    expect(fn).toMatch(/after\.status == 'accepted'/);
+    expect(fn).toMatch(/after\.acceptedBy == request\.auth\.uid/);
+  });
+});
+
+describe('invitations rules', () => {
+  const block = matchBlock('/invitations/{token}');
+
+  it('lets a signed-in user read an invitation only by its secret token', () => {
+    expect(block).toMatch(/allow get: if isSignedIn\(\);/);
+    expect(block).toMatch(/allow list: if isAdmin\(\);/);
+  });
+
+  it('lets only admins create invitations, and never delete them', () => {
+    expect(block).toMatch(/allow create: if isAdmin\(\)/);
+    expect(block).toMatch(/allow delete: if false;/);
+  });
+
+  it('lets the invitee only accept their own pending invitation while creating their profile', () => {
+    const invitee = block.match(/allow update: if isSignedIn\(\)([\s\S]*?);/)?.[1] ?? '';
+    expect(invitee).toMatch(/resource\.data\.status == 'pending'/);
+    expect(invitee).toMatch(/resource\.data\.expiresAt > request\.time/);
+    expect(invitee).toMatch(/resource\.data\.email == request\.auth\.token\.email\.lower\(\)/);
+    expect(invitee).toMatch(/affectedKeys\(\)\.hasOnly\(\['status', 'acceptedBy', 'acceptedAt'\]\)/);
+    expect(invitee).toMatch(/request\.resource\.data\.acceptedBy == request\.auth\.uid/);
+    expect(invitee).toMatch(/getAfter\(\/databases\/\$\(database\)\/documents\/users\/\$\(request\.auth\.uid\)\)\.data\.invitationId == token/);
+  });
 });
 
 describe('lessons rules', () => {
