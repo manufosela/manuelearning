@@ -113,4 +113,10 @@ describe('Dashboard page (/dashboard)', () => {
     const dashboard = page.doc.querySelector('student-dashboard-view');
     expect(dashboard).not.toBeNull();
   });
+
+  it('should have a help button that replays the guided tour', () => {
+    const help = page.doc.querySelector('#tour-help-btn');
+    expect(help).not.toBeNull();
+    expect(help.getAttribute('aria-label')).toContain('tour');
+  });
 });

@@ -8,10 +8,16 @@ import { SITE } from '../config/site.config.js';
     <section class="dashboard">
       <div class="dashboard__header">
         <h1>Dashboard del estudiante</h1>
-        <button class="btn btn--secondary btn--sm" id="logout-btn">
-          <span class="material-symbols-outlined">logout</span>
-          Cerrar sesión
-        </button>
+        <div class="dashboard__actions">
+          <button class="btn btn--secondary btn--sm" id="tour-help-btn" aria-label="Ver el tour guiado">
+            <span class="material-symbols-outlined">help</span>
+            Ayuda
+          </button>
+          <button class="btn btn--secondary btn--sm" id="logout-btn">
+            <span class="material-symbols-outlined">logout</span>
+            Cerrar sesión
+          </button>
+        </div>
       </div>
       <notification-center></notification-center>
       <student-dashboard-view></student-dashboard-view>
@@ -24,6 +30,16 @@ import { SITE } from '../config/site.config.js';
   import '../components/student-dashboard-view.js';
   import '../components/notification-center.js';
   import { logoutUser } from '../lib/firebase/auth.js';
+  import { autoStartTour, startTour } from '../lib/tour.js';
+  import { STUDENT_TOUR_ID, studentTourSteps } from '../lib/tours/student-tour.js';
+
+  const view = document.querySelector('student-dashboard-view');
+  view?.addEventListener('dashboard-ready', (event) => {
+    autoStartTour(STUDENT_TOUR_ID, event.detail.uid, studentTourSteps(view));
+  });
+  document.getElementById('tour-help-btn')?.addEventListener('click', () => {
+    startTour(studentTourSteps(view));
+  });
 
   document.getElementById('logout-btn')?.addEventListener('click', async () => {
     const result = await logoutUser();
@@ -54,13 +70,22 @@ import { SITE } from '../config/site.config.js';
     font-weight: 900;
   }
 
-  #logout-btn {
+  .dashboard__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  #logout-btn,
+  #tour-help-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
   }
 
-  #logout-btn .material-symbols-outlined {
+  #logout-btn .material-symbols-outlined,
+  #tour-help-btn .material-symbols-outlined {
     font-size: 1.25rem;
   }
 
