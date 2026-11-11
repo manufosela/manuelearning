@@ -6,6 +6,7 @@ import {
   invitationExpiry,
   buildInvitationLink,
   buildInvitationMessage,
+  invitationEmailFor,
   invitationProblem,
   INVITATION_PROBLEM_MESSAGES,
 } from '../src/lib/invitations.js';
@@ -77,6 +78,19 @@ describe('buildInvitationMessage', () => {
       expiresAt: new Date('2026-12-11T10:00:00Z'),
     });
     expect(noCohort.body).not.toContain('convocatoria');
+  });
+});
+
+describe('invitationEmailFor', () => {
+  it('builds link and message for a stored invitation', () => {
+    const email = invitationEmailFor(
+      { id: 'tok', expiresAt: new Date('2026-12-11T10:00:00Z') },
+      { origin: 'https://manuelearning.com', siteName: 'ManuElearning', cohortName: 'C1' },
+    );
+    expect(email.link).toBe('https://manuelearning.com/invitacion?token=tok');
+    expect(email.subject).toBe('Invitación a ManuElearning');
+    expect(email.body).toContain(email.link);
+    expect(email.body).toContain('C1');
   });
 });
 
