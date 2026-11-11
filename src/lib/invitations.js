@@ -65,6 +65,17 @@ export function buildInvitationMessage({ link, siteName, cohortName, expiresAt }
 }
 
 /**
+ * Link and copy-paste email for a stored invitation.
+ * @param {{id: string, expiresAt: Date}} invitation
+ * @param {{origin: string, siteName: string, cohortName: string}} context
+ * @returns {{link: string, subject: string, body: string}}
+ */
+export function invitationEmailFor(invitation, { origin, siteName, cohortName }) {
+  const link = buildInvitationLink(origin, invitation.id);
+  return { link, ...buildInvitationMessage({ link, siteName, cohortName, expiresAt: invitation.expiresAt }) };
+}
+
+/**
  * Why an invitation cannot be accepted by the given account, or null if it can.
  * @param {{email: string, status: string, expiresAt: Date} | null} invitation
  * @param {string} email - email of the signed-in account
