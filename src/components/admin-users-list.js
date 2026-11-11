@@ -1,6 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { fetchAllUsers, updateUserRole, updateUserStatus } from '../lib/firebase/users.js';
 import { fetchAllCohorts } from '../lib/firebase/cohorts.js';
+import { fetchPendingInvitations } from '../lib/firebase/invitations.js';
+import './invitation-form.js';
+import './invitation-list.js';
 import { waitForAuth } from '../lib/auth-ready.js';
 import { exportCsv } from '../lib/csv-export.js';
 import { filterBySearch } from '../lib/search-filter.js';
@@ -16,6 +19,9 @@ export class AdminUsersList extends LitElement {
     _loading: { type: Boolean, state: true },
     _error: { type: String, state: true },
     _actionError: { type: String, state: true },
+    _cohorts: { type: Array, state: true },
+    _invitations: { type: Array, state: true },
+    _showInviteForm: { type: Boolean, state: true },
     _searchQuery: { type: String, state: true },
     _activeTab: { type: String, state: true },
   };
@@ -122,6 +128,16 @@ export class AdminUsersList extends LitElement {
       margin-bottom: 1rem;
       font-size: 0.875rem;
       color: var(--color-text-secondary, #475569);
+    }
+
+    .toolbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .invite-panel {
+      margin-bottom: 1rem;
     }
 
     .export-btn {
@@ -328,6 +344,9 @@ export class AdminUsersList extends LitElement {
     this._loading = true;
     this._error = '';
     this._actionError = '';
+    this._cohorts = [];
+    this._invitations = [];
+    this._showInviteForm = false;
     this._searchQuery = '';
     this._activeTab = 'active';
   }
@@ -341,10 +360,17 @@ export class AdminUsersList extends LitElement {
     this._loading = true;
     this._error = '';
 
-    const [usersResult, cohortsResult] = await Promise.all([
+    const [usersResult, cohortsResult, invitationsResult] = await Promise.all([
       fetchAllUsers(),
       fetchAllCohorts(),
+      fetchPendingInvitations(),
     ]);
+
+    if (invitationsResult.success) {
+      this._invitations = invitationsResult.invitations;
+    } else {
+      this._actionError = invitationsResult.error;
+    }
 
     this._loading = false;
     if (usersResult.success) {
@@ -355,11 +381,22 @@ export class AdminUsersList extends LitElement {
     }
 
     if (cohortsResult.success) {
+      this._cohorts = cohortsResult.cohorts.map(({ id, name }) => ({ id, name }));
       this._cohortMap = {};
       for (const c of cohortsResult.cohorts) {
         this._cohortMap[c.id] = c.name;
       }
     }
+  }
+
+  /** @param {CustomEvent} e */
+  _onInvitationCreated(e) {
+    this._invitations = [e.detail, ...this._invitations];
+  }
+
+  /** @param {CustomEvent} e */
+  _onInvitationRevoked(e) {
+    this._invitations = this._invitations.filter((i) => i.id !== e.detail);
   }
 
   _exportCsv() {
@@ -450,11 +487,22 @@ export class AdminUsersList extends LitElement {
       ${this._actionError ? html`<div class="action-error" role="alert">${this._actionError}</div>` : ''}
       <div class="toolbar">
         <span>${tabUsers.length} usuarios ${tabLabel}</span>
-        <button class="export-btn" @click=${this._exportCsv}>
-          <span class="material-symbols-outlined">download</span>
-          Exportar CSV
-        </button>
+        <div class="toolbar-actions">
+          <button class="export-btn" aria-expanded=${this._showInviteForm}
+            @click=${() => { this._showInviteForm = !this._showInviteForm; }}>
+            <span class="material-symbols-outlined">person_add</span>
+            Invitar
+          </button>
+          <button class="export-btn" @click=${this._exportCsv}>
+            <span class="material-symbols-outlined">download</span>
+            Exportar CSV
+          </button>
+        </div>
       </div>
+      ${this._showInviteForm
+        ? html`<invitation-form class="invite-panel" .cohorts=${this._cohorts}
+            @invitation-created=${this._onInvitationCreated}></invitation-form>`
+        : ''}
       <div class="tabs">
         <button
           class="tab ${this._activeTab === 'active' ? 'tab--active' : ''}"
@@ -468,7 +516,7 @@ export class AdminUsersList extends LitElement {
           @click=${() => { this._activeTab = 'pending'; }}
         >
           Pendientes
-          <span class="tab-count">${pendingUsers.length}</span>
+          <span class="tab-count">${pendingUsers.length + this._invitations.length}</span>
         </button>
         <button
           class="tab ${this._activeTab === 'inactive' ? 'tab--active' : ''}"
@@ -478,6 +526,10 @@ export class AdminUsersList extends LitElement {
           <span class="tab-count">${inactiveUsers.length}</span>
         </button>
       </div>
+      ${this._activeTab === 'pending'
+        ? html`<invitation-list class="invite-panel" .invitations=${this._invitations} .cohortMap=${this._cohortMap}
+            @invitation-revoked=${this._onInvitationRevoked}></invitation-list>`
+        : ''}
       <div class="search-bar">
         <input
           class="search-input"
