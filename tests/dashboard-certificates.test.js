@@ -67,6 +67,15 @@ describe('student dashboard per-course titles and certificates', () => {
     mockProgress.mockResolvedValue({ success: true, completedLessons: [{ moduleId: 'k1', lessonId: 'k1-l1' }] });
   });
 
+  it('announces dashboard-ready with the uid once rendered', async () => {
+    const onReady = vi.fn();
+    document.addEventListener('dashboard-ready', onReady);
+    await mount();
+    document.removeEventListener('dashboard-ready', onReady);
+    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(onReady.mock.calls[0][0].detail).toEqual({ uid: 'u1' });
+  });
+
   it('shows the course title from the courses collection instead of the slug', async () => {
     const el = await mount();
     const titles = [...el.shadowRoot.querySelectorAll('.course-section-title')].map((t) => t.textContent);
