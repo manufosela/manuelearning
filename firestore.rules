@@ -21,8 +21,13 @@ service cloud.firestore {
     match /users/{uid} {
       // Any signed-in user can read their own profile; admins can read all
       allow read: if isOwner(uid) || isAdmin();
-      // User can create their own profile during registration
-      allow create: if isOwner(uid);
+      // User can create their own profile during registration, only as a pending
+      // student with their own email and the registration fields
+      allow create: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['email', 'displayName', 'role', 'status', 'cohortId', 'createdAt'])
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role == 'student'
+        && request.resource.data.status == 'pending';
       // Users can only update safe profile fields (displayName, weeklyDigest, lastActivity);
       // all other fields (role, email, lifetimeAccess, cohortId, etc.) are immutable for non-admins
       allow update: if isOwner(uid)

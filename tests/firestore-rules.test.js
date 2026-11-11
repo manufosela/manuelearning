@@ -41,6 +41,30 @@ describe('certificates rules', () => {
   });
 });
 
+describe('users rules', () => {
+  const block = matchBlock('/users/{uid}');
+  const create = block.match(/allow create: ([\s\S]*?);/)?.[1] ?? '';
+
+  it('only lets a user create their own profile', () => {
+    expect(create).toMatch(/^if isOwner\(uid\)/);
+  });
+
+  it('forces the self-created profile to be a pending student (no privilege escalation)', () => {
+    expect(create).toMatch(/request\.resource\.data\.role == 'student'/);
+    expect(create).toMatch(/request\.resource\.data\.status == 'pending'/);
+  });
+
+  it('binds the profile email to the signed-in account', () => {
+    expect(create).toMatch(/request\.resource\.data\.email == request\.auth\.token\.email/);
+  });
+
+  it('limits the self-created profile to the registration fields', () => {
+    expect(create).toMatch(
+      /request\.resource\.data\.keys\(\)\.hasOnly\(\['email', 'displayName', 'role', 'status', 'cohortId', 'createdAt'\]\)/,
+    );
+  });
+});
+
 describe('lessons rules', () => {
   it('only lets students read student lessons', () => {
     expect(rules).toMatch(/allow read: if isAdmin\(\) \|\| \(isSignedIn\(\) && resource\.data\.audience == 'student'\);/);
