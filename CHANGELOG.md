@@ -6,6 +6,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- CHANGELOG_ENTRIES -->
+## [1.1.0] - 2026-11-11
+### Features
+- feat: tour guiado del admin en /admin con botón de ayuda (MEL-TSK-0109)
+- feat: tour guiado del alumno en /dashboard con botón de ayuda (MEL-TSK-0110)
+- feat: módulo de tours guiados con driver.js (MEL-TSK-0108)
+- feat: página /invitacion para aceptar invitaciones (MEL-TSK-0107)
+- feat: componente para aceptar una invitación con google (MEL-TSK-0107)
+- feat: invitar desde /admin/users y ver invitaciones en pendientes (MEL-TSK-0107)
+- feat: lista de invitaciones pendientes con copiar y revocar (MEL-TSK-0106)
+- feat: formulario de invitación con enlace y correo para copiar (MEL-TSK-0106)
+- feat: botón de copiar y correo de una invitación guardada (MEL-TSK-0106)
+- feat: leer y aceptar una invitación en un único batch (MEL-TSK-0106)
+- feat: capa de datos de invitaciones para el admin (MEL-TSK-0106)
+- feat: reglas e índice de invitaciones y alta activa invitada (MEL-TSK-0106)
+- feat: helpers de invitaciones, enlace, mensaje y validez (MEL-TSK-0106)
+- feat: certificado y título real de cada curso en el dashboard (MEL-TSK-0096)
+- feat: certificado ligado al curso completado (MEL-TSK-0096)
+- feat: preguntas abiertas en el quiz de la lección (MEL-TSK-0101)
+- feat: helpers puros del quiz de lección con preguntas abiertas (MEL-TSK-0101)
+- feat: material del formador visible solo para admins en temario y lección (MEL-TSK-0095)
+- feat: audiencia de lección en el panel de módulos (MEL-TSK-0095)
+- feat: audiencia de lección con reglas e índice para el material del formador (MEL-TSK-0095)
+- feat: enlaces de cursos del pie desde la colección courses (MEL-TSK-0100)
+- feat: catálogo /cursos alimentado por la colección courses (MEL-TSK-0100)
+- feat: saveCourse y deleteCourse en el servicio de cursos (MEL-TSK-0092)
+- feat: colección courses con servicio, reglas e índice (MEL-TSK-0092)
+- feat: script import-course.mjs que sube un curso desde su manifiesto (MEL-TSK-0091)
+- feat: lógica de manifiesto de curso para importar desde markdown (MEL-TSK-0091)
+- feat: retirar el curso demo de javascript (MEL-TSK-0090)
+### Fixes
+- fix: heatmap en día local, orden válido finito y cursos en orden español (MEL-BUG-0010)
+- fix: impedir crear el propio perfil como admin o activo (MEL-BUG-0009)
+- fix: desactivar usuario desde el admin y bloquear a los inactivos (MEL-BUG-0008)
+- fix: permitir la verificación pública de certificados (MEL-BUG-0007)
+- fix: sacar el email de contacto del repositorio público (MEL-TSK-0098)
+- fix: navegación de la lección limitada al curso actual (MEL-BUG-0006)
+- fix: estilos del pie para los enlaces de curso generados por lit (MEL-TSK-0100)
+
 ## [1.0.55] - 2026-03-15
 - fix: comprehensive UI audit — dark mode, accessibility, responsive and performance
 
