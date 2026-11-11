@@ -1,0 +1,22 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { SITE } from '../config/site.config.js';
+import '../styles/auth-card.css';
+---
+
+<MainLayout title={`Invitación | ${SITE.name}`} hideAuthButton={true}>
+  <section class="auth-page">
+    <div class="auth-card">
+      <div class="auth-header">
+        <img src="/logo.svg" alt={SITE.name} class="auth-logo" />
+        <h1>Tienes una invitación</h1>
+        <p>Acepta para entrar en {SITE.name}</p>
+      </div>
+      <invitation-accept></invitation-accept>
+    </div>
+  </section>
+</MainLayout>
+
+<script>
+  import '../components/invitation-accept.js';
+</script>

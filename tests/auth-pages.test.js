@@ -69,6 +69,23 @@ describe('Login page (/login)', () => {
   });
 });
 
+describe('Invitation page (/invitacion)', () => {
+  /** @type {{ html: string, doc: Document }} */
+  let page;
+
+  beforeAll(() => {
+    page = loadPage('invitacion');
+  });
+
+  it('should mount the invitation-accept element', () => {
+    expect(page.doc.querySelector('invitation-accept')).not.toBeNull();
+  });
+
+  it('should use the shared auth card', () => {
+    expect(page.doc.querySelector('.auth-card .auth-header h1').textContent).toContain('Tienes una invitación');
+  });
+});
+
 describe('Dashboard page (/dashboard)', () => {
   /** @type {{ html: string, doc: Document }} */
   let page;
