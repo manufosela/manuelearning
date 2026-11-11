@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   setDoc,
   updateDoc,
@@ -9,6 +10,7 @@ import {
   orderBy,
   serverTimestamp,
   Timestamp,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from './config.js';
 import { normalizeEmail, isValidEmail, invitationExpiry } from '../invitations.js';
@@ -84,5 +86,53 @@ export async function revokeInvitation(token) {
   } catch (err) {
     console.error('revokeInvitation failed', err);
     return { success: false, error: 'Error al revocar la invitación' };
+  }
+}
+
+/**
+ * Read an invitation by its token; invitation is null when it does not exist.
+ * @param {string} token
+ * @returns {Promise<{success: boolean, invitation?: Invitation | null, error?: string}>}
+ */
+export async function fetchInvitation(token) {
+  if (!token) return { success: true, invitation: null };
+  try {
+    const snap = await getDoc(doc(db, COLLECTION, token));
+    return { success: true, invitation: snap.exists() ? toInvitation(snap) : null };
+  } catch (err) {
+    console.error('fetchInvitation failed', err);
+    return { success: false, error: 'Error al leer la invitación' };
+  }
+}
+
+/**
+ * Create the invitee's active profile and consume the invitation atomically.
+ * The rules reject the batch unless the invitation is valid for this account.
+ * @param {{uid: string, email: string, displayName: string | null}} user
+ * @param {Invitation} invitation
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function acceptInvitation(user, invitation) {
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'users', user.uid), {
+    email: user.email,
+    displayName: user.displayName ?? '',
+    role: 'student',
+    status: 'active',
+    cohortId: invitation.cohortId,
+    createdAt: serverTimestamp(),
+    invitationId: invitation.id,
+  });
+  batch.update(doc(db, COLLECTION, invitation.id), {
+    status: 'accepted',
+    acceptedBy: user.uid,
+    acceptedAt: serverTimestamp(),
+  });
+  try {
+    await batch.commit();
+    return { success: true };
+  } catch (err) {
+    console.error('acceptInvitation failed', err);
+    return { success: false, error: 'No se ha podido aceptar la invitación' };
   }
 }

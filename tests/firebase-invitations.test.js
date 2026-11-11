@@ -4,14 +4,19 @@ vi.mock('firebase/app', () => ({ initializeApp: vi.fn(() => ({})) }));
 vi.mock('firebase/auth', () => ({ getAuth: vi.fn(() => ({ currentUser: null })) }));
 
 const mockSetDoc = vi.fn();
+const mockGetDoc = vi.fn();
 const mockGetDocs = vi.fn();
 const mockUpdateDoc = vi.fn();
+const mockBatchSet = vi.fn();
+const mockBatchUpdate = vi.fn();
+const mockBatchCommit = vi.fn();
 
 vi.mock('firebase/firestore', () => ({
   getFirestore: vi.fn(() => ({})),
   collection: vi.fn(() => 'invitations-col'),
   doc: vi.fn((_db, col, id) => `${col}/${id}`),
   setDoc: (...args) => mockSetDoc(...args),
+  getDoc: (...args) => mockGetDoc(...args),
   getDocs: (...args) => mockGetDocs(...args),
   updateDoc: (...args) => mockUpdateDoc(...args),
   query: vi.fn(),
@@ -19,12 +24,15 @@ vi.mock('firebase/firestore', () => ({
   orderBy: vi.fn(),
   serverTimestamp: vi.fn(() => 'SERVER_TS'),
   Timestamp: { fromDate: (date) => ({ toDate: () => date }) },
+  writeBatch: vi.fn(() => ({ set: mockBatchSet, update: mockBatchUpdate, commit: mockBatchCommit })),
 }));
 
 import {
   createInvitation,
   fetchPendingInvitations,
   revokeInvitation,
+  fetchInvitation,
+  acceptInvitation,
 } from '../src/lib/firebase/invitations.js';
 
 const expiresAt = new Date('2026-12-11T10:00:00Z');
@@ -81,5 +89,51 @@ describe('revokeInvitation', () => {
 
   it('rejects an empty token', async () => {
     expect((await revokeInvitation('')).success).toBe(false);
+  });
+});
+
+describe('fetchInvitation', () => {
+  it('returns null when the token does not exist', async () => {
+    mockGetDoc.mockResolvedValue({ exists: () => false });
+    const result = await fetchInvitation('nope');
+    expect(result).toEqual({ success: true, invitation: null });
+  });
+
+  it('returns the invitation', async () => {
+    mockGetDoc.mockResolvedValue(snapshot('t1', { email: 'ana@example.com', cohortId: 'c1', status: 'pending', expiresAt: { toDate: () => expiresAt } }));
+    const result = await fetchInvitation('t1');
+    expect(result.invitation).toMatchObject({ id: 't1', email: 'ana@example.com', expiresAt });
+  });
+});
+
+describe('acceptInvitation', () => {
+  const user = { uid: 'u1', email: 'ana@example.com', displayName: 'Ana' };
+  const invitation = { id: 't1', email: 'ana@example.com', cohortId: 'c1', status: 'pending', expiresAt };
+
+  it('creates the active profile and consumes the invitation in one batch', async () => {
+    mockBatchCommit.mockResolvedValue();
+    const result = await acceptInvitation(user, invitation);
+
+    expect(result.success).toBe(true);
+    expect(mockBatchSet).toHaveBeenCalledWith('users/u1', {
+      email: 'ana@example.com',
+      displayName: 'Ana',
+      role: 'student',
+      status: 'active',
+      cohortId: 'c1',
+      createdAt: 'SERVER_TS',
+      invitationId: 't1',
+    });
+    expect(mockBatchUpdate).toHaveBeenCalledWith('invitations/t1', {
+      status: 'accepted',
+      acceptedBy: 'u1',
+      acceptedAt: 'SERVER_TS',
+    });
+    expect(mockBatchCommit).toHaveBeenCalledOnce();
+  });
+
+  it('reports a rejected batch', async () => {
+    mockBatchCommit.mockRejectedValue(new Error('permission-denied'));
+    expect((await acceptInvitation(user, invitation)).success).toBe(false);
   });
 });
