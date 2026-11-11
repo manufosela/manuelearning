@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- CHANGELOG_ENTRIES -->
+## [1.1.1] - 2026-11-11
+### Fixes
+- fix: la racha cuenta el día en hora local (MEL-BUG-0011)
+
 ## [1.1.0] - 2026-11-11
 ### Features
 - feat: tour guiado del admin en /admin con botón de ayuda (MEL-TSK-0109)
