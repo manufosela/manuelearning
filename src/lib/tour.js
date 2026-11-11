@@ -1,5 +1,6 @@
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
+import '../styles/tour.css';
 
 // Guided tours on driver.js: Spanish texts and a per-browser, per-user "seen" flag.
 

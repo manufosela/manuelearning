@@ -666,6 +666,8 @@ export class StudentDashboardView extends LitElement {
     }
 
     this._loading = false;
+    await this.updateComplete;
+    this.dispatchEvent(new CustomEvent('dashboard-ready', { detail: { uid: user.uid }, bubbles: true, composed: true }));
   }
 
   /**
